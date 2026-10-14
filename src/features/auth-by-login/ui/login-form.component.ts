@@ -3,7 +3,6 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Me, SessionApi, SessionStore } from '@entities/session';
 import { errorText } from '@shared/api';
 
-/** Форма входа (spec 08 §2.0): «Логин или почта» + «Пароль». */
 @Component({
   selector: 'app-login-form',
   imports: [ReactiveFormsModule],
@@ -14,7 +13,6 @@ export class LoginFormComponent {
   private readonly session = inject(SessionStore);
   private readonly fb = inject(NonNullableFormBuilder);
 
-  /** Вход выполнен — куда перейти, решает страница. */
   readonly loggedIn = output<Me>();
 
   readonly form = this.fb.group({

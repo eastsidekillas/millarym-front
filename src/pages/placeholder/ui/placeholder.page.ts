@@ -1,6 +1,5 @@
 import { Component, input } from '@angular/core';
 
-/** Временная страница для разделов, которые ещё не сделаны. */
 @Component({
   selector: 'app-placeholder-page',
   template: `
@@ -9,6 +8,5 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class PlaceholderPage {
-  /** Из data маршрута (withComponentInputBinding) */
   readonly title = input('');
 }

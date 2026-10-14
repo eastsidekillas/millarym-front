@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-/** Достать понятный текст ошибки из ответа API ({detail} или {errors: {поле: [..]}}). */
 export function errorText(error: unknown, fallback = 'Что-то пошло не так. Попробуйте ещё раз.'): string {
   if (!(error instanceof HttpErrorResponse)) return fallback;
   if (error.status === 0) return 'Нет связи с сервером. Проверьте сеть.';

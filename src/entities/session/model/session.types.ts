@@ -1,4 +1,3 @@
-/** Коды прав — совпадают с app_auth/rights.py на бэке (spec 08 §12а). */
 export type RightCode =
   | 'move_orders_cut'
   | 'move_cut_cover'
@@ -13,7 +12,6 @@ export type RightCode =
   | 'edit'
   | 'reserve';
 
-/** Ответ GET /users/me/ — вошедший сотрудник. */
 export interface Me {
   id: number;
   username: string;

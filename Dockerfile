@@ -1,8 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-# package-lock.json* — файл появится после первого `npm install`
-COPY package.json package-lock.json* ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build -- --configuration=production
 

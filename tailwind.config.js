@@ -1,4 +1,3 @@
-// Палитра «Миларум» (new-crm/brand/tailwind.preset.js). Цвета — CSS-переменные в styles.css.
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{html,ts}'],

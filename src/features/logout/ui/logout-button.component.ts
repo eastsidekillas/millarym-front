@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { SessionApi, SessionStore } from '@entities/session';
 
-/** Кнопка «Выйти»: завершить сессию на сервере и открыть страницу входа. */
 @Component({
   selector: 'app-logout-button',
   template: `<button type="button" class="btn-ghost" (click)="logout()">Выйти</button>`,

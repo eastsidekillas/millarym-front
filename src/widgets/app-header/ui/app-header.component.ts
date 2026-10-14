@@ -3,7 +3,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SessionStore } from '@entities/session';
 import { LogoutButtonComponent } from '@features/logout';
 
-/** Шапка (spec 08 §2.1): логотип, меню, сотрудник и «Выйти». */
 @Component({
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive, LogoutButtonComponent],

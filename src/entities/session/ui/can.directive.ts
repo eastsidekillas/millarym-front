@@ -2,11 +2,6 @@ import { Directive, TemplateRef, ViewContainerRef, effect, inject, input } from 
 import { SessionStore } from '../model/session.store';
 import { RightCode } from '../model/session.types';
 
-/**
- * Показывает элемент, только если у сотрудника есть право.
- *   <button *appCan="'ship'">Отгрузить</button>
- * Сервер всё равно проверяет право сам — это только чтобы не показывать лишнее.
- */
 @Directive({ selector: '[appCan]' })
 export class CanDirective {
   private readonly session = inject(SessionStore);

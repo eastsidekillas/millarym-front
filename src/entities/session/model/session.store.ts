@@ -3,10 +3,6 @@ import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxj
 import { SessionApi } from '../api/session.api';
 import { Me, RightCode } from './session.types';
 
-/**
- * Текущий сотрудник и его права (signals).
- * Токены лежат в httpOnly cookie — фронт их не видит и не хранит.
- */
 @Injectable({ providedIn: 'root' })
 export class SessionStore {
   private readonly api = inject(SessionApi);
@@ -31,7 +27,6 @@ export class SessionStore {
     this._me.set(null);
   }
 
-  /** Есть ли вход. Один запрос /me на все одновременные проверки. */
   checkAuth(): Observable<boolean> {
     if (this._me()) return of(true);
     if (!this.meRequest$) {
@@ -46,7 +41,6 @@ export class SessionStore {
     return this.meRequest$;
   }
 
-  /** Обновить access-токен. Параллельные 401 ждут один и тот же запрос. */
   refreshToken(): Observable<void> {
     if (!this.refresh$) {
       this.refresh$ = this.api.refresh().pipe(

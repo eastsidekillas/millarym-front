@@ -4,13 +4,11 @@ import { Observable } from 'rxjs';
 import { environment } from '@shared/config';
 import { LoginRequest, Me, PasswordChangeRequest } from '../model/session.types';
 
-/** Запросы к /users/* и /token/*. Токены приходят и уходят в httpOnly cookie. */
 @Injectable({ providedIn: 'root' })
 export class SessionApi {
   private readonly http = inject(HttpClient);
   private readonly api = environment.baseURL;
 
-  /** Адреса, после 401 на которых не нужно обновлять токен. */
   static readonly noRetryUrls = ['/users/login/', '/users/logout/', '/token/refresh/'];
   static readonly meUrl = '/users/me/';
 

@@ -4,11 +4,6 @@ import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { SessionApi, SessionStore } from '@entities/session';
 
-/**
- * Cookie отправляются на тот же адрес автоматически; withCredentials — на случай,
- * если фронт и API окажутся на разных портах. На 401 один раз обновляем
- * токен и повторяем запрос; не вышло — на страницу входа с возвратом обратно.
- */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const session = inject(SessionStore);
   const router = inject(Router);
@@ -23,7 +18,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       return session.refreshToken().pipe(
         switchMap(() => next(request)),
         catchError((refreshError: unknown) => {
-          // /me при открытии без входа — guard сам отправит на вход
+          // 401 на /me при открытии без входа обрабатывает guard
           if (!req.url.includes(SessionApi.meUrl)) {
             session.clear();
             const url = router.url;

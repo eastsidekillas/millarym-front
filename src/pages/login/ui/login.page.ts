@@ -2,7 +2,6 @@ import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginFormComponent } from '@features/auth-by-login';
 
-/** Страница входа: логотип + форма. После входа — туда, откуда пришли. */
 @Component({
   selector: 'app-login-page',
   imports: [LoginFormComponent],
@@ -31,7 +30,6 @@ import { LoginFormComponent } from '@features/auth-by-login';
 export class LoginPage {
   private readonly router = inject(Router);
 
-  /** Куда вернуться после входа (?returnUrl=...) */
   readonly returnUrl = input<string>();
 
   goBack(): void {

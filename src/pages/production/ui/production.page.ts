@@ -1,10 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CanDirective, RightCode, SessionStore } from '@entities/session';
 
-/**
- * Заглушка «Производства» (этап 2 плана). Пока показывает, какие действия
- * доступны вошедшему — чтобы проверить роли на живых учётках.
- */
 @Component({
   selector: 'app-production-page',
   imports: [CanDirective],
