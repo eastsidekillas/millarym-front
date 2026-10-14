@@ -1,9 +1,9 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
   <app-stage-tabs [counters]="counters()" [active]="stage() === 'trash' ? null : $any(stage())" (selected)="selectStage($event)" />
   @if (counters(); as c) {
-    <p class="text-sm text-muted">
-      Свободных изделий: <span class="tnum font-medium text-ink">{{ c.free }}</span>
-    </p>
+    <a class="btn-outline" routerLink="/reports" [queryParams]="freeStockParams()">
+      Свободные остатки <span class="tnum font-semibold">{{ c.free }}</span>
+    </a>
   }
 </div>
 

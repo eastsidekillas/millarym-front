@@ -17,9 +17,11 @@ import {
   itemAlert,
   meters,
 } from '@entities/item';
+import { ReportApi } from '@entities/report';
 import { ItemActions } from '@features/item-actions';
 import { ItemForm } from '@features/item-form';
 import { errorText } from '@shared/api';
+import { ToastService } from '@shared/ui';
 import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
 
 @Component({
@@ -37,10 +39,13 @@ export class ItemCardComponent {
   private readonly changed = inject(ItemsChanged);
   readonly actions = inject(ItemActions);
   private readonly itemForm = inject(ItemForm);
+  private readonly reports = inject(ReportApi);
+  private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
   readonly error = signal<string | null>(null);
   reserve = '';
+  readonly exporting = signal(false);
 
   readonly fmt = fmtDate;
   readonly fmtTime = fmtDateTime;
@@ -137,5 +142,16 @@ export class ItemCardComponent {
   async saveReserve() {
     const item = this.item();
     if (item && this.reserve.trim() !== item.reserve) await this.actions.reserve(item, this.reserve);
+  }
+
+  async exportXlsx(it: ItemDetail) {
+    this.exporting.set(true);
+    try {
+      await this.reports.downloadItem(it.id, it.number);
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось скачать файл.'));
+    } finally {
+      this.exporting.set(false);
+    }
   }
 }

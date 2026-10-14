@@ -65,23 +65,22 @@
               }
             </div>
           }
-          @if (otherActions().length || action('move_any')?.allowed) {
-            <div class="flex flex-wrap gap-2">
-              @for (a of otherActions(); track a.code) {
-                <button type="button" [class]="a.code === 'trash' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
-                  {{ a.label }}
-                </button>
-              }
-              @if (action('move_any')?.allowed) {
-                <select class="field w-auto pr-8" aria-label="Переместить на этап" #target (change)="moveTo(target.value); target.value = ''">
-                  <option value="">Переместить на этап…</option>
-                  @for (s of moveTargets(); track s.id) {
-                    <option [value]="s.id">{{ s.name }}</option>
-                  }
-                </select>
-              }
-            </div>
-          }
+          <div class="flex flex-wrap gap-2">
+            @for (a of otherActions(); track a.code) {
+              <button type="button" [class]="a.code === 'trash' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
+                {{ a.label }}
+              </button>
+            }
+            @if (action('move_any')?.allowed) {
+              <select class="field w-auto pr-8" aria-label="Переместить на этап" #target (change)="moveTo(target.value); target.value = ''">
+                <option value="">Переместить на этап…</option>
+                @for (s of moveTargets(); track s.id) {
+                  <option [value]="s.id">{{ s.name }}</option>
+                }
+              </select>
+            }
+            <button type="button" class="btn-outline" [disabled]="exporting()" (click)="exportXlsx(it)">{{ exporting() ? 'Готовим файл…' : 'В Excel' }}</button>
+          </div>
           @for (a of locked(); track a.code) {
             <ng-container *ngTemplateOutlet="lock; context: { $implicit: a }" />
           }
