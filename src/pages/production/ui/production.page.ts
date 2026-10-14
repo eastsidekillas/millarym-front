@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi } from '@entities/catalog';
 import { Counters, Item, ItemApi, ItemListParams, ItemsChanged, STAGES, Stage, StageFilter, TRASH_HINT } from '@entities/item';
@@ -26,7 +26,7 @@ type FilterId = (typeof FILTERS)[number]['id'];
 
 @Component({
   selector: 'app-production-page',
-  imports: [StageTabsComponent, ItemsTableComponent, ItemCardComponent, BulkBarComponent, TrashFabComponent],
+  imports: [RouterLink, StageTabsComponent, ItemsTableComponent, ItemCardComponent, BulkBarComponent, TrashFabComponent],
   templateUrl: './production.page.html',
 })
 export class ProductionPage {
@@ -53,6 +53,7 @@ export class ProductionPage {
     return FILTERS.some((x) => x.id === f) ? (f as FilterId) : '';
   });
   readonly model = computed(() => this.params().get('model') ?? '');
+  readonly freeStockParams = computed(() => ({ kind: 'free-stock', models: this.model() || null }));
   readonly openId = computed(() => {
     const id = Number(this.params().get('item'));
     return Number.isInteger(id) && id > 0 ? id : null;

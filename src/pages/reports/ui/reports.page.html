@@ -1,0 +1,164 @@
+<h1 class="text-xl font-semibold">Отчёты</h1>
+
+<div class="mt-4 grid gap-6 lg:grid-cols-[240px_1fr]">
+  <nav aria-label="Отчёты">
+    <ul class="grid gap-0.5">
+      @for (r of reports(); track r.kind) {
+        <li>
+          <button
+            type="button"
+            class="flex min-h-9 w-full items-center rounded-md px-3 py-2 text-left text-sm leading-5"
+            [class]="kind() === r.kind ? 'bg-accent/[.08] font-medium text-accent' : 'hover:bg-sub'"
+            [attr.aria-current]="kind() === r.kind ? 'page' : null"
+            (click)="select(r.kind)"
+          >
+            {{ r.title }}
+          </button>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  @if (report(); as r) {
+    <section class="min-w-0">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">{{ r.title }}</h2>
+          <p class="mt-0.5 max-w-[72ch] text-sm text-muted">{{ r.description }}</p>
+        </div>
+        <button type="button" class="btn-primary" [disabled]="downloading() || missing() || !!error()" (click)="download()">
+          {{ downloading() ? 'Готовим файл…' : 'Скачать Excel' }}
+        </button>
+      </div>
+
+      @if (r.params.length) {
+        <div class="mt-4 grid gap-3">
+          @for (p of r.params; track p.name) {
+            @switch (p.type) {
+              @case ('text') {
+                <label class="grid max-w-sm gap-1.5">
+                  <span class="text-xs text-muted">{{ p.label }}</span>
+                  <input type="search" class="field" [value]="values()[p.name]" (input)="type(p.name, $any($event.target).value)" [placeholder]="p.required ? 'Например, Фоминых' : 'Пусто — все контрагенты'" />
+                </label>
+              }
+              @case ('bool') {
+                <label class="flex items-center gap-2 text-sm">
+                  <input type="checkbox" class="h-4 w-4 accent-[rgb(var(--accent))]" [checked]="values()[p.name] === '1'" (change)="set(p.name, $any($event.target).checked ? '1' : '')" />
+                  {{ p.label }}
+                </label>
+              }
+              @case ('date') {}
+              @case ('models') {
+                <div class="grid gap-1.5">
+                  <span class="text-xs text-muted">{{ r.kind === 'free-stock' ? p.label + ': без галочек — все свободные, ' + freeTotal() + ' шт.' : p.label }}</span>
+                  <app-model-picker
+                    [options]="r.kind === 'free-stock' ? freeModels() : allModels()"
+                    [showCounts]="r.kind === 'free-stock'"
+                    [selected]="selectedModels()"
+                    (selectedChange)="setModels($event)"
+                  />
+                </div>
+              }
+            }
+          }
+          @if (r.params[0]?.type === 'date') {
+            <div class="flex flex-wrap items-end gap-2">
+              @for (p of r.params; track p.name) {
+                <label class="grid gap-1.5">
+                  <span class="text-xs text-muted">{{ p.label }}</span>
+                  <input type="date" class="field w-auto" [value]="values()[p.name]" (change)="set(p.name, $any($event.target).value)" />
+                </label>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (error()) {
+        <p class="mt-4 rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
+      } @else if (missing()) {
+        <p class="mt-6 text-sm text-muted">Заполните параметры выше, и здесь появится таблица.</p>
+      } @else if (result(); as res) {
+        <p class="mt-5 text-sm text-muted">
+          {{ subtitle(res.subtitle) }}. Всего: <span class="tnum font-medium text-ink">{{ res.total }}</span> шт.
+          @if (r.kind === 'reserved' && hasRepeats()) {
+            <span class="ml-1"><span class="inline-block h-2.5 w-2.5 rounded-sm bg-warn/30 align-middle"></span> одинаковые позиции у одного контрагента, проверьте, не подписаны ли дважды.</span>
+          }
+        </p>
+
+        @if (res.summary.length) {
+          <details class="mt-3 rounded-lg border border-line bg-surface">
+            <summary class="cursor-pointer px-4 py-2.5 text-sm font-medium">Итог по моделям для сверки с заявкой</summary>
+            <div class="grid gap-4 border-t border-line px-4 py-3 sm:grid-cols-2">
+              @for (s of res.summary; track s.title) {
+                <div>
+                  <h3 class="text-sm font-medium">{{ s.title }}</h3>
+                  <ul class="mt-1 text-sm">
+                    @for (row of s.rows; track row[0]) {
+                      <li class="flex justify-between gap-4 border-b border-line py-1 last:border-0">
+                        <span>{{ row[0] }}</span><span class="tnum">{{ row[1] }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          </details>
+        }
+
+        <div class="mt-3 overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
+          <table class="w-full min-w-[760px] text-sm">
+            <thead>
+              <tr class="border-b border-line text-left text-xs text-muted">
+                @for (c of res.columns; track c.key) {
+                  <th class="px-3 py-2.5 font-normal" [class.text-right]="c.kind === 'number'">{{ c.title }}</th>
+                }
+              </tr>
+            </thead>
+            @for (b of blocks(); track $index) {
+              <tbody>
+                @if (b.group) {
+                  <tr>
+                    <th [attr.colspan]="res.columns.length" class="bg-sub px-3 py-2 text-left text-[13px] font-medium">{{ b.group }}</th>
+                  </tr>
+                }
+                @for (row of b.rows; track row.item_id) {
+                  <tr class="border-b border-line last:border-0" [class]="markClass(row.mark)">
+                    @for (c of res.columns; track c.key) {
+                      <td class="whitespace-pre-line px-3 py-2.5 align-top" [class.text-right]="c.kind === 'number'" [class.tnum]="c.kind === 'number'">
+                        @switch (c.kind) {
+                          @case ('photos') {
+                            <div class="flex gap-1">
+                              @for (ph of row.photos; track $index) {
+                                @if (ph.url) {
+                                  <img [src]="ph.url" [alt]="ph.name" [title]="ph.name" class="h-9 w-9 rounded object-cover ring-1 ring-black/10" loading="lazy" />
+                                }
+                              }
+                            </div>
+                          }
+                          @default {
+                            @if (c.key === 'number') {
+                              <a class="num text-accent hover:underline" [routerLink]="['/production']" [queryParams]="{ item: row.item_id }">{{ row.number }}</a>
+                            } @else {
+                              {{ row.cells[c.key] }}
+                            }
+                          }
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            } @empty {
+              <tbody>
+                <tr><td [attr.colspan]="res.columns.length" class="px-4 py-12 text-center text-muted">Под эти условия изделий нет.</td></tr>
+              </tbody>
+            }
+          </table>
+        </div>
+      } @else if (loading()) {
+        <p class="mt-6 text-sm text-muted">Строим отчёт…</p>
+      }
+    </section>
+  }
+</div>

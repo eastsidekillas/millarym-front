@@ -36,7 +36,8 @@ export class AppHeaderComponent {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
-        const q = this.router.parseUrl(this.router.url).queryParams['q'] ?? '';
+        const onProduction = this.router.url.startsWith('/production');
+        const q = onProduction ? (this.router.parseUrl(this.router.url).queryParams['q'] ?? '') : '';
         if (q !== this.query()) this.query.set(q);
       });
   }

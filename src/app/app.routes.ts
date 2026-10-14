@@ -27,7 +27,11 @@ export const routes: Routes = [
         title: 'Ткани — Миларум CRM',
         loadComponent: () => import('@pages/fabrics').then((m) => m.FabricsPage),
       },
-      { path: 'reports', title: 'Отчёты — Миларум CRM', data: { title: 'Отчёты' }, loadComponent: placeholder },
+      {
+        path: 'reports',
+        title: 'Отчёты — Миларум CRM',
+        loadComponent: () => import('@pages/reports').then((m) => m.ReportsPage),
+      },
       {
         path: 'journal',
         title: 'Журнал — Миларум CRM',
