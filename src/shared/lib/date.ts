@@ -39,6 +39,17 @@ export function fmtDate(value: DateLike): string {
   return `${d}.${m}.${y.slice(2)}`;
 }
 
+const longDay = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'long', timeZone: 'UTC' });
+
+export function fmtDayLong(day: string): string {
+  return longDay.format(new Date(`${day}T00:00:00Z`));
+}
+
+export function fmtTime(value: DateLike): string {
+  if (!value || isDateOnly(value)) return '';
+  return timeFormat.format(value instanceof Date ? value : new Date(value));
+}
+
 export function fmtDateTime(value: DateLike): string {
   if (!value || isDateOnly(value)) return fmtDate(value);
   const d = value instanceof Date ? value : new Date(value);
