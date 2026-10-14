@@ -157,7 +157,7 @@ export class ItemFormComponent {
           }),
         );
         const numbers = created.map((i) => i.number).join(', ');
-        this.toast.show(`${created.length > 1 ? 'Созданы' : 'Создано'}: ${numbers} → ${STAGE_NAME[created[0].stage]}`);
+        this.toast.show(`${created.length > 1 ? 'Созданы' : 'Создано'} ${numbers}, этап «${STAGE_NAME[created[0].stage]}»`);
         this.form.created.set(created);
       }
       this.changed.notify();

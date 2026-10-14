@@ -68,7 +68,7 @@ export class ProductionPage {
 
   readonly hint = computed(() => {
     const stage = this.stage();
-    if (stage === null) return `Поиск по всем этапам: найдено ${this.total()}`;
+    if (stage === null) return `Поиск по всем этапам, найдено ${this.total()}.`;
     if (stage === 'trash') return TRASH_HINT;
     return STAGES.find((s) => s.id === stage)?.hint ?? '';
   });

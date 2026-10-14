@@ -38,10 +38,24 @@ export const FABRIC_SLOTS: { slot: FabricSlot; label: string }[] = [
   { slot: 'leather', label: 'Кожзам' },
 ];
 
+export const MOVE_LABEL: Record<Stage, string> = {
+  orders: 'В заказы',
+  cut: 'В крой',
+  cover: 'На склад чехлов',
+  work: 'В работу',
+  fg: 'На СГП',
+};
+
 export function nextLabel(stage: Stage): string {
   const next = NEXT_STAGE[stage];
-  return next ? `→ ${STAGE_NAME[next]}` : '';
+  return next ? MOVE_LABEL[next] : '';
 }
+
+export const LOCK_TEXT: Record<string, string> = {
+  move: 'Перемещать на следующий этап могут',
+  restore: 'Возвращать из Корзины могут',
+  reserve: 'Менять резерв могут',
+};
 
 export interface ItemAlert {
   level: 'crit' | 'warn';

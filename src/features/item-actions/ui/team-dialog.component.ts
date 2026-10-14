@@ -9,28 +9,30 @@ import { ItemActions } from '../model/item-actions.service';
   template: `
     @if (actions.teamRequest(); as req) {
       <app-modal
-        [title]="req.count > 1 ? 'Выдать в работу: ' + req.count + ' изд.' : 'Выдать в работу'"
-        subtitle="Без бригады на «В работе» перевести нельзя"
+        [title]="req.count > 1 ? 'Выдать в работу ' + req.count + ' изд.' : 'Выдать в работу'"
+        subtitle="Выберите бригаду, которая будет собирать"
         width="md:max-w-md"
         (closed)="req.resolve(null)"
       >
-        <div class="grid gap-4 p-5">
+        <div class="grid gap-5 px-6 py-5">
           @if (loading()) {
             <p class="text-sm text-muted">Загружаем бригады…</p>
           } @else if (!teams().length) {
-            <p class="text-sm">Бригад пока нет. Их добавляют в справочнике «Бригады» (админка).</p>
+            <p class="text-sm">Бригад пока нет. Добавьте их в админке, в разделе «Бригады».</p>
           } @else {
-            <div class="grid gap-2" role="radiogroup" aria-label="Бригада">
+            <div class="grid gap-1.5" role="radiogroup" aria-label="Бригада">
               @for (t of teams(); track t.id) {
                 <button
                   type="button"
-                  class="flex items-center justify-between rounded-xl border px-4 py-3 text-left hover:bg-sub"
-                  [class]="selected()?.id === t.id ? 'border-accent bg-accent/10' : 'border-line'"
+                  role="radio"
+                  [attr.aria-checked]="selected()?.id === t.id"
+                  class="flex h-10 items-center justify-between rounded-lg border px-3 text-left text-sm"
+                  [class]="selected()?.id === t.id ? 'border-accent bg-accent/[.08]' : 'border-line hover:bg-sub'"
                   (click)="selected.set(t)"
                   (dblclick)="req.resolve(t)"
                 >
-                  <span class="font-medium">{{ t.name }}</span>
-                  @if (t.foreman) {
+                  <span>{{ t.name }}</span>
+                  @if (t.foreman && t.foreman !== t.name) {
                     <span class="text-xs text-muted">{{ t.foreman }}</span>
                   }
                 </button>

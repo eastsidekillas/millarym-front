@@ -1,12 +1,12 @@
 @if (form.state()) {
   <app-modal
     [title]="editing() ? 'Изменить ' + editing()!.number : 'Новое изделие'"
-    [subtitle]="editing() ? '' : 'Каждая единица получает свой паспорт и номер'"
+    [subtitle]="editing() ? '' : 'Каждое изделие получает свой номер и паспорт'"
     (closed)="form.close()"
   >
-    <form class="grid gap-4 p-5 sm:grid-cols-2" (ngSubmit)="submit()" novalidate>
-      <label class="grid gap-1">
-        <span class="label">Модель</span>
+    <form class="grid gap-x-4 gap-y-5 px-6 py-5 sm:grid-cols-2" (ngSubmit)="submit()" novalidate>
+      <label class="grid gap-1.5">
+        <span class="text-xs text-muted">Модель</span>
         <select class="field" name="model" [(ngModel)]="modelId" required>
           <option [ngValue]="null" disabled>Выберите модель</option>
           @for (m of models(); track m.id) {
@@ -14,79 +14,78 @@
           }
         </select>
       </label>
-      <label class="grid gap-1">
-        <span class="label">Комплектация / дополнения</span>
-        <input class="field" name="extra" [value]="extra()" (input)="extra.set($any($event.target).value)" placeholder="левый угол, накладки венге…" />
+      <label class="grid gap-1.5">
+        <span class="text-xs text-muted">Комплектация / дополнения</span>
+        <input class="field" name="extra" [value]="extra()" (input)="extra.set($any($event.target).value)" placeholder="Например, левый угол" />
       </label>
       @if (kit().length) {
-        <div class="-mt-2 flex flex-wrap items-center gap-1.5 sm:col-span-2">
-          <span class="mr-1 text-xs text-muted">Быстро:</span>
+        <div class="-mt-3 flex flex-wrap items-center gap-1.5 sm:col-span-2">
           @for (k of kit(); track k.id) {
-            <button type="button" class="h-7 rounded-full border px-3 text-xs hover:bg-sub" [class]="kitOn(k) ? 'border-accent bg-accent/10 text-accent' : 'border-line'" (click)="toggleKit(k)">
-              {{ k.name.toLowerCase() }}
+            <button type="button" class="chip h-7" [class.chip-on]="kitOn(k)" [attr.aria-pressed]="kitOn(k)" (click)="toggleKit(k)">
+              {{ k.name }}
             </button>
           }
         </div>
       }
 
       @if (!editing()) {
-        <label class="grid gap-1 sm:col-span-2">
-          <span class="label">Резерв</span>
+        <label class="grid gap-1.5 sm:col-span-2">
+          <span class="text-xs text-muted">Резерв</span>
           <input
             class="field"
             name="reserve"
             [ngModel]="reserve()"
             (ngModelChange)="reserve.set($event)"
-            placeholder="кому или пометка: ИП Фоминых, согл., частное лицо… Пусто — изделие на склад"
+            placeholder="Кому или пометка: ИП Фоминых, согл., частное лицо"
             autocomplete="off"
           />
         </label>
-        <div class="rounded-xl border px-4 py-3 text-sm sm:col-span-2" [class]="reserve().trim() ? 'border-accent bg-accent/10' : 'border-lime bg-lime/10'">
+        <p class="-mt-3 text-sm text-muted sm:col-span-2">
           @if (reserve().trim()) {
-            <b>Резерв указан</b> — изделие останется во вкладке <b>«Заказы»</b> и будет ждать ткань и передачи в крой.
+            С резервом изделие попадёт на этап <span class="font-medium text-ink">«Заказы»</span> и будет ждать ткань.
           } @else {
-            <b>Резерв не указан</b> — изделие сразу уйдёт во вкладку <b>«Крой»</b> как складское.
+            Без резерва изделие сразу попадёт на этап <span class="font-medium text-ink">«Крой»</span> как складское.
           }
-        </div>
+        </p>
       }
 
-      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-line px-4 py-3 sm:col-span-2">
-        <label class="flex items-center gap-3">
-          <input type="checkbox" class="h-4 w-4" name="indiv" [ngModel]="indiv()" (ngModelChange)="indiv.set($event)" />
-          <span class="text-sm"><b>Индивидуальный заказ</b> — срок 30 дней, в списке салатовая полоса и «заказ»</span>
+      <div class="grid gap-2 sm:col-span-2">
+        <label class="flex items-center gap-2.5">
+          <input type="checkbox" class="h-4 w-4 accent-[rgb(var(--accent))]" name="indiv" [ngModel]="indiv()" (ngModelChange)="indiv.set($event)" />
+          <span class="text-sm">Индивидуальный заказ <span class="text-muted">(срок 30 дней)</span></span>
         </label>
         @if (indiv()) {
-          <input class="field min-w-[200px] flex-1" name="indivNote" [(ngModel)]="indivNote" placeholder="что особенного: размер, своя ткань…" />
+          <input class="field" name="indivNote" [(ngModel)]="indivNote" placeholder="Что особенного: размер, своя ткань" aria-label="Что особенного" />
         }
       </div>
 
       <div class="grid gap-2 sm:col-span-2">
-        <span class="label">Ткани</span>
+        <span class="text-xs text-muted">Ткани и метраж</span>
         @for (row of slots; track row.slot; let first = $first) {
-          <div class="grid grid-cols-[100px_1fr_80px] items-center gap-2">
+          <div class="grid grid-cols-[104px_1fr_88px] items-center gap-2">
             <span class="text-sm text-muted">{{ row.label }}</span>
-            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'обязательно — начните вводить название' : '—'" />
+            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Обязательно. Начните вводить название' : ''" />
             <input class="field tnum" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal" placeholder="м" [attr.aria-label]="'Метраж: ' + row.label" />
           </div>
         }
       </div>
 
       @if (!editing()) {
-        <label class="grid gap-1">
-          <span class="label">Количество единиц</span>
+        <label class="grid gap-1.5">
+          <span class="text-xs text-muted">Количество единиц</span>
           <input type="number" min="1" max="50" class="field tnum" name="qty" [(ngModel)]="qty" />
         </label>
       }
-      <label class="grid gap-1" [class.sm:col-span-2]="editing()">
-        <span class="label">Комментарий</span>
+      <label class="grid gap-1.5" [class.sm:col-span-2]="editing()">
+        <span class="text-xs text-muted">Комментарий</span>
         <input class="field" name="comment" [(ngModel)]="comment" />
       </label>
 
       @if (error()) {
-        <p class="rounded-lg bg-crit/10 px-3 py-2 text-sm text-crit sm:col-span-2" role="alert">{{ error() }}</p>
+        <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit sm:col-span-2" role="alert">{{ error() }}</p>
       }
 
-      <div class="-mx-5 -mb-5 flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4 sm:col-span-2">
+      <div class="-mx-6 -mb-5 flex flex-wrap justify-end gap-2 border-t border-line px-6 py-4 sm:col-span-2">
         <button type="button" class="btn-outline" (click)="form.close()">Отмена</button>
         <button type="submit" class="btn-primary" [disabled]="saving()">
           {{ saving() ? 'Сохраняем…' : editing() ? 'Сохранить' : 'Создать' }}

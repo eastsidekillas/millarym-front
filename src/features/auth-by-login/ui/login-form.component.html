@@ -1,11 +1,11 @@
 <form
   [formGroup]="form"
   (ngSubmit)="submit()"
-  class="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-sm"
+  class="grid gap-4 rounded-xl border border-line bg-surface p-6"
   novalidate
 >
   <label class="block">
-    <span class="mb-1 block text-sm font-medium">Логин или почта</span>
+    <span class="mb-1.5 block text-sm">Логин или почта</span>
     <input
       formControlName="login"
       class="field"
@@ -18,7 +18,7 @@
   </label>
 
   <label class="block">
-    <span class="mb-1 block text-sm font-medium">Пароль</span>
+    <span class="mb-1.5 block text-sm">Пароль</span>
     <div class="relative">
       <input
         formControlName="password"
@@ -28,7 +28,7 @@
       />
       <button
         type="button"
-        class="absolute inset-y-0 right-2 my-auto h-7 rounded-md px-2 text-xs text-muted hover:bg-sub"
+        class="absolute inset-y-0 right-1.5 my-auto h-7 rounded-md px-2 text-xs text-muted hover:bg-sub hover:text-ink"
         (click)="showPassword.set(!showPassword())"
       >
         {{ showPassword() ? 'Скрыть' : 'Показать' }}
@@ -37,10 +37,10 @@
   </label>
 
   @if (error()) {
-    <p class="rounded-lg bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
+    <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
   }
 
-  <button type="submit" class="btn-primary w-full" [disabled]="loading()">
+  <button type="submit" class="btn-primary mt-1 w-full" [disabled]="loading()">
     {{ loading() ? 'Входим…' : 'Войти' }}
   </button>
 </form>

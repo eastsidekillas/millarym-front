@@ -9,6 +9,8 @@ import {
   ItemDetail,
   ItemNumberComponent,
   ItemsChanged,
+  LOCK_TEXT,
+  MOVE_LABEL,
   STAGES,
   STAGE_NAME,
   Stage,
@@ -64,6 +66,17 @@ export class ItemCardComponent {
   readonly fabricRows = computed(() =>
     FABRIC_SLOTS.map(({ slot, label }) => ({ label, fabric: this.item()?.fabrics.find((f) => f.slot === slot) ?? null })),
   );
+  readonly mainActions = computed(() =>
+    (this.item()?.actions ?? []).filter(
+      (a) => a.allowed && ['move', 'restore', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),
+    ),
+  );
+  readonly otherActions = computed(() =>
+    (this.item()?.actions ?? []).filter((a) => a.allowed && ['edit', 'copy', 'trash'].includes(a.code)),
+  );
+  readonly locked = computed(() =>
+    (this.item()?.actions ?? []).filter((a) => !a.allowed && (a.code === 'move' || a.code === 'restore')),
+  );
   readonly moveTargets = computed(() => STAGES.filter((s) => s.id !== 'orders' && s.id !== this.item()?.stage));
 
   constructor() {
@@ -84,6 +97,21 @@ export class ItemCardComponent {
     } catch (err) {
       this.error.set(errorText(err, 'Не удалось открыть изделие.'));
     }
+  }
+
+  moveLabel(a: ItemAction): string {
+    return a.to ? MOVE_LABEL[a.to] : a.label;
+  }
+
+  plainLabel(a: ItemAction): string {
+    return a.code === 'return_to_work' ? 'Вернуть в работу' : a.label;
+  }
+
+  lockText(a: ItemAction): string {
+    const names = a.reason.split('Могут: ')[1]?.replace(/\.$/, '');
+    if (!names) return a.reason;
+    const what = a.code === 'move' && a.to ? `Перемещать ${MOVE_LABEL[a.to].toLowerCase()} могут` : LOCK_TEXT[a.code];
+    return `${what ?? 'Могут'}: ${names}.`;
   }
 
   action(code: string): ItemAction | undefined {

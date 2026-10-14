@@ -4,27 +4,33 @@ import { Counters, STAGES, Stage } from '@entities/item';
 @Component({
   selector: 'app-stage-tabs',
   template: `
-    <div class="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-2" role="tablist" aria-label="Этапы">
-      @for (s of stages; track s.id) {
-        @let on = active() === s.id;
-        @let c = counters()?.stages?.[s.id];
-        <button
-          type="button"
-          role="tab"
-          [attr.aria-selected]="on"
-          class="relative h-11 flex-none whitespace-nowrap rounded-xl border px-4 text-sm"
-          [class]="on ? 'border-accent bg-accent font-semibold text-onaccent' : 'border-line bg-surface hover:bg-sub'"
-          (click)="selected.emit(s.id)"
-        >
-          {{ s.name }}
-          <span class="tnum" [class]="on ? 'opacity-80' : 'text-muted'">{{ c?.total ?? '…' }}</span>
-          @if (c?.late) {
-            <span class="tnum absolute -right-1.5 -top-1.5 h-[18px] min-w-[18px] rounded-full bg-crit px-1 text-center text-[11px] leading-[18px] text-white" [title]="'Просрочено: ' + c!.late">
-              {{ c!.late }}
-            </span>
-          }
-        </button>
-      }
+    <div class="flex min-w-0 overflow-x-auto" role="tablist" aria-label="Этапы">
+      <div class="flex flex-none rounded-lg border border-line bg-surface p-0.5">
+        @for (s of stages; track s.id) {
+          @let on = active() === s.id;
+          @let c = counters()?.stages?.[s.id];
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="on"
+            class="flex h-8 items-center gap-2 whitespace-nowrap rounded-md px-3 text-sm"
+            [class]="on ? 'bg-accent font-medium text-onaccent' : 'text-ink hover:bg-sub'"
+            (click)="selected.emit(s.id)"
+          >
+            {{ s.name }}
+            <span class="tnum text-[13px]" [class]="on ? 'text-onaccent/75' : 'text-muted'">{{ c?.total ?? '' }}</span>
+            @if (c?.late) {
+              <span
+                class="tnum inline-flex h-[18px] min-w-[18px] items-center justify-center rounded px-1 text-[11px] font-medium"
+                [class]="on ? 'bg-onaccent text-crit' : 'bg-crit text-white'"
+                [title]="'Просрочено: ' + c!.late"
+              >
+                {{ c!.late }}
+              </span>
+            }
+          </button>
+        }
+      </div>
     </div>
   `,
 })

@@ -1,142 +1,143 @@
 <div class="fixed inset-0 z-40">
-  <div class="absolute inset-0 bg-black/30" (click)="closed.emit()"></div>
-  <aside class="absolute right-0 top-0 h-full w-full overflow-y-auto border-l border-line bg-surface shadow-2xl sm:w-[520px]" role="dialog" aria-label="Карточка изделия">
+  <div class="absolute inset-0 bg-black/25" (click)="closed.emit()"></div>
+  <aside class="absolute right-0 top-0 h-full w-full overflow-y-auto border-l border-line bg-surface sm:w-[520px]" role="dialog" aria-label="Карточка изделия">
     @if (item(); as it) {
-      <div class="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-line bg-surface px-5 py-4">
-        <div [style.border-left]="it.indiv ? '4px solid rgb(var(--lime))' : null" [style.padding-left]="it.indiv ? '10px' : null">
-          <div class="label">{{ it.reserve ? 'Изделие под заказ' : 'Изделие на склад' }}</div>
-          <app-item-number [number]="it.number" [indiv]="it.indiv" [large]="true" />
-          @if (it.indiv && it.indiv_note) {
-            <div class="mt-0.5 text-xs text-muted">Индивидуальный: {{ it.indiv_note }}</div>
-          }
-          <div class="mt-0.5 font-medium">
-            {{ it.model.name }}
+      <div class="sticky top-0 z-10 border-b border-line bg-surface px-6 pb-4 pt-5">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0" [class.border-l-4]="it.indiv" [class.border-lime]="it.indiv" [class.pl-3]="it.indiv">
+            <p class="text-xs text-muted">{{ it.reserve ? 'Изделие под заказ' : 'Изделие на склад' }}</p>
+            <app-item-number [number]="it.number" [indiv]="it.indiv" [large]="true" />
+            <p class="mt-1 text-[15px] font-medium">{{ it.model.name }}</p>
             @if (it.extra) {
-              · <span class="text-muted">{{ it.extra }}</span>
+              <p class="text-sm text-muted">{{ it.extra }}</p>
+            }
+            @if (it.indiv && it.indiv_note) {
+              <p class="mt-1 text-sm">Индивидуальный: {{ it.indiv_note }}</p>
+            }
+            @if (it.legacy_number) {
+              <p class="text-xs text-muted">Номер в старой системе: {{ it.legacy_number }}</p>
             }
           </div>
-          @if (it.legacy_number) {
-            <div class="text-xs text-muted">старый номер: {{ it.legacy_number }}</div>
-          }
+          <button type="button" class="-mr-2 flex h-8 w-8 flex-none items-center justify-center rounded-md text-muted hover:bg-sub hover:text-ink" aria-label="Закрыть" (click)="closed.emit()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
         </div>
-        <button type="button" class="rounded-md px-2 py-1 text-muted hover:text-ink" aria-label="Закрыть" (click)="closed.emit()">✕</button>
       </div>
 
-      <div class="grid gap-5 p-5">
-        <div class="flex items-center gap-1">
+      <div class="grid gap-6 px-6 py-5">
+        <ol class="grid grid-cols-5 gap-1" aria-label="Этапы">
           @for (s of path; track s.id; let i = $index) {
-            <div class="flex-1">
-              <div class="h-1.5 rounded-full" [class]="it.trashed_at ? 'bg-line' : i < stageIndex() ? 'bg-accent' : i === stageIndex() ? 'bg-lime' : 'bg-line'"></div>
-              <div class="mt-1 text-[10px]" [class]="i === stageIndex() ? 'font-semibold' : 'text-muted'">{{ s.name }}</div>
-            </div>
+            <li [attr.aria-current]="i === stageIndex() && !it.trashed_at ? 'step' : null">
+              <div class="h-1 rounded-full" [class]="it.trashed_at ? 'bg-line' : i < stageIndex() ? 'bg-accent' : i === stageIndex() ? 'bg-lime' : 'bg-line'"></div>
+              <div class="mt-1.5 truncate text-xs" [class]="i === stageIndex() ? 'font-medium text-ink' : 'text-muted'">{{ s.name }}</div>
+            </li>
           }
-        </div>
+        </ol>
 
         @if (alert(); as a) {
-          <div class="rounded-xl px-4 py-2 text-sm font-medium" [class]="a.level === 'crit' ? 'bg-crit/10 text-crit' : 'bg-warn/10 text-warn'">{{ a.text }}</div>
+          <p class="rounded-md px-3 py-2 text-sm font-medium" [class]="a.level === 'crit' ? 'bg-crit/10 text-crit' : 'bg-warn/10 text-warn'">
+            {{ a.text[0].toUpperCase() + a.text.slice(1) }}
+          </p>
         }
 
-        <div class="flex flex-wrap gap-2">
-          @if (it.trashed_at) {
-            <div class="w-full rounded-xl bg-sub px-4 py-3 text-sm">
-              В Корзине: {{ it.trash_reason_label.toLowerCase() }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}» · удалится через {{ daysUntil(it.purge_at) }} дн.
+        @if (it.trashed_at) {
+          <p class="rounded-md bg-sub px-3 py-2.5 text-sm">
+            {{ it.trash_reason_label }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}». Удалится через {{ daysUntil(it.purge_at) }} дн.
+          </p>
+        }
+
+        <div class="grid gap-2">
+          @if (mainActions().length) {
+            <div class="flex flex-wrap gap-2">
+              @for (a of mainActions(); track a.code) {
+                <button
+                  type="button"
+                  [class]="a.code === 'move' || a.code === 'restore' ? 'btn-primary' : 'btn-outline'"
+                  [title]="a.code === 'return_to_work' ? 'Бывает редко: переделка' : ''"
+                  [disabled]="actions.busy()"
+                  (click)="run(a)"
+                >
+                  {{ a.code === 'move' ? moveLabel(a) : plainLabel(a) }}
+                </button>
+              }
             </div>
           }
-          @for (a of it.actions; track a.code) {
-            @switch (a.code) {
-              @case ('move') {
-                @if (a.allowed) {
-                  <button type="button" class="btn-primary" [disabled]="actions.busy()" (click)="run(a)">{{ a.label }}</button>
-                } @else {
-                  <ng-container *ngTemplateOutlet="lock; context: { $implicit: a }" />
-                }
+          @if (otherActions().length || action('move_any')?.allowed) {
+            <div class="flex flex-wrap gap-2">
+              @for (a of otherActions(); track a.code) {
+                <button type="button" [class]="a.code === 'trash' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
+                  {{ a.label }}
+                </button>
               }
-              @case ('restore') {
-                @if (a.allowed) {
-                  <button type="button" class="btn-primary" [disabled]="actions.busy()" (click)="run(a)">Восстановить</button>
-                } @else {
-                  <ng-container *ngTemplateOutlet="lock; context: { $implicit: a }" />
-                }
+              @if (action('move_any')?.allowed) {
+                <select class="field w-auto pr-8" aria-label="Переместить на этап" #target (change)="moveTo(target.value); target.value = ''">
+                  <option value="">Переместить на этап…</option>
+                  @for (s of moveTargets(); track s.id) {
+                    <option [value]="s.id">{{ s.name }}</option>
+                  }
+                </select>
               }
-              @case ('move_any') {
-                @if (a.allowed) {
-                  <select class="h-10 rounded-full border border-line bg-surface px-3 text-sm" aria-label="Переместить в…" #target (change)="moveTo(target.value); target.value = ''">
-                    <option value="">Переместить в…</option>
-                    @for (s of moveTargets(); track s.id) {
-                      <option [value]="s.id">{{ s.name }}</option>
-                    }
-                  </select>
-                }
-              }
-              @case ('reserve') {}
-              @default {
-                @if (a.allowed) {
-                  <button
-                    type="button"
-                    class="btn-outline"
-                    [class.text-crit]="a.code === 'trash'"
-                    [title]="a.code === 'return_to_work' ? 'Бывает редко: переделка' : ''"
-                    [disabled]="actions.busy()"
-                    (click)="run(a)"
-                  >
-                    {{ a.label }}
-                  </button>
-                }
-              }
-            }
+            </div>
+          }
+          @for (a of locked(); track a.code) {
+            <ng-container *ngTemplateOutlet="lock; context: { $implicit: a }" />
           }
         </div>
 
-        <section class="grid gap-3">
-          <label class="grid gap-1">
-            <span class="label">Резерв</span>
-            @if (action('reserve')?.allowed) {
-              <form class="flex gap-2" (ngSubmit)="saveReserve()">
-                <input class="field" name="reserve" [(ngModel)]="reserve" placeholder="кому или пометка: ИП Фоминых, согл., частное лицо… Пусто = свободно" autocomplete="off" />
-                <button type="submit" class="btn-outline flex-none" [disabled]="actions.busy() || reserve.trim() === it.reserve">Сохранить</button>
-              </form>
-            } @else {
-              <div class="field flex items-center" [class.text-muted]="!it.reserve">{{ it.reserve || 'свободно' }}</div>
-              @if (action('reserve'); as r) {
-                <ng-container *ngTemplateOutlet="lock; context: { $implicit: r }" />
-              }
+        <section class="grid gap-1.5">
+          <label class="text-xs text-muted" for="card-reserve">Резерв</label>
+          @if (action('reserve')?.allowed) {
+            <form class="flex gap-2" (ngSubmit)="saveReserve()">
+              <input id="card-reserve" class="field" name="reserve" [(ngModel)]="reserve" placeholder="Кому или пометка. Пусто — свободно" autocomplete="off" />
+              <button type="submit" class="btn-outline flex-none" [disabled]="actions.busy() || reserve.trim() === it.reserve">Сохранить</button>
+            </form>
+          } @else {
+            <p id="card-reserve" class="text-sm" [class.text-muted]="!it.reserve">{{ it.reserve || 'Свободно' }}</p>
+            @if (action('reserve'); as r) {
+              <ng-container *ngTemplateOutlet="lock; context: { $implicit: r }" />
             }
-            @if (it.reserved_at) {
-              <span class="text-xs text-muted">резерв с {{ fmt(it.reserved_at) }}</span>
-            }
-          </label>
-
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <div><dt class="label">Создано</dt><dd class="tnum">{{ fmt(it.created_at) }} · {{ it.manager }}</dd></div>
-            <div><dt class="label">На этапе</dt><dd class="tnum">{{ stageName[it.stage] }} · {{ daysSince(it.stage_since) }} дн.</dd></div>
-            @if (it.team) {
-              <div><dt class="label">Бригада</dt><dd>{{ it.team.name }}</dd></div>
-            }
-            @if (it.stage === 'orders' || it.fabric_arrived_at) {
-              <div>
-                <dt class="label">Ткань пришла</dt>
-                <dd class="tnum">
-                  @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} } @else { <span class="font-medium text-warn">ждём</span> }
-                </dd>
-              </div>
-            }
-            @if (it.sew_at) {
-              <div><dt class="label">Выдано в шитьё</dt><dd class="tnum">{{ fmt(it.sew_at) }}</dd></div>
-            }
-            @if (it.cover_ready_at) {
-              <div><dt class="label">Чехол готов</dt><dd class="tnum">{{ fmt(it.cover_ready_at) }}</dd></div>
-            }
-            @if (it.work_at) {
-              <div><dt class="label">Выдано в работу</dt><dd class="tnum">{{ fmt(it.work_at) }}</dd></div>
-            }
-            @if (it.indiv && it.due_at) {
-              <div><dt class="label">Срок (индивид.)</dt><dd class="tnum">{{ fmt(it.due_at) }}</dd></div>
-            }
-          </dl>
+          }
+          @if (it.reserved_at) {
+            <p class="text-xs text-muted">Резерв с {{ fmt(it.reserved_at) }}</p>
+          }
         </section>
 
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <dt class="text-xs text-muted">Создано</dt>
+            <dd class="tnum">{{ fmt(it.created_at) }}, {{ it.manager }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-muted">На этапе «{{ stageName[it.stage] }}»</dt>
+            <dd class="tnum">с {{ fmt(it.stage_since) }}, {{ daysSince(it.stage_since) }} дн.</dd>
+          </div>
+          @if (it.team) {
+            <div><dt class="text-xs text-muted">Бригада</dt><dd>{{ it.team.name }}</dd></div>
+          }
+          @if (it.stage === 'orders' || it.fabric_arrived_at) {
+            <div>
+              <dt class="text-xs text-muted">Ткань пришла</dt>
+              <dd class="tnum">
+                @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} } @else { <span class="font-medium text-warn">ждём</span> }
+              </dd>
+            </div>
+          }
+          @if (it.sew_at) {
+            <div><dt class="text-xs text-muted">Выдано в шитьё</dt><dd class="tnum">{{ fmt(it.sew_at) }}</dd></div>
+          }
+          @if (it.cover_ready_at) {
+            <div><dt class="text-xs text-muted">Чехол готов</dt><dd class="tnum">{{ fmt(it.cover_ready_at) }}</dd></div>
+          }
+          @if (it.work_at) {
+            <div><dt class="text-xs text-muted">Выдано в работу</dt><dd class="tnum">{{ fmt(it.work_at) }}</dd></div>
+          }
+          @if (it.indiv && it.due_at) {
+            <div><dt class="text-xs text-muted">Срок заказа</dt><dd class="tnum">{{ fmt(it.due_at) }}</dd></div>
+          }
+        </dl>
+
         <section>
-          <div class="label mb-2">Ткани</div>
+          <h3 class="mb-1 text-xs text-muted">Ткани</h3>
           <table class="w-full text-sm">
             <tbody>
               @for (row of fabricRows(); track row.label) {
@@ -146,7 +147,7 @@
                     @if (row.fabric; as f) {
                       <span class="inline-flex items-center gap-2">
                         @if (f.fabric.photo_thumb) {
-                          <img [src]="f.fabric.photo_thumb" alt="" class="h-8 w-8 rounded object-cover ring-1 ring-black/10" />
+                          <img [src]="f.fabric.photo_thumb" alt="" class="h-7 w-7 rounded object-cover ring-1 ring-black/10" />
                         }
                         {{ f.fabric.name }}
                       </span>
@@ -163,40 +164,40 @@
 
         @if (it.comment) {
           <section>
-            <div class="label mb-1">Комментарий</div>
+            <h3 class="mb-1 text-xs text-muted">Комментарий</h3>
             <p class="whitespace-pre-line text-sm">{{ it.comment }}</p>
           </section>
         }
 
         <section>
-          <div class="label mb-2">История</div>
-          <ul class="grid gap-2 text-sm">
+          <h3 class="mb-2 text-xs text-muted">История</h3>
+          <ol class="grid gap-2.5 text-sm">
             @for (e of it.events; track e.id) {
-              <li class="flex gap-3">
-                <span class="tnum w-28 flex-none whitespace-nowrap text-muted">{{ fmtTime(e.at) }}</span>
-                <span><span class="text-muted">{{ e.user.name }}:</span> {{ e.text }}</span>
+              <li class="grid grid-cols-[112px_1fr] gap-3">
+                <span class="tnum whitespace-nowrap text-muted">{{ fmtTime(e.at) }}</span>
+                <span>{{ e.text }}<span class="block text-xs text-muted">{{ e.user.name }}</span></span>
               </li>
             }
-          </ul>
+          </ol>
         </section>
       </div>
     } @else if (error()) {
-      <div class="grid gap-3 p-5">
+      <div class="grid gap-3 p-6">
         <p class="text-sm text-crit">{{ error() }}</p>
         <button type="button" class="btn-outline w-fit" (click)="closed.emit()">Закрыть</button>
       </div>
     } @else {
-      <p class="p-5 text-sm text-muted">Загружаем…</p>
+      <p class="p-6 text-sm text-muted">Загружаем…</p>
     }
   </aside>
 </div>
 
 <ng-template #lock let-a>
-  <div class="flex w-full items-center gap-1.5 text-xs text-muted">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <p class="flex w-full items-start gap-1.5 text-xs text-muted">
+    <svg class="mt-px flex-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
-    {{ a.label }} — {{ a.reason.split('Могут: ')[1] ? 'могут: ' + a.reason.split('Могут: ')[1] : a.reason }}
-  </div>
+    <span>{{ lockText(a) }}</span>
+  </p>
 </ng-template>

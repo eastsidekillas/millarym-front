@@ -6,22 +6,20 @@ import { ItemActions } from '@features/item-actions';
 @Component({
   selector: 'app-bulk-bar',
   template: `
-    <div class="sticky top-[76px] z-20 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-accent bg-surface px-4 py-2 shadow-sm">
-      <span class="text-sm font-semibold">Выбрано: {{ items().length }}</span>
+    <div class="sticky top-[57px] z-20 mb-3 flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-accent bg-surface px-3 py-2">
+      <span class="mr-2 text-sm font-medium">Выбрано: {{ items().length }}</span>
       @if (next(); as to) {
-        <button type="button" class="h-8 rounded-full bg-accent px-3 text-xs font-medium text-onaccent disabled:opacity-50" [disabled]="actions.busy()" (click)="move(to)">
-          {{ nextText() }}
-        </button>
+        <button type="button" class="btn-row-next" [disabled]="actions.busy()" (click)="move(to)">{{ nextText() }}</button>
       }
       @if (session.can('move_any')) {
-        <select class="h-8 rounded-full border border-line bg-surface px-2 text-xs" aria-label="Переместить в…" #target (change)="moveAny(target.value); target.value = ''">
-          <option value="">Переместить в…</option>
+        <select class="select-sm" aria-label="Переместить на этап" #target (change)="moveAny(target.value); target.value = ''">
+          <option value="">Переместить на этап…</option>
           @for (s of targets; track s.id) {
             <option [value]="s.id">{{ s.name }}</option>
           }
         </select>
       }
-      <button type="button" class="h-8 px-3 text-xs text-muted hover:text-ink" (click)="cleared.emit()">Снять выделение</button>
+      <button type="button" class="btn-ghost ml-auto" (click)="cleared.emit()">Снять выделение</button>
     </div>
   `,
 })

@@ -8,21 +8,17 @@ import { LoginFormComponent } from '@features/auth-by-login';
   template: `
     <div class="flex min-h-full items-center justify-center px-4 py-10">
       <div class="w-full max-w-sm">
-        <div class="mb-6 flex flex-col items-center gap-3 text-center">
-          <span class="rounded-2xl bg-white p-2 shadow-sm">
-            <img src="milarum-logo.svg" alt="Миларум" class="h-16 w-auto" />
-          </span>
+        <div class="mb-6 flex items-center gap-3">
+          <img src="milarum-logo.svg" alt="Миларум" class="h-10 w-auto rounded bg-white p-px" />
           <div>
-            <div class="text-lg font-bold tracking-tight">CRM фабрики</div>
-            <div class="text-sm text-muted">Производство и склады</div>
+            <h1 class="text-lg font-semibold leading-6">CRM фабрики</h1>
+            <p class="text-sm text-muted">Вход для сотрудников</p>
           </div>
         </div>
 
         <app-login-form (loggedIn)="goBack()" />
 
-        <p class="mt-4 text-center text-xs text-muted">
-          Забыли пароль — обратитесь к директору или администратору.
-        </p>
+        <p class="mt-4 text-sm text-muted">Забыли пароль? Новый выдаст директор или администратор.</p>
       </div>
     </div>
   `,

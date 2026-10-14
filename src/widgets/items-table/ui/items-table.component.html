@@ -1,36 +1,36 @@
-<div class="overflow-x-auto rounded-xl border border-line bg-surface">
+<div class="overflow-x-auto rounded-lg border border-line bg-surface">
   <table class="w-full min-w-[980px] text-sm">
     <thead>
-      <tr class="border-b border-line text-left">
-        <th class="w-8 px-3 py-3">
+      <tr class="border-b border-line text-left text-xs text-muted">
+        <th class="w-10 py-2.5 pl-4 pr-2">
           <input type="checkbox" aria-label="Выбрать все" [checked]="allSelected()" (change)="toggledAll.emit($any($event.target).checked)" />
         </th>
-        <th class="label px-2 py-3">№</th>
+        <th class="font-normal px-2 py-2.5">№</th>
         @if (searching()) {
-          <th class="label px-3 py-3">Этап</th>
+          <th class="font-normal px-3 py-2.5">Этап</th>
         }
-        <th class="label px-3 py-3">Изделие</th>
-        <th class="label px-3 py-3">Ткани</th>
-        <th class="label px-3 py-3">Резерв</th>
+        <th class="font-normal px-3 py-2.5">Изделие</th>
+        <th class="font-normal px-3 py-2.5">Ткани</th>
+        <th class="font-normal px-3 py-2.5">Резерв</th>
         @for (col of columns(); track col.key) {
-          <th class="label whitespace-nowrap px-3 py-3">{{ col.title }}</th>
+          <th class="font-normal whitespace-nowrap px-3 py-2.5">{{ col.title }}</th>
         }
         @if (showSince()) {
-          <th class="label whitespace-nowrap px-3 py-3">{{ trash() ? 'Дата удаления' : 'На этапе с' }}</th>
+          <th class="font-normal whitespace-nowrap px-3 py-2.5">{{ trash() ? 'Дата удаления' : 'На этапе с' }}</th>
         }
-        <th class="label px-3 py-3 text-right">Действие</th>
+        <th class="font-normal py-2.5 pl-3 pr-4 text-right">Действие</th>
       </tr>
     </thead>
     <tbody [class.opacity-60]="loading()">
       @for (it of items(); track it.id) {
         @let a = alert(it);
         <tr class="cursor-pointer border-b border-line last:border-0 hover:bg-sub" (click)="opened.emit(it.id)">
-          <td class="px-3 py-3" [style.box-shadow]="it.indiv ? 'inset 4px 0 0 rgb(var(--lime))' : null" (click)="$event.stopPropagation()">
+          <td class="py-3 pl-4 pr-2" [style.box-shadow]="it.indiv ? 'inset 4px 0 0 rgb(var(--lime))' : null" (click)="$event.stopPropagation()">
             <input type="checkbox" [checked]="selected().has(it.id)" (change)="toggled.emit(it)" [attr.aria-label]="'Выбрать ' + it.number" />
           </td>
           <td class="px-2 py-3"><app-item-number [number]="it.number" [indiv]="it.indiv" /></td>
           @if (searching()) {
-            <td class="px-3 py-3"><span class="inline-flex rounded-full bg-sub px-2 py-0.5 text-xs">{{ stageName[it.stage] }}</span></td>
+            <td class="px-3 py-3">{{ stageName[it.stage] }}</td>
           }
           <td class="px-3 py-3">
             <div class="font-medium">{{ it.model.name }}</div>
@@ -41,12 +41,12 @@
             @if (it.reserve) {
               {{ it.reserve }}
               @if (it.reserved_at) {
-                <div class="text-[11px] text-muted">резерв с {{ fmt(it.reserved_at) }}</div>
+                <div class="text-xs text-muted">резерв с {{ fmt(it.reserved_at) }}</div>
               }
             } @else if (it.stage === 'orders') {
               <span class="text-muted">—</span>
             } @else {
-              <span class="inline-flex items-center gap-1.5 text-xs font-medium text-good"><span class="h-1.5 w-1.5 rounded-full bg-good"></span>свободно</span>
+              <span class="font-medium text-good">свободно</span>
             }
           </td>
           @for (col of columns(); track col.key; let last = $last) {
@@ -64,12 +64,12 @@
                 @case ('work') {
                   {{ fmt(it.work_at) || '—' }}
                   @if (it.team) {
-                    <div class="text-[11px] text-muted">бригада {{ it.team.name }}</div>
+                    <div class="text-xs text-muted">бригада {{ it.team.name }}</div>
                   }
                 }
               }
               @if (a && !showSince() && last) {
-                <div class="text-[11px] font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
+                <div class="text-xs font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
               }
             </td>
           }
@@ -77,19 +77,20 @@
             <td class="tnum whitespace-nowrap px-3 py-3">
               @if (it.trashed_at) {
                 {{ fmt(it.trashed_at) }}
-                <div class="text-[11px]" [class]="daysUntil(it.purge_at) <= 3 ? 'font-medium text-crit' : 'text-muted'">
-                  {{ it.trash_reason_label.toLowerCase() }} · удалится через {{ daysUntil(it.purge_at) }} дн.
+                <div class="text-xs text-muted">{{ it.trash_reason_label }}</div>
+                <div class="text-xs" [class]="daysUntil(it.purge_at) <= 3 ? 'font-medium text-crit' : 'text-muted'">
+                  удалится через {{ daysUntil(it.purge_at) }} дн.
                 </div>
               } @else {
                 {{ fmt(it.stage_since) }}
-                <div class="text-[11px] text-muted">{{ daysSince(it.stage_since) }} дн.</div>
+                <div class="text-xs text-muted">{{ daysSince(it.stage_since) }} дн.</div>
               }
               @if (a) {
-                <div class="text-[11px] font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
+                <div class="text-xs font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
               }
             </td>
           }
-          <td class="whitespace-nowrap px-3 py-3 text-right" (click)="$event.stopPropagation()">
+          <td class="whitespace-nowrap py-3 pl-3 pr-4 text-right" (click)="$event.stopPropagation()">
             @if (it.trashed_at) {
               @if (session.can('restore')) {
                 <button type="button" class="btn-row" [disabled]="actions.busy()" (click)="actions.run(it, 'restore')">Восстановить</button>
@@ -97,12 +98,12 @@
             } @else {
               @if (session.can('marks')) {
                 @if (it.stage === 'orders' && !it.fabric_arrived_at) {
-                  <button type="button" class="btn-row mr-1" [disabled]="actions.busy()" (click)="actions.run(it, 'fabric_arrived')">Ткань пришла</button>
+                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'fabric_arrived')">Ткань пришла</button>
                 }
                 @if (it.stage === 'cut' && !it.sew_at) {
-                  <button type="button" class="btn-row mr-1" [disabled]="actions.busy()" (click)="actions.run(it, 'sew')">В шитьё</button>
+                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'sew')">В шитьё</button>
                 } @else if (it.stage === 'cut' && !it.cover_ready_at) {
-                  <button type="button" class="btn-row mr-1" [disabled]="actions.busy()" (click)="actions.run(it, 'cover_ready')">Чехол готов</button>
+                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'cover_ready')">Чехол готов</button>
                 }
               }
               @if (it.stage === 'fg' && session.can('ship')) {

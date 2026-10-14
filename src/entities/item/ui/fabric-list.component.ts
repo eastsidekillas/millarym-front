@@ -6,7 +6,7 @@ import { ItemFabric } from '../model/item.types';
   template: `
     <div class="flex flex-wrap gap-x-3 gap-y-1">
       @for (f of fabrics(); track f.slot) {
-        <span class="inline-flex items-center gap-1.5 text-xs" [title]="f.slot_label">
+        <span class="inline-flex items-center gap-1.5 text-[13px]" [title]="f.slot_label">
           @if (f.fabric.photo_thumb) {
             <img [src]="f.fabric.photo_thumb" alt="" class="h-4 w-4 flex-none rounded object-cover ring-1 ring-black/10" loading="lazy" />
           } @else {

@@ -1,28 +1,30 @@
-<div class="flex flex-wrap items-start gap-3">
+<div class="flex flex-wrap items-center justify-between gap-3">
   <app-stage-tabs [counters]="counters()" [active]="stage() === 'trash' ? null : $any(stage())" (selected)="selectStage($event)" />
   @if (counters(); as c) {
-    <div class="ml-auto flex h-11 flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line px-4 text-sm text-muted" title="Выгрузка в Excel — следующий этап">
-      Свободные остатки <span class="tnum font-semibold text-ink">{{ c.free }}</span>
-    </div>
+    <p class="text-sm text-muted">
+      Свободных изделий: <span class="tnum font-medium text-ink">{{ c.free }}</span>
+    </p>
   }
 </div>
 
 @if (stage() === 'trash') {
-  <h2 class="mt-2 text-lg font-semibold">Корзина</h2>
+  <h1 class="mt-5 text-xl font-semibold">Корзина</h1>
 }
 
-<div class="mb-3 mt-2 flex flex-wrap items-center justify-between gap-2">
-  <div class="text-sm text-muted">
+<div class="mb-3 mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+  <p class="max-w-[72ch] text-sm text-muted">
     {{ hint() }}
     @if (late()) {
-      · <span class="font-medium text-crit">просрочено: {{ late() }}</span>
+      <span class="font-medium text-crit">Просрочено: {{ late() }}.</span>
     }
-  </div>
+  </p>
   <div class="flex flex-wrap items-center gap-2">
     @for (f of filters; track f.id) {
-      <button type="button" class="chip" [class.chip-on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.title }}</button>
+      <button type="button" class="chip" [class.chip-on]="filter() === f.id" [attr.aria-pressed]="filter() === f.id" (click)="setFilter(f.id)">
+        {{ f.title }}
+      </button>
     }
-    <select class="h-8 rounded-full border border-line bg-surface px-3 text-xs" aria-label="Модель" [value]="model()" (change)="setModel($any($event.target).value)">
+    <select class="select-sm" aria-label="Модель" [value]="model()" (change)="setModel($any($event.target).value)">
       <option value="">Все модели</option>
       @for (m of models(); track m.id) {
         <option [value]="m.id" [selected]="model() === '' + m.id">{{ m.name }}</option>
@@ -45,10 +47,10 @@
   (toggledAll)="toggleAll($event)"
 />
 
-<div class="mb-16 mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
-  Показано {{ items().length }} из {{ total() }}. Клик по строке открывает карточку изделия.
+<div class="mb-16 mt-3 flex min-h-8 flex-wrap items-center gap-3 text-[13px] text-muted">
+  Показано {{ items().length }} из {{ total() }}
   @if (items().length < total()) {
-    <button type="button" class="btn-ghost" [disabled]="loading()" (click)="more()">Показать ещё</button>
+    <button type="button" class="btn-outline h-8 text-[13px]" [disabled]="loading()" (click)="more()">Показать ещё</button>
   }
 </div>
 

@@ -25,7 +25,7 @@ const DONE: Partial<Record<ActionCode, string>> = {
   fabric_arrived: 'ткань пришла',
   sew: 'выдано в шитьё',
   cover_ready: 'чехол готов',
-  ship: 'отгружено → Корзина',
+  ship: 'отгружено и перенесено в Корзину',
   trash: 'удалено в Корзину',
   restore: 'восстановлено',
   return_to_work: 'возвращено в работу',
@@ -61,7 +61,7 @@ export class ItemActions {
       team = await this.askTeam(1);
       if (!team) return null;
     }
-    return this.call(this.api.move(item.id, to, team?.id), `${item.number} → ${STAGE_NAME[to]}`);
+    return this.call(this.api.move(item.id, to, team?.id), `${item.number} на этапе «${STAGE_NAME[to]}»`);
   }
 
   async bulkMove(items: Target[], to: Stage): Promise<Item[] | null> {
@@ -71,7 +71,7 @@ export class ItemActions {
       if (!team) return null;
     }
     const numbers = items.map((i) => i.number).join(', ');
-    return this.call(this.api.bulkMove(items.map((i) => i.id), to, team?.id), `${numbers} → ${STAGE_NAME[to]}`);
+    return this.call(this.api.bulkMove(items.map((i) => i.id), to, team?.id), `На этапе «${STAGE_NAME[to]}»: ${numbers}`);
   }
 
   async run(item: Target, code: ActionCode): Promise<ItemDetail | null> {
@@ -84,7 +84,7 @@ export class ItemActions {
       return null;
     }
     const result = await this.call(this.api.run(item.id, action), code === 'copy' ? null : `${item.number}: ${DONE[code]}`);
-    if (result && code === 'copy') this.toast.show(`Копия ${item.number} → ${result.number}, ${STAGE_NAME[result.stage]}`);
+    if (result && code === 'copy') this.toast.show(`Создана копия ${item.number}: ${result.number}, этап «${STAGE_NAME[result.stage]}»`);
     return result;
   }
 

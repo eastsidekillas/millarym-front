@@ -25,10 +25,10 @@ export interface PickedFabric {
       autocomplete="off"
     />
     @if (open() && (results().length || text())) {
-      <ul class="absolute left-0 right-0 top-11 z-10 max-h-64 overflow-y-auto rounded-xl border border-line bg-surface py-1 shadow-lg">
+      <ul class="absolute left-0 right-0 top-10 z-10 max-h-64 overflow-y-auto rounded-lg border border-line bg-surface py-1 shadow-[0_4px_12px_rgb(0_0_0/.08)]">
         @for (f of results(); track f.id) {
           <li>
-            <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-sub" (click)="pick(f)">
+            <button type="button" class="flex h-9 w-full items-center gap-2 px-3 text-left text-sm hover:bg-sub" (click)="pick(f)">
               @if (f.photo_thumb) {
                 <img [src]="f.photo_thumb" alt="" class="h-6 w-6 rounded object-cover" />
               } @else {

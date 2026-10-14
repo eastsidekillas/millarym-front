@@ -5,7 +5,7 @@ import { SessionApi, SessionStore } from '@entities/session';
 
 @Component({
   selector: 'app-logout-button',
-  template: `<button type="button" class="btn-ghost" (click)="logout()">Выйти</button>`,
+  template: `<button type="button" class="btn-outline" (click)="logout()">Выйти</button>`,
 })
 export class LogoutButtonComponent {
   private readonly api = inject(SessionApi);

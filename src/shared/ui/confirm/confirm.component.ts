@@ -8,17 +8,11 @@ import { ConfirmService } from './confirm.service';
   template: `
     @if (confirm.current(); as c) {
       <app-modal [title]="c.title" width="md:max-w-md" (closed)="c.resolve(false)">
-        <div class="grid gap-4 p-5">
+        <div class="grid gap-5 px-6 py-5">
           <p class="text-sm">{{ c.text }}</p>
           <div class="flex justify-end gap-2">
             <button type="button" class="btn-outline" (click)="c.resolve(false)">Отмена</button>
-            <button
-              type="button"
-              class="btn-primary"
-              [class.!bg-crit]="c.danger"
-              [class.!text-white]="c.danger"
-              (click)="c.resolve(true)"
-            >
+            <button type="button" [class]="c.danger ? 'btn bg-crit text-white hover:bg-crit/90' : 'btn-primary'" (click)="c.resolve(true)">
               {{ c.ok }}
             </button>
           </div>

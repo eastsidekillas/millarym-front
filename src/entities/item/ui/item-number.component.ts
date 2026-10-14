@@ -3,9 +3,9 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'app-item-number',
   template: `
-    <div class="num whitespace-nowrap font-bold" [class]="large() ? 'text-3xl' : 'text-[15px]'">{{ number() }}</div>
+    <div class="num whitespace-nowrap leading-tight" [class]="large() ? 'text-[28px]' : 'text-[15px]'">{{ number() }}</div>
     @if (indiv()) {
-      <div class="text-[10px] font-semibold uppercase tracking-wide text-lime">заказ</div>
+      <div class="text-xs font-medium text-lime-ink">заказ</div>
     }
   `,
 })
