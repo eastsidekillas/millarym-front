@@ -1,58 +1,35 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from '@core/guards/auth.guard';
+import { authGuard, guestGuard } from './providers/auth.guard';
+
+const placeholder = () => import('@pages/placeholder').then((m) => m.PlaceholderPage);
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
     title: 'Вход — Миларум CRM',
-    loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
+    loadComponent: () => import('@pages/login').then((m) => m.LoginPage),
   },
   {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./layout/shell/shell.component').then((m) => m.ShellComponent),
+    loadComponent: () =>
+      import('./layouts/main-layout.component').then((m) => m.MainLayoutComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'production' },
       {
         path: 'production',
         title: 'Производство — Миларум CRM',
-        loadComponent: () =>
-          import('./pages/production/production.page').then((m) => m.ProductionPage),
+        loadComponent: () => import('@pages/production').then((m) => m.ProductionPage),
       },
-      {
-        path: 'fabrics',
-        title: 'Ткани — Миларум CRM',
-        data: { title: 'Ткани' },
-        loadComponent: () =>
-          import('./pages/placeholder/placeholder.page').then((m) => m.PlaceholderPage),
-      },
-      {
-        path: 'reports',
-        title: 'Отчёты — Миларум CRM',
-        data: { title: 'Отчёты' },
-        loadComponent: () =>
-          import('./pages/placeholder/placeholder.page').then((m) => m.PlaceholderPage),
-      },
-      {
-        path: 'journal',
-        title: 'Журнал — Миларум CRM',
-        data: { title: 'Журнал' },
-        loadComponent: () =>
-          import('./pages/placeholder/placeholder.page').then((m) => m.PlaceholderPage),
-      },
-      {
-        path: 'refs',
-        title: 'Справочники — Миларум CRM',
-        data: { title: 'Справочники' },
-        loadComponent: () =>
-          import('./pages/placeholder/placeholder.page').then((m) => m.PlaceholderPage),
-      },
+      { path: 'fabrics', title: 'Ткани — Миларум CRM', data: { title: 'Ткани' }, loadComponent: placeholder },
+      { path: 'reports', title: 'Отчёты — Миларум CRM', data: { title: 'Отчёты' }, loadComponent: placeholder },
+      { path: 'journal', title: 'Журнал — Миларум CRM', data: { title: 'Журнал' }, loadComponent: placeholder },
+      { path: 'refs', title: 'Справочники — Миларум CRM', data: { title: 'Справочники' }, loadComponent: placeholder },
       {
         path: '**',
         title: 'Не найдено — Миларум CRM',
-        loadComponent: () =>
-          import('./pages/not-found/not-found.page').then((m) => m.NotFoundPage),
+        loadComponent: () => import('@pages/not-found').then((m) => m.NotFoundPage),
       },
     ],
   },

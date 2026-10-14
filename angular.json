@@ -56,7 +56,7 @@
               "@fontsource/golos-text/700.css",
               "@fontsource/jetbrains-mono/400.css",
               "@fontsource/jetbrains-mono/600.css",
-              "src/styles.css"
+              "src/app/styles/styles.css"
             ]
           },
           "configurations": {
@@ -76,8 +76,8 @@
               "outputHashing": "all",
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "src/shared/config/environment.ts",
+                  "with": "src/shared/config/environment.prod.ts"
                 }
               ]
             },

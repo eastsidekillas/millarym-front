@@ -17,19 +17,29 @@ npm start            # http://localhost:4200
 
 Сборка: `npm run build` → `dist/millarym-front/browser`.
 
-## Структура
+## Структура — Feature-Sliced Design
+
+Слои сверху вниз; импортировать можно только из слоёв **ниже**, а из соседнего
+слайса — только через его `index.ts` (публичный API).
 
 ```
-src/app/
-├── core/
-│   ├── auth/             # AuthService (signals): me, can(code), login/logout/refresh
-│   ├── interceptors/     # 401 → обновить токен → повторить запрос
-│   ├── guards/           # authGuard (всё закрыто без входа), guestGuard (страница входа)
-│   ├── directives/       # *appCan="'ship'" — показать, только если есть право
-│   └── http-error.ts     # текст ошибки из ответа API
-├── layout/shell/         # шапка: логотип, меню, пользователь, «Выйти»
-└── pages/                # login, production, …
+src/
+├── app/          # инициализация: app.config, маршруты, providers (guard, interceptor),
+│                 # layouts (каркас с шапкой), styles
+├── pages/        # страницы целиком: login, production, placeholder, not-found
+├── widgets/      # крупные блоки страниц: app-header
+├── features/     # действия пользователя: auth-by-login (форма входа), logout
+├── entities/     # бизнес-сущности: session (SessionApi, SessionStore на signals, *appCan)
+└── shared/       # без бизнес-логики: api (errorText), config (environment), ui, lib
 ```
+
+Внутри слайса — сегменты `ui/`, `model/`, `api/`, `lib/`.
+Алиасы: `@app/*`, `@pages/*`, `@widgets/*`, `@features/*`, `@entities/*`, `@shared/*`.
+
+Примеры:
+- права: `inject(SessionStore).can('ship')` или `<button *appCan="'ship'">`;
+- новая сущность (изделие) → `entities/item/{api,model,ui}`, действие «Перенести» →
+  `features/move-item`, таблица этапа → `widgets/stage-table`, экран → `pages/production`.
 
 Шрифты (Golos Text, JetBrains Mono) входят в сборку (`@fontsource`), интернет на сервере не нужен.
 Цвета — CSS-переменные в `src/styles.css`, палитра из `new-crm/brand`.

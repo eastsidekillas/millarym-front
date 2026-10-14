@@ -9,7 +9,7 @@ import localeRu from '@angular/common/locales/ru';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
-import { authInterceptor } from '@core/interceptors/auth.interceptor';
+import { authInterceptor } from './providers/auth.interceptor';
 
 registerLocaleData(localeRu, 'ru');
 
