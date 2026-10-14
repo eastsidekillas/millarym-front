@@ -18,6 +18,7 @@ module.exports = {
         ink: 'rgb(var(--ink) / <alpha-value>)',
         muted: 'rgb(var(--muted) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
+        lime: 'rgb(var(--lime) / <alpha-value>)',
         onaccent: 'rgb(var(--on-accent) / <alpha-value>)',
         good: 'rgb(var(--good) / <alpha-value>)',
         warn: 'rgb(var(--warn) / <alpha-value>)',

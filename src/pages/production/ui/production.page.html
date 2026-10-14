@@ -1,23 +1,59 @@
-<h1 class="mb-1 text-xl font-bold">Производство</h1>
-<p class="mb-6 text-sm text-muted">Раздел в разработке. Ниже — что разрешено вашей роли.</p>
+<div class="flex flex-wrap items-start gap-3">
+  <app-stage-tabs [counters]="counters()" [active]="stage() === 'trash' ? null : $any(stage())" (selected)="selectStage($event)" />
+  @if (counters(); as c) {
+    <div class="ml-auto flex h-11 flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line px-4 text-sm text-muted" title="Выгрузка в Excel — следующий этап">
+      Свободные остатки <span class="tnum font-semibold text-ink">{{ c.free }}</span>
+    </div>
+  }
+</div>
 
-<div class="max-w-xl rounded-2xl border border-line bg-surface p-5">
-  <div class="mb-3 text-sm">
-    {{ session.me()?.short_name }} · <span class="text-muted">{{ session.me()?.role }}</span>
-  </div>
-  <ul class="space-y-1 text-sm">
-    @for (a of actions; track a.code) {
-      <li class="flex items-center gap-2">
-        <span
-          class="h-2 w-2 flex-none rounded-full"
-          [class.bg-good]="session.can(a.code)"
-          [class.bg-line]="!session.can(a.code)"
-        ></span>
-        <span [class.text-muted]="!session.can(a.code)">{{ a.title }}</span>
-      </li>
+@if (stage() === 'trash') {
+  <h2 class="mt-2 text-lg font-semibold">Корзина</h2>
+}
+
+<div class="mb-3 mt-2 flex flex-wrap items-center justify-between gap-2">
+  <div class="text-sm text-muted">
+    {{ hint() }}
+    @if (late()) {
+      · <span class="font-medium text-crit">просрочено: {{ late() }}</span>
     }
-  </ul>
-  <div class="mt-4 flex flex-wrap gap-2">
-    <button *appCan="'ship'" type="button" class="btn-primary" disabled>Отгрузить (пример *appCan)</button>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    @for (f of filters; track f.id) {
+      <button type="button" class="chip" [class.chip-on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.title }}</button>
+    }
+    <select class="h-8 rounded-full border border-line bg-surface px-3 text-xs" aria-label="Модель" [value]="model()" (change)="setModel($any($event.target).value)">
+      <option value="">Все модели</option>
+      @for (m of models(); track m.id) {
+        <option [value]="m.id" [selected]="model() === '' + m.id">{{ m.name }}</option>
+      }
+    </select>
   </div>
 </div>
+
+@if (selectedItems().length) {
+  <app-bulk-bar [items]="selectedItems()" (cleared)="clearSelection()" (done)="clearSelection()" />
+}
+
+<app-items-table
+  [items]="items()"
+  [stage]="stage()"
+  [selected]="selectedIds()"
+  [loading]="loading()"
+  (opened)="open($event)"
+  (toggled)="toggle($event)"
+  (toggledAll)="toggleAll($event)"
+/>
+
+<div class="mb-16 mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
+  Показано {{ items().length }} из {{ total() }}. Клик по строке открывает карточку изделия.
+  @if (items().length < total()) {
+    <button type="button" class="btn-ghost" [disabled]="loading()" (click)="more()">Показать ещё</button>
+  }
+</div>
+
+<app-trash-fab [count]="counters()?.trash ?? null" [active]="stage() === 'trash'" (pressed)="selectStage('trash')" />
+
+@if (openId(); as id) {
+  <app-item-card [itemId]="id" (closed)="close()" (opened)="open($event)" />
+}

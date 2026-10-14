@@ -1,4 +1,5 @@
 <header class="sticky top-0 z-30 border-b border-line bg-surface">
+  <div class="h-1" style="background: linear-gradient(90deg, rgb(0 99 66), rgb(120 190 32))"></div>
   <div class="flex flex-wrap items-center gap-3 px-4 py-3 md:px-6">
     <a routerLink="/" class="mr-2 flex items-center gap-3">
       <span class="flex-none rounded-xl bg-white p-1">
@@ -22,7 +23,22 @@
       }
     </nav>
 
-    <div class="order-2 min-w-[200px] flex-1 md:order-none"></div>
+    <div class="order-2 min-w-[200px] flex-1 md:order-none">
+      <input
+        #search
+        type="search"
+        class="field"
+        placeholder="Поиск: номер, модель, ткань, резерв…  ( / )"
+        aria-label="Поиск по всем этапам"
+        autocomplete="off"
+        [value]="query()"
+        (input)="type($any($event.target).value)"
+      />
+    </div>
+
+    @if (session.can('edit')) {
+      <button type="button" class="btn-primary order-2 whitespace-nowrap md:order-none" (click)="itemForm.create()">+ Новое изделие</button>
+    }
 
     @if (session.me(); as me) {
       <div class="order-2 flex items-center gap-3 md:order-none">

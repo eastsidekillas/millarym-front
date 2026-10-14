@@ -1,0 +1,97 @@
+@if (form.state()) {
+  <app-modal
+    [title]="editing() ? 'Изменить ' + editing()!.number : 'Новое изделие'"
+    [subtitle]="editing() ? '' : 'Каждая единица получает свой паспорт и номер'"
+    (closed)="form.close()"
+  >
+    <form class="grid gap-4 p-5 sm:grid-cols-2" (ngSubmit)="submit()" novalidate>
+      <label class="grid gap-1">
+        <span class="label">Модель</span>
+        <select class="field" name="model" [(ngModel)]="modelId" required>
+          <option [ngValue]="null" disabled>Выберите модель</option>
+          @for (m of models(); track m.id) {
+            <option [ngValue]="m.id">{{ m.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="grid gap-1">
+        <span class="label">Комплектация / дополнения</span>
+        <input class="field" name="extra" [value]="extra()" (input)="extra.set($any($event.target).value)" placeholder="левый угол, накладки венге…" />
+      </label>
+      @if (kit().length) {
+        <div class="-mt-2 flex flex-wrap items-center gap-1.5 sm:col-span-2">
+          <span class="mr-1 text-xs text-muted">Быстро:</span>
+          @for (k of kit(); track k.id) {
+            <button type="button" class="h-7 rounded-full border px-3 text-xs hover:bg-sub" [class]="kitOn(k) ? 'border-accent bg-accent/10 text-accent' : 'border-line'" (click)="toggleKit(k)">
+              {{ k.name.toLowerCase() }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (!editing()) {
+        <label class="grid gap-1 sm:col-span-2">
+          <span class="label">Резерв</span>
+          <input
+            class="field"
+            name="reserve"
+            [ngModel]="reserve()"
+            (ngModelChange)="reserve.set($event)"
+            placeholder="кому или пометка: ИП Фоминых, согл., частное лицо… Пусто — изделие на склад"
+            autocomplete="off"
+          />
+        </label>
+        <div class="rounded-xl border px-4 py-3 text-sm sm:col-span-2" [class]="reserve().trim() ? 'border-accent bg-accent/10' : 'border-lime bg-lime/10'">
+          @if (reserve().trim()) {
+            <b>Резерв указан</b> — изделие останется во вкладке <b>«Заказы»</b> и будет ждать ткань и передачи в крой.
+          } @else {
+            <b>Резерв не указан</b> — изделие сразу уйдёт во вкладку <b>«Крой»</b> как складское.
+          }
+        </div>
+      }
+
+      <div class="flex flex-wrap items-center gap-3 rounded-xl border border-line px-4 py-3 sm:col-span-2">
+        <label class="flex items-center gap-3">
+          <input type="checkbox" class="h-4 w-4" name="indiv" [ngModel]="indiv()" (ngModelChange)="indiv.set($event)" />
+          <span class="text-sm"><b>Индивидуальный заказ</b> — срок 30 дней, в списке салатовая полоса и «заказ»</span>
+        </label>
+        @if (indiv()) {
+          <input class="field min-w-[200px] flex-1" name="indivNote" [(ngModel)]="indivNote" placeholder="что особенного: размер, своя ткань…" />
+        }
+      </div>
+
+      <div class="grid gap-2 sm:col-span-2">
+        <span class="label">Ткани</span>
+        @for (row of slots; track row.slot; let first = $first) {
+          <div class="grid grid-cols-[100px_1fr_80px] items-center gap-2">
+            <span class="text-sm text-muted">{{ row.label }}</span>
+            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'обязательно — начните вводить название' : '—'" />
+            <input class="field tnum" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal" placeholder="м" [attr.aria-label]="'Метраж: ' + row.label" />
+          </div>
+        }
+      </div>
+
+      @if (!editing()) {
+        <label class="grid gap-1">
+          <span class="label">Количество единиц</span>
+          <input type="number" min="1" max="50" class="field tnum" name="qty" [(ngModel)]="qty" />
+        </label>
+      }
+      <label class="grid gap-1" [class.sm:col-span-2]="editing()">
+        <span class="label">Комментарий</span>
+        <input class="field" name="comment" [(ngModel)]="comment" />
+      </label>
+
+      @if (error()) {
+        <p class="rounded-lg bg-crit/10 px-3 py-2 text-sm text-crit sm:col-span-2" role="alert">{{ error() }}</p>
+      }
+
+      <div class="-mx-5 -mb-5 flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4 sm:col-span-2">
+        <button type="button" class="btn-outline" (click)="form.close()">Отмена</button>
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          {{ saving() ? 'Сохраняем…' : editing() ? 'Сохранить' : 'Создать' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

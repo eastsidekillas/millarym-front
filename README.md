@@ -25,16 +25,21 @@ npm start            # http://localhost:4200
 ```
 src/
 ├── app/          # инициализация: app.config, маршруты, providers (guard, interceptor),
-│                 # layouts (каркас с шапкой), styles
-├── pages/        # страницы целиком: login, production, placeholder, not-found
-├── widgets/      # крупные блоки страниц: app-header
-├── features/     # действия пользователя: auth-by-login (форма входа), logout
-├── entities/     # бизнес-сущности: session (SessionApi, SessionStore на signals, *appCan)
-└── shared/       # без бизнес-логики: api (errorText), config (environment), ui, lib
+│                 # layouts (каркас: шапка + диалоги), styles
+├── pages/        # login, production, placeholder, not-found
+├── widgets/      # app-header (поиск, «+ Новое изделие»), stage-tabs, items-table,
+│                 # item-card (карточка справа), bulk-bar, trash-fab
+├── features/     # auth-by-login, logout, item-actions (переходы, отметки, бригада, подтверждения),
+│                 # item-form (новое изделие и правка)
+├── entities/     # session (SessionStore, *appCan), item (ItemApi, типы, этапы), catalog (справочники, выбор ткани)
+└── shared/       # api (errorText, Page, Ref), config (environment), lib (даты по Екатеринбургу), ui (модалка, toast, confirm)
 ```
 
 Внутри слайса — сегменты `ui/`, `model/`, `api/`, `lib/`.
 Алиасы: `@app/*`, `@pages/*`, `@widgets/*`, `@features/*`, `@entities/*`, `@shared/*`.
+
+Состояние экрана «Производство» — в адресе: `?stage=cut&filter=late&model=3&q=7965&item=42`,
+поэтому вкладку, фильтр и открытую карточку можно отправить ссылкой.
 
 Примеры:
 - права: `inject(SessionStore).can('ship')` или `<button *appCan="'ship'">`;
