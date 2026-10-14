@@ -1,0 +1,79 @@
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-xl font-semibold">Ткани</h1>
+  @if (session.can('fabrics')) {
+    <button type="button" class="btn-primary" (click)="form.create()">Добавить ткань</button>
+  }
+</div>
+
+<div class="mb-4 mt-4 flex flex-wrap items-center gap-2">
+  <input type="search" class="field max-w-xs" placeholder="Название ткани" aria-label="Поиск ткани" (input)="type($any($event.target).value)" />
+  <select class="select-sm h-9" aria-label="Порядок" [value]="ordering()" (change)="ordering.set($any($event.target).value)">
+    <option value="name">По названию</option>
+    <option value="-in_work">Сначала те, что в работе</option>
+    <option value="-created_at">Сначала новые</option>
+  </select>
+  @if (session.can('fabrics')) {
+    <label class="ml-1 flex items-center gap-2 text-sm">
+      <input type="checkbox" class="h-4 w-4 accent-[rgb(var(--accent))]" [checked]="showHidden()" (change)="showHidden.set($any($event.target).checked)" />
+      Показать скрытые
+    </label>
+  }
+  <p class="ml-auto text-sm text-muted">Всего: <span class="tnum">{{ total() }}</span></p>
+</div>
+
+<ul class="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-3" [class.opacity-60]="loading()">
+  @for (f of fabrics(); track f.id) {
+    <li>
+      <button
+        type="button"
+        class="group grid w-full overflow-hidden rounded-lg border border-line bg-surface text-left hover:border-accent/50"
+        [class.opacity-60]="!f.active"
+        (click)="open(f)"
+      >
+        <div class="aspect-[4/3] w-full bg-sub">
+          @if (f.photo_thumb) {
+            <img [src]="f.photo_thumb" [alt]="f.name" class="h-full w-full object-cover" loading="lazy" />
+          } @else {
+            <div class="h-full w-full" [style.background]="swatch(f.name)"></div>
+          }
+        </div>
+        <div class="grid gap-0.5 px-3 py-2.5">
+          <span class="truncate text-sm font-medium" [title]="f.name">{{ f.name }}</span>
+          <span class="text-xs text-muted">
+            @if (!f.active) {
+              Скрыта
+            } @else if (f.in_work) {
+              В работе: <span class="tnum">{{ f.in_work }}</span> изд.
+            } @else {
+              Не используется
+            }
+          </span>
+        </div>
+      </button>
+    </li>
+  } @empty {
+    <li class="col-span-full py-12 text-center text-sm text-muted">
+      @if (loading()) {
+        Загружаем…
+      } @else if (search()) {
+        Тканей с таким названием нет.
+      } @else {
+        Справочник тканей пуст. Добавьте первую ткань.
+      }
+    </li>
+  }
+</ul>
+
+@if (fabrics().length < total()) {
+  <div class="mt-4">
+    <button type="button" class="btn-outline h-8 text-[13px]" [disabled]="loading()" (click)="more()">Показать ещё</button>
+  </div>
+}
+
+<app-fabric-form />
+
+@if (viewing(); as f) {
+  <app-modal [title]="f.name" width="md:max-w-3xl" (closed)="viewing.set(null)">
+    <img [src]="f.photo" [alt]="f.name" class="max-h-[75vh] w-full object-contain" />
+  </app-modal>
+}
