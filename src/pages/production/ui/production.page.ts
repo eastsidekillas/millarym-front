@@ -22,5 +22,7 @@ export class ProductionPage {
     { code: 'marks', title: 'Отметки (ткань пришла, раскроено, чехол готов)' },
     { code: 'edit', title: 'Редактировать изделие' },
     { code: 'reserve', title: 'Резерв' },
+    { code: 'fabrics', title: 'Ткани: добавлять и менять' },
+    { code: 'catalog', title: 'Справочники: модели, категории, комплектация, бригады, сроки' },
   ];
 }

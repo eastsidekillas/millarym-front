@@ -10,7 +10,9 @@ export type RightCode =
   | 'move_any'
   | 'marks'
   | 'edit'
-  | 'reserve';
+  | 'reserve'
+  | 'fabrics'
+  | 'catalog';
 
 export interface Me {
   id: number;
