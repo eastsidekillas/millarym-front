@@ -1,0 +1,23 @@
+<h1 class="mb-1 text-xl font-bold">Производство</h1>
+<p class="mb-6 text-sm text-muted">Раздел в разработке. Ниже — что разрешено вашей роли.</p>
+
+<div class="max-w-xl rounded-2xl border border-line bg-surface p-5">
+  <div class="mb-3 text-sm">
+    {{ auth.me()?.short_name }} · <span class="text-muted">{{ auth.me()?.role }}</span>
+  </div>
+  <ul class="space-y-1 text-sm">
+    @for (a of actions; track a.code) {
+      <li class="flex items-center gap-2">
+        <span
+          class="h-2 w-2 flex-none rounded-full"
+          [class.bg-good]="auth.can(a.code)"
+          [class.bg-line]="!auth.can(a.code)"
+        ></span>
+        <span [class.text-muted]="!auth.can(a.code)">{{ a.title }}</span>
+      </li>
+    }
+  </ul>
+  <div class="mt-4 flex flex-wrap gap-2">
+    <button *appCan="'ship'" type="button" class="btn-primary" disabled>Отгрузить (пример *appCan)</button>
+  </div>
+</div>
