@@ -1,0 +1,141 @@
+import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import {
+  FABRIC_SLOTS,
+  ItemAction,
+  ItemApi,
+  ItemDetail,
+  ItemNumberComponent,
+  ItemsChanged,
+  LOCK_TEXT,
+  MOVE_LABEL,
+  STAGES,
+  STAGE_NAME,
+  Stage,
+  itemAlert,
+  meters,
+} from '@entities/item';
+import { ItemActions } from '@features/item-actions';
+import { ItemForm } from '@features/item-form';
+import { errorText } from '@shared/api';
+import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
+
+@Component({
+  selector: 'app-item-card',
+  imports: [FormsModule, NgTemplateOutlet, ItemNumberComponent],
+  host: { '(document:keydown.escape)': 'closed.emit()' },
+  templateUrl: './item-card.component.html',
+})
+export class ItemCardComponent {
+  readonly itemId = input.required<number>();
+  readonly closed = output<void>();
+  readonly opened = output<number>();
+
+  private readonly api = inject(ItemApi);
+  private readonly changed = inject(ItemsChanged);
+  readonly actions = inject(ItemActions);
+  private readonly itemForm = inject(ItemForm);
+
+  readonly item = signal<ItemDetail | null>(null);
+  readonly error = signal<string | null>(null);
+  reserve = '';
+
+  readonly fmt = fmtDate;
+  readonly fmtTime = fmtDateTime;
+  readonly daysSince = daysSince;
+  readonly daysUntil = daysUntil;
+  readonly meters = meters;
+  readonly path = STAGES;
+  readonly stageName = STAGE_NAME;
+
+  readonly byCode = computed(() => {
+    const map = new Map<string, ItemAction>();
+    for (const a of this.item()?.actions ?? []) map.set(a.code, a);
+    return map;
+  });
+  readonly stageIndex = computed(() => {
+    const it = this.item();
+    return it ? STAGES.findIndex((s) => s.id === it.stage) : -1;
+  });
+  readonly alert = computed(() => {
+    const it = this.item();
+    return it ? itemAlert(it) : null;
+  });
+  readonly fabricRows = computed(() =>
+    FABRIC_SLOTS.map(({ slot, label }) => ({ label, fabric: this.item()?.fabrics.find((f) => f.slot === slot) ?? null })),
+  );
+  readonly mainActions = computed(() =>
+    (this.item()?.actions ?? []).filter(
+      (a) => a.allowed && ['move', 'restore', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),
+    ),
+  );
+  readonly otherActions = computed(() =>
+    (this.item()?.actions ?? []).filter((a) => a.allowed && ['edit', 'copy', 'trash'].includes(a.code)),
+  );
+  readonly locked = computed(() =>
+    (this.item()?.actions ?? []).filter((a) => !a.allowed && (a.code === 'move' || a.code === 'restore')),
+  );
+  readonly moveTargets = computed(() => STAGES.filter((s) => s.id !== 'orders' && s.id !== this.item()?.stage));
+
+  constructor() {
+    effect(() => {
+      const id = this.itemId();
+      this.changed.version();
+      untracked(() => this.load(id));
+    });
+  }
+
+  private async load(id: number) {
+    try {
+      const item = await firstValueFrom(this.api.get(id));
+      if (item.id !== this.itemId()) return;
+      this.item.set(item);
+      this.reserve = item.reserve;
+      this.error.set(null);
+    } catch (err) {
+      this.error.set(errorText(err, 'Не удалось открыть изделие.'));
+    }
+  }
+
+  moveLabel(a: ItemAction): string {
+    return a.to ? MOVE_LABEL[a.to] : a.label;
+  }
+
+  plainLabel(a: ItemAction): string {
+    return a.code === 'return_to_work' ? 'Вернуть в работу' : a.label;
+  }
+
+  lockText(a: ItemAction): string {
+    const names = a.reason.split('Могут: ')[1]?.replace(/\.$/, '');
+    if (!names) return a.reason;
+    const what = a.code === 'move' && a.to ? `Перемещать ${MOVE_LABEL[a.to].toLowerCase()} могут` : LOCK_TEXT[a.code];
+    return `${what ?? 'Могут'}: ${names}.`;
+  }
+
+  action(code: string): ItemAction | undefined {
+    return this.byCode().get(code);
+  }
+
+  async run(a: ItemAction) {
+    const item = this.item();
+    if (!item || !a.allowed) return;
+    if (a.code === 'move' && a.to) await this.actions.move(item, a.to);
+    else if (a.code === 'edit') this.itemForm.edit(item);
+    else {
+      const result = await this.actions.run(item, a.code);
+      if (result && a.code === 'copy') this.opened.emit(result.id);
+    }
+  }
+
+  async moveTo(to: string) {
+    const item = this.item();
+    if (item && to) await this.actions.move(item, to as Stage);
+  }
+
+  async saveReserve() {
+    const item = this.item();
+    if (item && this.reserve.trim() !== item.reserve) await this.actions.reserve(item, this.reserve);
+  }
+}

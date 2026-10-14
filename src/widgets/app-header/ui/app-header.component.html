@@ -1,37 +1,47 @@
 <header class="sticky top-0 z-30 border-b border-line bg-surface">
-  <div class="flex flex-wrap items-center gap-3 px-4 py-3 md:px-6">
-    <a routerLink="/" class="mr-2 flex items-center gap-3">
-      <span class="flex-none rounded-xl bg-white p-1">
-        <img src="milarum-logo.svg" alt="Миларум" class="h-9 w-auto" />
-      </span>
-      <span class="leading-tight">
-        <span class="block font-bold tracking-tight">CRM фабрики</span>
-        <span class="block text-xs text-muted">Производство и склады</span>
-      </span>
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 pt-2.5 md:h-14 md:flex-nowrap md:px-6 md:pt-0">
+    <a routerLink="/" class="flex flex-none items-center gap-3" aria-label="На главную">
+      <img src="milarum-logo.svg" alt="Миларум" class="h-8 w-auto rounded bg-white p-px" />
+      <span class="hidden text-[15px] font-semibold leading-tight sm:block">CRM фабрики</span>
     </a>
 
-    <nav class="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:w-auto">
+    <nav class="order-4 flex w-full gap-5 overflow-x-auto md:order-none md:h-full md:w-auto" aria-label="Разделы">
       @for (item of nav; track item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="bg-accent/10 font-semibold text-accent"
-          class="whitespace-nowrap rounded-lg px-3 py-2 text-sm hover:bg-sub"
+          routerLinkActive="!border-accent !text-ink font-medium"
+          class="flex h-10 items-center whitespace-nowrap border-b-2 border-transparent text-sm text-muted hover:text-ink md:h-full"
         >
           {{ item.title }}
         </a>
       }
     </nav>
 
-    <div class="order-2 min-w-[200px] flex-1 md:order-none"></div>
+    <div class="relative order-3 w-full md:order-none md:ml-auto md:max-w-md md:flex-1">
+      <input
+        #search
+        type="search"
+        class="field pr-9"
+        placeholder="Номер, модель, ткань или резерв"
+        aria-label="Поиск по всем этапам"
+        autocomplete="off"
+        [value]="query()"
+        (input)="type($any($event.target).value)"
+      />
+      <kbd class="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-line px-1.5 text-[11px] leading-5 text-muted md:block">/</kbd>
+    </div>
 
-    @if (session.me(); as me) {
-      <div class="order-2 flex items-center gap-3 md:order-none">
-        <div class="text-right text-xs leading-tight">
+    <div class="order-2 ml-auto flex flex-none items-center gap-3 md:order-none md:ml-0">
+      @if (session.can('edit')) {
+        <button type="button" class="btn-primary" (click)="itemForm.create()">Новое изделие</button>
+      }
+      @if (session.me(); as me) {
+        <div class="hidden text-right leading-tight lg:block">
           <div class="text-sm font-medium">{{ me.short_name }}</div>
-          <div class="text-muted">{{ me.role }}</div>
+          <div class="text-xs text-muted">{{ me.role }}</div>
         </div>
         <app-logout-button />
-      </div>
-    }
+      }
+    </div>
   </div>
 </header>

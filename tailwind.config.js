@@ -18,6 +18,8 @@ module.exports = {
         ink: 'rgb(var(--ink) / <alpha-value>)',
         muted: 'rgb(var(--muted) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
+        lime: 'rgb(var(--lime) / <alpha-value>)',
+        'lime-ink': 'rgb(var(--lime-ink) / <alpha-value>)',
         onaccent: 'rgb(var(--on-accent) / <alpha-value>)',
         good: 'rgb(var(--good) / <alpha-value>)',
         warn: 'rgb(var(--warn) / <alpha-value>)',
@@ -25,9 +27,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['"Golos Text"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
-      borderRadius: { pill: '20px' },
     },
   },
   plugins: [],

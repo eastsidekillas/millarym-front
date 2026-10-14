@@ -10,6 +10,8 @@
   --ink: 30 34 35;
   --muted: 84 88 89;
   --accent: 0 99 66;
+  --lime: 120 190 32;
+  --lime-ink: 68 128 0;
   --on-accent: 255 255 255;
   --good: 62 128 20;
   --warn: 176 108 0;
@@ -24,27 +26,91 @@
   --ink: 229 234 230;
   --muted: 150 160 154;
   --accent: 120 190 32;
+  --lime: 120 190 32;
+  --lime-ink: 140 204 84;
   --on-accent: 12 32 20;
   --good: 140 204 84;
   --warn: 232 172 64;
   --crit: 240 112 102;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: 14 19 17;
+    --surface: 21 28 25;
+    --sub: 28 37 33;
+    --line: 43 54 49;
+    --ink: 229 234 230;
+    --muted: 150 160 154;
+    --accent: 120 190 32;
+    --lime: 120 190 32;
+    --lime-ink: 140 204 84;
+    --on-accent: 12 32 20;
+    --good: 140 204 84;
+    --warn: 232 172 64;
+    --crit: 240 112 102;
+    color-scheme: dark;
+  }
 }
 
 @layer base {
   html, body { @apply h-full; }
-  body { @apply bg-bg text-ink font-sans antialiased; }
+  body { @apply bg-bg font-sans text-sm text-ink antialiased; }
+  :focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 1px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
 }
 
 @layer components {
   .field {
-    @apply h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink
-      placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20;
+    @apply h-9 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink
+      placeholder:text-muted focus:border-accent focus:outline-none;
+  }
+  textarea.field {
+    @apply h-auto py-2;
+  }
+  .btn {
+    @apply inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-medium
+      disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply inline-flex h-10 items-center justify-center rounded-full bg-accent px-5 font-medium
-      text-onaccent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply btn bg-accent text-onaccent hover:bg-accent/90;
+  }
+  .btn-outline {
+    @apply btn border border-line bg-surface text-ink hover:bg-sub;
+  }
+  .btn-danger {
+    @apply btn border border-line bg-surface text-crit hover:bg-crit/5;
   }
   .btn-ghost {
-    @apply inline-flex h-9 items-center justify-center rounded-full border border-line px-3 text-xs hover:bg-sub;
+    @apply btn h-8 px-3 font-normal text-muted hover:bg-sub hover:text-ink;
+  }
+  .btn-row {
+    @apply inline-flex h-8 items-center justify-center whitespace-nowrap rounded-md border border-line bg-surface px-3
+      text-[13px] hover:bg-sub disabled:opacity-50;
+  }
+  .btn-row-next {
+    @apply inline-flex h-8 items-center justify-center whitespace-nowrap rounded-md border border-accent/40 bg-surface px-3
+      text-[13px] font-medium text-accent hover:border-accent hover:bg-accent/[.06] disabled:opacity-50;
+  }
+  .chip {
+    @apply inline-flex h-8 items-center rounded-md border border-line bg-surface px-3 text-[13px] text-ink hover:bg-sub;
+  }
+  .chip-on {
+    @apply border-accent bg-accent/[.08] font-medium text-accent hover:bg-accent/[.08];
+  }
+  .select-sm {
+    @apply h-8 rounded-md border border-line bg-surface pl-3 pr-8 text-[13px] text-ink;
+  }
+  .label {
+    @apply text-xs text-muted;
+  }
+  .num {
+    @apply font-semibold tabular-nums;
+  }
+  .tnum {
+    @apply tabular-nums;
   }
 }

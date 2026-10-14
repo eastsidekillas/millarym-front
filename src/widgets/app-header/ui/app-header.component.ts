@@ -1,15 +1,25 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter } from 'rxjs';
 import { SessionStore } from '@entities/session';
+import { ItemForm } from '@features/item-form';
 import { LogoutButtonComponent } from '@features/logout';
 
 @Component({
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive, LogoutButtonComponent],
+  host: { '(document:keydown)': 'hotkey($event)' },
   templateUrl: './app-header.component.html',
 })
 export class AppHeaderComponent {
   readonly session = inject(SessionStore);
+  readonly itemForm = inject(ItemForm);
+  private readonly router = inject(Router);
+
+  readonly search = viewChild<ElementRef<HTMLInputElement>>('search');
+  readonly query = signal('');
+  private timer?: ReturnType<typeof setTimeout>;
 
   readonly nav = [
     { path: '/production', title: 'Производство' },
@@ -18,4 +28,39 @@ export class AppHeaderComponent {
     { path: '/journal', title: 'Журнал' },
     { path: '/refs', title: 'Справочники' },
   ];
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        const q = this.router.parseUrl(this.router.url).queryParams['q'] ?? '';
+        if (q !== this.query()) this.query.set(q);
+      });
+  }
+
+  type(value: string) {
+    this.query.set(value);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      const q = value.trim();
+      const onProduction = this.router.url.startsWith('/production');
+      const current = onProduction ? this.router.parseUrl(this.router.url).queryParams : {};
+      this.router.navigate(['/production'], {
+        queryParams: { ...current, q: q || null, item: null },
+        replaceUrl: onProduction,
+      });
+    }, 250);
+  }
+
+  hotkey(event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      this.search()?.nativeElement.focus();
+    }
+  }
 }
