@@ -42,7 +42,8 @@ export class ItemFormComponent {
     return s?.mode === 'edit' ? s.item : null;
   });
 
-  modelId: number | null = null;
+  readonly modelChoice = signal<number | 'custom' | null>(null);
+  customName = '';
   readonly extra = signal('');
   reserve = signal('');
   indiv = signal(false);
@@ -63,7 +64,8 @@ export class ItemFormComponent {
   private reset() {
     const item = this.editing();
     this.error.set(null);
-    this.modelId = item?.model.id ?? null;
+    this.modelChoice.set(item ? (item.model?.id ?? 'custom') : null);
+    this.customName = item?.custom_name ?? '';
     this.extra.set(item?.extra ?? '');
     this.reserve.set('');
     this.indiv.set(item?.indiv ?? false);
@@ -122,8 +124,11 @@ export class ItemFormComponent {
 
   async submit() {
     this.error.set(null);
-    if (!this.modelId) {
-      this.error.set('Выберите модель.');
+    const choice = this.modelChoice();
+    const model = typeof choice === 'number' ? choice : null;
+    const customName = choice === 'custom' ? this.customName.trim() : '';
+    if (choice === null || (choice === 'custom' && !customName)) {
+      this.error.set(choice === 'custom' ? 'Впишите название изделия.' : 'Выберите модель.');
       return;
     }
     const fabrics = this.fabrics();
@@ -134,7 +139,8 @@ export class ItemFormComponent {
       if (item) {
         await firstValueFrom(
           this.api.update(item.id, {
-            model: this.modelId,
+            model,
+            custom_name: customName,
             extra: this.extra(),
             indiv: this.indiv(),
             indiv_note: this.indivNote,
@@ -146,7 +152,8 @@ export class ItemFormComponent {
       } else {
         const created = await firstValueFrom(
           this.api.create({
-            model: this.modelId,
+            model,
+            custom_name: customName,
             extra: this.extra(),
             reserve: this.reserve(),
             indiv: this.indiv(),
