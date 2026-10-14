@@ -1,0 +1,33 @@
+stages:
+  - build
+  - deploy
+
+default:
+  before_script:
+    - docker info
+
+build_image:
+  tags:
+    - shell
+  stage: build
+  script:
+    - |-
+      docker buildx build \
+        --tag 'docker-1.hosting.bp96.ru:5000/millarym/millarym-front:latest' \
+        --platform=linux/amd64 --pull --push .
+  only:
+    - main
+
+deploy:
+  tags:
+    - ssh
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - docker compose pull
+    - docker compose stop
+    - docker compose up -d
+  only:
+    - main
+  when: manual
