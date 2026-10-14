@@ -16,7 +16,9 @@ export interface Item {
   id: number;
   number: string;
   legacy_number: string;
-  model: Ref;
+  model: Ref | null;
+  custom_name: string;
+  title: string;
   extra: string;
   comment: string;
   reserve: string;
@@ -100,7 +102,8 @@ export interface FabricInput {
 }
 
 export interface ItemCreate {
-  model: number;
+  model: number | null;
+  custom_name: string;
   fabrics: FabricInput[];
   extra: string;
   reserve: string;

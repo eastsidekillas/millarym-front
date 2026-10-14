@@ -7,7 +7,10 @@
           <div class="min-w-0" [class.border-l-4]="it.indiv" [class.border-lime]="it.indiv" [class.pl-3]="it.indiv">
             <p class="text-xs text-muted">{{ it.reserve ? 'Изделие под заказ' : 'Изделие на склад' }}</p>
             <app-item-number [number]="it.number" [indiv]="it.indiv" [large]="true" />
-            <p class="mt-1 text-[15px] font-medium">{{ it.model.name }}</p>
+            <p class="mt-1 text-[15px] font-medium">{{ it.title }}</p>
+            @if (!it.model) {
+              <p class="text-xs text-muted">Название вне справочника</p>
+            }
             @if (it.extra) {
               <p class="text-sm text-muted">{{ it.extra }}</p>
             }
