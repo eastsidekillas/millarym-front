@@ -38,7 +38,7 @@
 
 <div class="rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
   @for (g of groups(); track g.day) {
-    <h2 class="sticky top-[57px] z-10 border-b border-line bg-sub px-4 py-2 text-[13px] font-medium first:rounded-t-lg">{{ g.title }}</h2>
+    <h2 class="sticky top-0 xl:top-[57px] z-10 border-b border-line bg-sub px-4 py-2 text-[13px] font-medium first:rounded-t-lg">{{ g.title }}</h2>
     <ol>
       @for (e of g.events; track e.id) {
         <li class="grid grid-cols-[56px_96px_1fr] items-baseline gap-x-4 border-b border-line px-4 py-2.5 text-sm last:border-0 sm:grid-cols-[56px_140px_96px_1fr]">

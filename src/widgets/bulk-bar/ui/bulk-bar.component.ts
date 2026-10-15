@@ -7,7 +7,7 @@ import { PrintPassport } from '@features/print-passport';
 @Component({
   selector: 'app-bulk-bar',
   template: `
-    <div class="sticky top-[57px] z-20 mb-3 flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-accent bg-surface px-3 py-2">
+    <div class="sticky top-0 xl:top-[57px] z-20 mb-3 flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-accent bg-surface px-3 py-2">
       <span class="mr-2 text-sm font-medium">Выбрано: {{ items().length }}</span>
       @if (next(); as to) {
         <button type="button" class="btn-row-next" [disabled]="actions.busy()" (click)="move(to)">{{ nextText() }}</button>

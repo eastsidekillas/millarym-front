@@ -11,7 +11,7 @@ import { LoginFormComponent } from '@features/auth-by-login';
         <div class="mb-6 flex items-center gap-3">
           <img src="milarum-logo.svg" alt="Миларум" class="h-10 w-auto rounded bg-white p-px" />
           <div>
-            <h1 class="text-lg font-semibold leading-6">CRM фабрики</h1>
+            <h1 class="text-lg font-semibold leading-6">Резервы и Заказы</h1>
             <p class="text-sm text-muted">Вход для сотрудников</p>
           </div>
         </div>
