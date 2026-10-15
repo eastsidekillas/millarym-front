@@ -8,7 +8,17 @@
 </div>
 
 @if (stage() === 'trash') {
-  <h1 class="mt-5 text-xl font-semibold">Корзина</h1>
+  <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+    <h1 class="text-xl font-semibold">Корзина</h1>
+    <input
+      type="search"
+      class="field max-w-sm"
+      placeholder="Номер, контрагент или модель"
+      aria-label="Поиск в Корзине"
+      [value]="q()"
+      (input)="searchTrash($any($event.target).value)"
+    />
+  </div>
 }
 
 <div class="mb-3 mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
