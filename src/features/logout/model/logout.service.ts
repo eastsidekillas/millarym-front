@@ -1,18 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { SessionApi, SessionStore } from '@entities/session';
 
-@Component({
-  selector: 'app-logout-button',
-  template: `<button type="button" class="btn-outline" (click)="logout()">Выйти</button>`,
-})
-export class LogoutButtonComponent {
+@Injectable({ providedIn: 'root' })
+export class Logout {
   private readonly api = inject(SessionApi);
   private readonly session = inject(SessionStore);
   private readonly router = inject(Router);
 
-  logout(): void {
+  run(): void {
     this.api
       .logout()
       .pipe(catchError(() => of(null)))

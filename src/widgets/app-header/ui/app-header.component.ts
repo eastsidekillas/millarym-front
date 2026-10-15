@@ -3,20 +3,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
 import { SessionStore } from '@entities/session';
-import { ChangePassword } from '@features/change-password';
 import { ItemForm } from '@features/item-form';
-import { LogoutButtonComponent } from '@features/logout';
+import { UserMenuComponent } from './user-menu.component';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive, LogoutButtonComponent],
+  imports: [RouterLink, RouterLinkActive, UserMenuComponent],
   host: { '(document:keydown)': 'hotkey($event)' },
   templateUrl: './app-header.component.html',
 })
 export class AppHeaderComponent {
   readonly session = inject(SessionStore);
   readonly itemForm = inject(ItemForm);
-  readonly password = inject(ChangePassword);
   private readonly router = inject(Router);
 
   readonly search = viewChild<ElementRef<HTMLInputElement>>('search');

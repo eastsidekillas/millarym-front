@@ -58,6 +58,7 @@
   html, body { @apply h-full; }
   body { @apply bg-bg font-sans text-sm text-ink antialiased; }
   :focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 1px; }
+  lucide-icon { display: inline-flex; flex: none; }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
@@ -83,6 +84,9 @@
   }
   .btn-danger {
     @apply btn border border-line bg-surface text-crit hover:bg-crit/5;
+  }
+  .menu-item {
+    @apply flex h-9 w-full items-center gap-2.5 px-3 text-left text-sm outline-none hover:bg-sub focus-visible:bg-sub;
   }
   .btn-ghost {
     @apply btn h-8 px-3 font-normal text-muted hover:bg-sub hover:text-ink;

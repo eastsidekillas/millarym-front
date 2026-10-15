@@ -1,1 +1,1 @@
-export { LogoutButtonComponent } from './ui/logout-button.component';
+export { Logout } from './model/logout.service';

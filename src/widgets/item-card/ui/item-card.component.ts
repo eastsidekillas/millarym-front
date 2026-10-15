@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Lock, LucideAngularModule, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { FABRIC_SLOTS, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
@@ -13,7 +14,7 @@ import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
 
 @Component({
   selector: 'app-item-card',
-  imports: [FormsModule, NgTemplateOutlet, ItemNumberComponent],
+  imports: [FormsModule, NgTemplateOutlet, ItemNumberComponent, LucideAngularModule],
   host: { '(document:keydown.escape)': 'closed.emit()' },
   templateUrl: './item-card.component.html',
 })
@@ -35,6 +36,7 @@ export class ItemCardComponent {
   reserve = '';
   readonly exporting = signal(false);
 
+  readonly icons = { close: X, lock: Lock };
   readonly fmt = fmtDate;
   readonly fmtTime = fmtDateTime;
   readonly daysSince = daysSince;

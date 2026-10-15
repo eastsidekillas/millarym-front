@@ -1,7 +1,9 @@
 import { Component, input, output } from '@angular/core';
+import { LucideAngularModule, X } from 'lucide-angular';
 
 @Component({
   selector: 'app-modal',
+  imports: [LucideAngularModule],
   host: { '(document:keydown.escape)': 'closed.emit()' },
   template: `
     <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-0 md:items-center md:p-6" (click)="closed.emit()">
@@ -21,7 +23,7 @@ import { Component, input, output } from '@angular/core';
             }
           </div>
           <button type="button" class="-mr-2 flex h-8 w-8 flex-none items-center justify-center rounded-md text-muted hover:bg-sub hover:text-ink" aria-label="Закрыть" (click)="closed.emit()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            <lucide-icon [img]="closeIcon" />
           </button>
         </div>
         <ng-content />
@@ -34,4 +36,5 @@ export class ModalComponent {
   readonly subtitle = input('');
   readonly width = input('md:max-w-2xl');
   readonly closed = output<void>();
+  readonly closeIcon = X;
 }

@@ -35,16 +35,7 @@
       @if (session.can('edit')) {
         <button type="button" class="btn-primary" (click)="itemForm.create()">Новое изделие</button>
       }
-      @if (session.me(); as me) {
-        <button type="button" class="hidden rounded-md px-2 py-1 text-right leading-tight hover:bg-sub lg:block" title="Сменить пароль" (click)="password.open()">
-          <span class="block text-sm font-medium">{{ me.short_name }}</span>
-          <span class="block text-xs text-muted">{{ me.role }}</span>
-        </button>
-        <button type="button" class="flex h-9 w-9 items-center justify-center rounded-md text-muted hover:bg-sub hover:text-ink lg:hidden" aria-label="Сменить пароль" title="Сменить пароль" (click)="password.open()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4" /><path d="M10.8 12.2 20 3m-4 4 3 3m-6-1 2 2" /></svg>
-        </button>
-        <app-logout-button />
-      }
+      <app-user-menu />
     </div>
   </div>
 </header>

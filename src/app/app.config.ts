@@ -8,6 +8,7 @@ import { registerLocaleData } from '@angular/common';
 import localeRu from '@angular/common/locales/ru';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { LucideIconConfig } from 'lucide-angular';
 import { routes } from './app.routes';
 import { authInterceptor } from './providers/auth.interceptor';
 
@@ -20,5 +21,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     { provide: LOCALE_ID, useValue: 'ru' },
+    { provide: LucideIconConfig, useFactory: () => Object.assign(new LucideIconConfig(), { size: 16, strokeWidth: 1.75 }) },
   ],
 };
