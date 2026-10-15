@@ -1,15 +1,5 @@
 import { Component, computed, inject, input, output } from '@angular/core';
-import {
-  FabricListComponent,
-  Item,
-  ItemNumberComponent,
-  MOVE_RIGHT,
-  NEXT_STAGE,
-  STAGE_NAME,
-  StageFilter,
-  itemAlert,
-  nextLabel,
-} from '@entities/item';
+import { FabricListComponent, Item, ItemNumberComponent, MOVE_RIGHT, NEXT_STAGE, STAGE_NAME, StageFilter, itemAlert, nextLabel, purgeText } from '@entities/item';
 import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
 import { daysSince, daysUntil, fmtDate } from '@shared/lib';
@@ -45,6 +35,7 @@ export class ItemsTableComponent {
   readonly fmt = fmtDate;
   readonly daysSince = daysSince;
   readonly daysUntil = daysUntil;
+  readonly purgeText = purgeText;
   readonly stageName = STAGE_NAME;
   readonly alert = itemAlert;
   readonly nextLabel = nextLabel;
