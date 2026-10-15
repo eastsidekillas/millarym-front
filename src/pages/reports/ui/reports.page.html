@@ -38,7 +38,7 @@
               @case ('text') {
                 <label class="grid max-w-sm gap-1.5">
                   <span class="text-xs text-muted">{{ p.label }}</span>
-                  <input type="search" class="field" [value]="values()[p.name]" (input)="type(p.name, $any($event.target).value)" [placeholder]="p.required ? 'Например, Фоминых' : 'Пусто — все контрагенты'" />
+                  <input type="search" class="field" [value]="values()[p.name]" (input)="type(p.name, $any($event.target).value)" [placeholder]="p.placeholder" />
                 </label>
               }
               @case ('bool') {
@@ -52,7 +52,7 @@
                 <div class="grid gap-1.5">
                   <span class="text-xs text-muted">{{ r.kind === 'free-stock' ? p.label + ': без галочек — все свободные, ' + freeTotal() + ' шт.' : p.label }}</span>
                   <app-model-picker
-                    [options]="r.kind === 'free-stock' ? freeModels() : allModels()"
+                    [options]="freeModels()"
                     [showCounts]="r.kind === 'free-stock'"
                     [selected]="selectedModels()"
                     (selectedChange)="setModels($event)"
