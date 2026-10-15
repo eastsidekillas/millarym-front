@@ -2,7 +2,6 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { CatalogApi } from '@entities/catalog';
 import { ModelCount, ReportApi, ReportInfo, ReportParams, ReportResult, ReportRow } from '@entities/report';
 import { errorText } from '@shared/api';
 import { factoryDay } from '@shared/lib';
@@ -21,14 +20,12 @@ interface Block {
 })
 export class ReportsPage {
   private readonly api = inject(ReportApi);
-  private readonly catalog = inject(CatalogApi);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   readonly reports = toSignal(this.api.list(), { initialValue: [] as ReportInfo[] });
   private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
-  private readonly catalogModels = toSignal(this.catalog.models(), { initialValue: [] });
 
   readonly kind = computed(() => this.params().get('kind') ?? 'free-stock');
   readonly report = computed(() => this.reports().find((r) => r.kind === this.kind()) ?? null);
@@ -41,10 +38,6 @@ export class ReportsPage {
   readonly missing = computed(() => (this.report()?.params ?? []).some((p) => p.required && !this.values()[p.name]));
 
   readonly freeModels = signal<ModelCount[]>([]);
-  readonly allModels = computed<ModelCount[]>(() => [
-    ...this.catalogModels().map((m) => ({ id: m.id, name: m.name, count: 0 })),
-    { id: 'custom' as const, name: 'Вне справочника', count: 0 },
-  ]);
   readonly freeTotal = computed(() => this.freeModels().reduce((sum, m) => sum + m.count, 0));
 
   readonly result = signal<ReportResult | null>(null);

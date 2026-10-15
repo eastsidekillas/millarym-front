@@ -5,6 +5,7 @@ export interface ReportParam {
   label: string;
   type: ParamType;
   required: boolean;
+  placeholder: string;
 }
 
 export interface ReportInfo {

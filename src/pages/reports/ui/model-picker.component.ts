@@ -7,6 +7,9 @@ import { ModelCount } from '@entities/report';
     <div class="grid gap-2">
       <div class="flex flex-wrap items-center gap-2">
         <input type="search" class="field h-8 max-w-[220px] text-[13px]" placeholder="Найти модель" aria-label="Найти модель" (input)="search.set($any($event.target).value)" />
+        @if (search().trim() && unpickedFound().length) {
+          <button type="button" class="btn-outline h-8" (click)="pickFound()">Отметить все найденные ({{ unpickedFound().length }})</button>
+        }
         @if (selected().length) {
           <button type="button" class="btn-ghost" (click)="selected.set([])">Снять все галочки ({{ selected().length }})</button>
         }
@@ -36,9 +39,15 @@ export class ModelPickerComponent {
   readonly search = signal('');
 
   readonly filtered = computed(() => {
-    const q = this.search().trim().toLowerCase().replace('ё', 'е');
-    return q ? this.options().filter((m) => m.name.toLowerCase().replace('ё', 'е').includes(q)) : this.options();
+    const q = this.search().trim().toLowerCase().replaceAll('ё', 'е');
+    return q ? this.options().filter((m) => m.name.toLowerCase().replaceAll('ё', 'е').includes(q)) : this.options();
   });
+
+  readonly unpickedFound = computed(() => this.filtered().filter((m) => !this.isOn(m.id)));
+
+  pickFound() {
+    this.selected.update((list) => [...list, ...this.unpickedFound().map((m) => String(m.id))]);
+  }
 
   isOn(id: number | 'custom'): boolean {
     return this.selected().includes(String(id));
