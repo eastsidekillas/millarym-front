@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './providers/auth.guard';
 
-const placeholder = () => import('@pages/placeholder').then((m) => m.PlaceholderPage);
 
 export const routes: Routes = [
   {
@@ -37,7 +36,11 @@ export const routes: Routes = [
         title: 'Журнал — Миларум CRM',
         loadComponent: () => import('@pages/journal').then((m) => m.JournalPage),
       },
-      { path: 'refs', title: 'Справочники — Миларум CRM', data: { title: 'Справочники' }, loadComponent: placeholder },
+      {
+        path: 'refs',
+        title: 'Справочники — Миларум CRM',
+        loadComponent: () => import('@pages/refs').then((m) => m.RefsPage),
+      },
       {
         path: '**',
         title: 'Не найдено — Миларум CRM',

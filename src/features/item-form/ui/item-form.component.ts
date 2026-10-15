@@ -1,8 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { CatalogApi, FabricPickerComponent, KitOption, PickedFabric } from '@entities/catalog';
+import { CatalogApi, FabricPickerComponent, KitOption, ModelChoice, ModelPickerComponent, PickedFabric, ProductModel } from '@entities/catalog';
 import { FABRIC_SLOTS, FabricInput, FabricSlot, ItemApi, ItemsChanged, STAGE_NAME } from '@entities/item';
 import { errorText } from '@shared/api';
 import { ModalComponent, ToastService } from '@shared/ui';
@@ -24,7 +23,7 @@ function kitGroup(name: string): string {
 
 @Component({
   selector: 'app-item-form',
-  imports: [FormsModule, ModalComponent, FabricPickerComponent],
+  imports: [FormsModule, ModalComponent, FabricPickerComponent, ModelPickerComponent],
   templateUrl: './item-form.component.html',
 })
 export class ItemFormComponent {
@@ -34,15 +33,21 @@ export class ItemFormComponent {
   private readonly changed = inject(ItemsChanged);
   private readonly toast = inject(ToastService);
 
-  readonly models = toSignal(this.catalog.models(), { initialValue: [] });
-  readonly kit = toSignal(this.catalog.kitOptions(), { initialValue: [] as KitOption[] });
+  private readonly activeModels = signal<ProductModel[]>([]);
+  readonly kit = signal<KitOption[]>([]);
 
   readonly editing = computed(() => {
     const s = this.form.state();
     return s?.mode === 'edit' ? s.item : null;
   });
 
-  readonly modelChoice = signal<number | 'custom' | null>(null);
+  readonly modelChoice = signal<ModelChoice>(null);
+  readonly models = computed(() => {
+    const list = this.activeModels();
+    const current = this.editing()?.model;
+    if (!current || list.some((m) => m.id === current.id)) return list;
+    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, in_work: 0 }];
+  });
   customName = '';
   readonly extra = signal('');
   reserve = signal('');
@@ -58,6 +63,11 @@ export class ItemFormComponent {
     effect(() => {
       const state = this.form.state();
       if (state) this.reset();
+    });
+    effect(() => {
+      if (!this.form.state()) return;
+      firstValueFrom(this.catalog.models()).then((list) => this.activeModels.set(list));
+      firstValueFrom(this.catalog.kitOptions()).then((list) => this.kit.set(list));
     });
   }
 
