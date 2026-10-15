@@ -5,16 +5,10 @@
     (closed)="form.close()"
   >
     <form class="grid gap-x-4 gap-y-5 px-6 py-5 sm:grid-cols-2" (ngSubmit)="submit()" novalidate>
-      <label class="grid gap-1.5">
-        <span class="text-xs text-muted">Модель</span>
-        <select class="field" name="model" [ngModel]="modelChoice()" (ngModelChange)="modelChoice.set($event)" required>
-          <option [ngValue]="null" disabled>Выберите модель</option>
-          @for (m of models(); track m.id) {
-            <option [ngValue]="m.id">{{ m.name }}</option>
-          }
-          <option ngValue="custom">Нет в справочнике, вписать вручную</option>
-        </select>
-      </label>
+      <div class="grid gap-1.5">
+        <span class="text-xs text-muted" id="item-model-label">Модель</span>
+        <app-model-picker [models]="models()" [value]="modelChoice()" (valueChange)="modelChoice.set($event)" />
+      </div>
       <label class="grid gap-1.5">
         <span class="text-xs text-muted">Комплектация / дополнения</span>
         <input class="field" name="extra" [value]="extra()" (input)="extra.set($any($event.target).value)" placeholder="Например, левый угол" />
