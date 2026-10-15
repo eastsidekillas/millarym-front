@@ -47,7 +47,7 @@ export class ProductionPage {
     const s = this.params().get('stage') as StageFilter;
     return STAGE_IDS.includes(s) ? s : 'orders';
   });
-  readonly stage = computed<StageFilter | null>(() => (this.q() ? null : this.tab()));
+  readonly stage = computed<StageFilter | null>(() => (this.q() && this.tab() !== 'trash' ? null : this.tab()));
   readonly filter = computed<FilterId>(() => {
     const f = this.params().get('filter') ?? '';
     return FILTERS.some((x) => x.id === f) ? (f as FilterId) : '';
@@ -70,7 +70,7 @@ export class ProductionPage {
   readonly hint = computed(() => {
     const stage = this.stage();
     if (stage === null) return `Поиск по всем этапам, найдено ${this.total()}.`;
-    if (stage === 'trash') return TRASH_HINT;
+    if (stage === 'trash') return this.q() ? `Поиск в Корзине, найдено ${this.total()}.` : TRASH_HINT;
     return STAGES.find((s) => s.id === stage)?.hint ?? '';
   });
   readonly late = computed(() => {
@@ -154,6 +154,13 @@ export class ProductionPage {
 
   go(params: Record<string, string | number | null>) {
     this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+  }
+
+  private searchTimer?: ReturnType<typeof setTimeout>;
+
+  searchTrash(text: string) {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.go({ q: text.trim() || null, item: null }), 300);
   }
 
   selectStage(stage: Stage | 'trash') {

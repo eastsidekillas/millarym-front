@@ -33,7 +33,7 @@
             }
           </td>
           @if (searching()) {
-            <td class="px-3 py-3">{{ stageName[it.stage] }}</td>
+            <td class="px-3 py-3">{{ it.trashed_at ? 'Корзина' : stageName[it.stage] }}</td>
           }
           <td class="px-3 py-3">
             <div class="font-medium">{{ it.title }}</div>
