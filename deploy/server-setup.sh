@@ -115,6 +115,7 @@ for path in / /api/v1/users/me/; do
   echo "https://$DOMAIN$path → $code"
 done
 echo "(ожидается: / → 200, /api/v1/users/me/ → 401 без входа)"
+$DC exec -T app sh -c 'touch /app/media/.write-test && rm /app/media/.write-test' && echo "папка фото доступна приложению на запись" || echo "ОШИБКА: приложение не может писать в папку фото"
 $DC logs --tail 15 caddy app frontend scheduler 2>&1 | tail -60
 
 step "готово: https://$DOMAIN"
