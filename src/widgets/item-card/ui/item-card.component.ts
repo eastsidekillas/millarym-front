@@ -2,21 +2,7 @@ import { Component, computed, effect, inject, input, output, signal, untracked }
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import {
-  FABRIC_SLOTS,
-  ItemAction,
-  ItemApi,
-  ItemDetail,
-  ItemNumberComponent,
-  ItemsChanged,
-  LOCK_TEXT,
-  MOVE_LABEL,
-  STAGES,
-  STAGE_NAME,
-  Stage,
-  itemAlert,
-  meters,
-} from '@entities/item';
+import { FABRIC_SLOTS, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
 import { ItemActions } from '@features/item-actions';
 import { ItemForm } from '@features/item-form';
@@ -53,6 +39,7 @@ export class ItemCardComponent {
   readonly fmtTime = fmtDateTime;
   readonly daysSince = daysSince;
   readonly daysUntil = daysUntil;
+  readonly purgeText = purgeText;
   readonly meters = meters;
   readonly path = STAGES;
   readonly stageName = STAGE_NAME;

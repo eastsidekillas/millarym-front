@@ -1,5 +1,5 @@
 import type { RightCode } from '@entities/session';
-import { daysSince } from '@shared/lib';
+import { daysSince, daysUntil } from '@shared/lib';
 import { FabricSlot, Item, Stage } from '../model/item.types';
 
 export interface StageInfo {
@@ -73,4 +73,9 @@ export function itemAlert(item: Item): ItemAlert | null {
 export function meters(value: string | null): string {
   if (value === null || value === '') return '';
   return `${String(Number(value)).replace('.', ',')} м`;
+}
+
+export function purgeText(purgeAt: string | null): string {
+  const days = daysUntil(purgeAt);
+  return days <= 0 ? 'удалится этой ночью' : `удалится через ${days} дн.`;
 }

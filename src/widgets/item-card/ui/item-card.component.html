@@ -52,7 +52,7 @@
 
         @if (it.trashed_at) {
           <p class="rounded-md bg-sub px-3 py-2.5 text-sm">
-            {{ it.trash_reason_label }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}». Удалится через {{ daysUntil(it.purge_at) }} дн.
+            {{ it.trash_reason_label }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}». {{ purgeText(it.purge_at)[0].toUpperCase() + purgeText(it.purge_at).slice(1) }}
           </p>
         }
 

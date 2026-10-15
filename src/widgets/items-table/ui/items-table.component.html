@@ -84,7 +84,7 @@
                 {{ fmt(it.trashed_at) }}
                 <div class="text-xs text-muted">{{ it.trash_reason_label }}</div>
                 <div class="text-xs" [class]="daysUntil(it.purge_at) <= 3 ? 'font-medium text-crit' : 'text-muted'">
-                  удалится через {{ daysUntil(it.purge_at) }} дн.
+                  {{ purgeText(it.purge_at) }}
                 </div>
               } @else {
                 {{ fmt(it.stage_since) }}
