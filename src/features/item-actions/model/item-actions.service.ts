@@ -24,7 +24,7 @@ const SIMPLE: Partial<Record<ActionCode, SimpleAction>> = {
 const DONE: Partial<Record<ActionCode, string>> = {
   fabric_arrived: 'ткань пришла',
   sew: 'выдано в шитьё',
-  cover_ready: 'чехол готов',
+  cover_ready: 'отшит',
   ship: 'отгружено и перенесено в Корзину',
   trash: 'удалено в Корзину',
   restore: 'восстановлено',
