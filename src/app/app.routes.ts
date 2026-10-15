@@ -6,7 +6,7 @@ export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
-    title: 'Вход — Миларум CRM',
+    title: 'Вход — Резервы и Заказы',
     loadComponent: () => import('@pages/login').then((m) => m.LoginPage),
   },
   {
@@ -18,32 +18,32 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'production' },
       {
         path: 'production',
-        title: 'Производство — Миларум CRM',
+        title: 'Производство — Резервы и Заказы',
         loadComponent: () => import('@pages/production').then((m) => m.ProductionPage),
       },
       {
         path: 'fabrics',
-        title: 'Ткани — Миларум CRM',
+        title: 'Ткани — Резервы и Заказы',
         loadComponent: () => import('@pages/fabrics').then((m) => m.FabricsPage),
       },
       {
         path: 'reports',
-        title: 'Отчёты — Миларум CRM',
+        title: 'Отчёты — Резервы и Заказы',
         loadComponent: () => import('@pages/reports').then((m) => m.ReportsPage),
       },
       {
         path: 'journal',
-        title: 'Журнал — Миларум CRM',
+        title: 'Журнал — Резервы и Заказы',
         loadComponent: () => import('@pages/journal').then((m) => m.JournalPage),
       },
       {
         path: 'refs',
-        title: 'Справочники — Миларум CRM',
+        title: 'Справочники — Резервы и Заказы',
         loadComponent: () => import('@pages/refs').then((m) => m.RefsPage),
       },
       {
         path: '**',
-        title: 'Не найдено — Миларум CRM',
+        title: 'Не найдено — Резервы и Заказы',
         loadComponent: () => import('@pages/not-found').then((m) => m.NotFoundPage),
       },
     ],

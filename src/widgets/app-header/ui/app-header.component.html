@@ -1,23 +1,23 @@
-<header class="sticky top-0 z-30 border-b border-line bg-surface">
-  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 pt-2.5 md:h-14 md:flex-nowrap md:px-6 md:pt-0">
+<header class="relative z-30 xl:sticky xl:top-0 border-b border-line bg-surface">
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 pt-2.5 xl:h-14 xl:flex-nowrap xl:px-6 xl:pt-0">
     <a routerLink="/" class="flex flex-none items-center gap-3" aria-label="На главную">
       <img src="milarum-logo.svg" alt="Миларум" class="h-8 w-auto rounded bg-white p-px" />
-      <span class="hidden text-[15px] font-semibold leading-tight sm:block">CRM фабрики</span>
+      <span class="hidden whitespace-nowrap text-[15px] font-semibold leading-tight xl:block">Резервы и Заказы</span>
     </a>
 
-    <nav class="order-4 flex w-full gap-5 overflow-x-auto md:order-none md:h-full md:w-auto" aria-label="Разделы">
+    <nav class="order-4 flex w-full gap-5 overflow-x-auto xl:order-none xl:h-full xl:w-auto" aria-label="Разделы">
       @for (item of nav; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="!border-accent !text-ink font-medium"
-          class="flex h-10 items-center whitespace-nowrap border-b-2 border-transparent text-sm text-muted hover:text-ink md:h-full"
+          class="flex h-10 items-center whitespace-nowrap border-b-2 border-transparent text-sm text-muted hover:text-ink xl:h-full"
         >
           {{ item.title }}
         </a>
       }
     </nav>
 
-    <div class="relative order-3 w-full md:order-none md:ml-auto md:max-w-md md:flex-1">
+    <div class="relative order-3 w-full xl:order-none xl:ml-auto xl:max-w-md xl:flex-1">
       <input
         #search
         type="search"
@@ -28,10 +28,10 @@
         [value]="query()"
         (input)="type($any($event.target).value)"
       />
-      <kbd class="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-line px-1.5 text-[11px] leading-5 text-muted md:block">/</kbd>
+      <kbd class="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-line px-1.5 text-[11px] leading-5 text-muted xl:block">/</kbd>
     </div>
 
-    <div class="order-2 ml-auto flex flex-none items-center gap-3 md:order-none md:ml-0">
+    <div class="order-2 ml-auto flex flex-none items-center gap-3 xl:order-none xl:ml-0">
       @if (session.can('edit')) {
         <button type="button" class="btn-primary" (click)="itemForm.create()">Новое изделие</button>
       }
