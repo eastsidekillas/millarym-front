@@ -65,4 +65,8 @@ export class ItemApi {
   events(params: Record<string, string | number>): Observable<Page<ItemEvent>> {
     return this.http.get<Page<ItemEvent>>(`${environment.baseURL}/events/`, { params });
   }
+
+  passports(ids: number[]): Observable<Blob> {
+    return this.http.get(`${environment.baseURL}/passports/`, { params: { ids: ids.join(',') }, responseType: 'blob' });
+  }
 }

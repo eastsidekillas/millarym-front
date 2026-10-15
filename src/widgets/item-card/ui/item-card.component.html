@@ -43,6 +43,13 @@
           </p>
         }
 
+        @if (it.passport_outdated && !it.trashed_at) {
+          <div class="flex flex-wrap items-center justify-between gap-2 rounded-md bg-warn/10 px-3 py-2">
+            <p class="text-sm font-medium text-warn">Паспорт устарел — изменено после печати</p>
+            <button type="button" class="btn-outline h-8" [disabled]="passport.busy()" (click)="printPassport(it)">Перепечатать</button>
+          </div>
+        }
+
         @if (it.trashed_at) {
           <p class="rounded-md bg-sub px-3 py-2.5 text-sm">
             {{ it.trash_reason_label }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}». Удалится через {{ daysUntil(it.purge_at) }} дн.
@@ -79,6 +86,7 @@
                 }
               </select>
             }
+            <button type="button" class="btn-outline" [disabled]="passport.busy()" (click)="printPassport(it)">Паспорт</button>
             <button type="button" class="btn-outline" [disabled]="exporting()" (click)="exportXlsx(it)">{{ exporting() ? 'Готовим файл…' : 'В Excel' }}</button>
           </div>
           @for (a of locked(); track a.code) {
@@ -136,6 +144,16 @@
           @if (it.indiv && it.due_at) {
             <div><dt class="text-xs text-muted">Срок заказа</dt><dd class="tnum">{{ fmt(it.due_at) }}</dd></div>
           }
+          <div>
+            <dt class="text-xs text-muted">Паспорт</dt>
+            <dd class="tnum">
+              @if (it.passport_printed_at) {
+                напечатан {{ fmt(it.passport_printed_at) }}
+              } @else {
+                <span class="text-muted">не печатали</span>
+              }
+            </dd>
+          </div>
         </dl>
 
         <section>

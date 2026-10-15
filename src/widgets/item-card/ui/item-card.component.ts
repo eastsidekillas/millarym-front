@@ -20,6 +20,7 @@ import {
 import { ReportApi } from '@entities/report';
 import { ItemActions } from '@features/item-actions';
 import { ItemForm } from '@features/item-form';
+import { PrintPassport } from '@features/print-passport';
 import { errorText } from '@shared/api';
 import { ToastService } from '@shared/ui';
 import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
@@ -40,6 +41,7 @@ export class ItemCardComponent {
   readonly actions = inject(ItemActions);
   private readonly itemForm = inject(ItemForm);
   private readonly reports = inject(ReportApi);
+  readonly passport = inject(PrintPassport);
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
@@ -142,6 +144,10 @@ export class ItemCardComponent {
   async saveReserve() {
     const item = this.item();
     if (item && this.reserve.trim() !== item.reserve) await this.actions.reserve(item, this.reserve);
+  }
+
+  printPassport(it: ItemDetail) {
+    this.passport.print([it.id]);
   }
 
   async exportXlsx(it: ItemDetail) {
