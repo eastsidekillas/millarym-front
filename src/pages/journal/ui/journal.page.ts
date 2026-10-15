@@ -16,7 +16,7 @@ const KINDS = [
   { id: 'move', title: 'Перемещение' },
   { id: 'fabric', title: 'Ткань пришла' },
   { id: 'sew', title: 'Выдано в шитьё' },
-  { id: 'cover_ready', title: 'Чехол готов' },
+  { id: 'cover_ready', title: 'Отшит' },
   { id: 'reserve', title: 'Резерв' },
   { id: 'edit', title: 'Правка' },
   { id: 'copy', title: 'Копия' },

@@ -15,9 +15,7 @@
         @for (col of columns(); track col.key) {
           <th class="font-normal whitespace-nowrap px-3 py-2.5">{{ col.title }}</th>
         }
-        @if (showSince()) {
-          <th class="font-normal whitespace-nowrap px-3 py-2.5">{{ trash() ? 'Дата удаления' : 'На этапе с' }}</th>
-        }
+        <th class="font-normal whitespace-nowrap px-3 py-2.5">{{ trash() ? 'Дата удаления' : 'На этапе с' }}</th>
         <th class="font-normal py-2.5 pl-3 pr-4 text-right">Действие</th>
       </tr>
     </thead>
@@ -54,7 +52,7 @@
               <span class="font-medium text-good">свободно</span>
             }
           </td>
-          @for (col of columns(); track col.key; let last = $last) {
+          @for (col of columns(); track col.key) {
             <td class="tnum whitespace-nowrap px-3 py-3">
               @switch (col.key) {
                 @case ('fabric') {
@@ -73,28 +71,23 @@
                   }
                 }
               }
-              @if (a && !showSince() && last) {
-                <div class="text-xs font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
-              }
             </td>
           }
-          @if (showSince()) {
-            <td class="tnum whitespace-nowrap px-3 py-3">
-              @if (it.trashed_at) {
-                {{ fmt(it.trashed_at) }}
-                <div class="text-xs text-muted">{{ it.trash_reason_label }}</div>
-                <div class="text-xs" [class]="daysUntil(it.purge_at) <= 3 ? 'font-medium text-crit' : 'text-muted'">
-                  {{ purgeText(it.purge_at) }}
-                </div>
-              } @else {
-                {{ fmt(it.stage_since) }}
-                <div class="text-xs text-muted">{{ daysSince(it.stage_since) }} дн.</div>
-              }
-              @if (a) {
-                <div class="text-xs font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
-              }
-            </td>
-          }
+          <td class="tnum whitespace-nowrap px-3 py-3">
+            @if (it.trashed_at) {
+              {{ fmt(it.trashed_at) }}
+              <div class="text-xs text-muted">{{ it.trash_reason_label }}</div>
+              <div class="text-xs" [class]="daysUntil(it.purge_at) <= 3 ? 'font-medium text-crit' : 'text-muted'">
+                {{ purgeText(it.purge_at) }}
+              </div>
+            } @else {
+              {{ fmt(it.stage_since) }}
+              <div class="text-xs text-muted">{{ daysSince(it.stage_since) }} дн.</div>
+            }
+            @if (a) {
+              <div class="text-xs font-medium" [class]="a.level === 'crit' ? 'text-crit' : 'text-warn'">{{ a.text }}</div>
+            }
+          </td>
           <td class="whitespace-nowrap py-3 pl-3 pr-4 text-right" (click)="$event.stopPropagation()">
             @if (it.trashed_at) {
               @if (session.can('restore')) {
@@ -108,7 +101,7 @@
                 @if (it.stage === 'cut' && !it.sew_at) {
                   <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'sew')">В шитьё</button>
                 } @else if (it.stage === 'cut' && !it.cover_ready_at) {
-                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'cover_ready')">Чехол готов</button>
+                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'cover_ready')">Отшит</button>
                 }
               }
               @if (it.stage === 'fg' && session.can('ship')) {

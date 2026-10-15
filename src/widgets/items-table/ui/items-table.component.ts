@@ -10,7 +10,7 @@ const STAGE_COLUMNS: Partial<Record<StageFilter, { key: Column; title: string }[
   orders: [{ key: 'fabric', title: 'Ткань пришла' }],
   cut: [
     { key: 'sew', title: 'Выдано в шитьё' },
-    { key: 'cover_ready', title: 'Чехол готов' },
+    { key: 'cover_ready', title: 'Отшит' },
   ],
   work: [{ key: 'work', title: 'Выдано в работу' }],
 };
@@ -43,7 +43,6 @@ export class ItemsTableComponent {
   readonly searching = computed(() => this.stage() === null);
   readonly trash = computed(() => this.stage() === 'trash');
   readonly columns = computed(() => STAGE_COLUMNS[this.stage() ?? 'fg'] ?? []);
-  readonly showSince = computed(() => this.stage() !== 'work');
   readonly allSelected = computed(() => this.items().length > 0 && this.items().every((i) => this.selected().has(i.id)));
 
   canNext(item: Item): boolean {
