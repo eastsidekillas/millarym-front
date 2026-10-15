@@ -2,6 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { Item, MOVE_RIGHT, NEXT_STAGE, STAGES, Stage, nextLabel } from '@entities/item';
 import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
+import { PrintPassport } from '@features/print-passport';
 
 @Component({
   selector: 'app-bulk-bar',
@@ -19,6 +20,7 @@ import { ItemActions } from '@features/item-actions';
           }
         </select>
       }
+      <button type="button" class="btn-outline h-8" [disabled]="passport.busy()" (click)="printPassports()">Печать паспортов</button>
       <button type="button" class="btn-ghost ml-auto" (click)="cleared.emit()">Снять выделение</button>
     </div>
   `,
@@ -30,6 +32,7 @@ export class BulkBarComponent {
 
   readonly session = inject(SessionStore);
   readonly actions = inject(ItemActions);
+  readonly passport = inject(PrintPassport);
   readonly targets = STAGES.filter((s) => s.id !== 'orders');
 
   private readonly sameStage = computed(() => {
@@ -50,6 +53,10 @@ export class BulkBarComponent {
 
   async move(to: Stage) {
     if (await this.actions.bulkMove(this.items(), to)) this.done.emit();
+  }
+
+  printPassports() {
+    this.passport.print(this.items().map((i) => i.id));
   }
 
   async moveAny(to: string) {
