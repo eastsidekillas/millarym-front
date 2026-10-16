@@ -35,7 +35,6 @@ export const FABRIC_SLOTS: { slot: FabricSlot; label: string }[] = [
   { slot: 'main', label: 'Основа' },
   { slot: 'comp1', label: 'Компаньон 1' },
   { slot: 'comp2', label: 'Компаньон 2' },
-  { slot: 'leather', label: 'Кожзам' },
 ];
 
 export const MOVE_LABEL: Record<Stage, string> = {
