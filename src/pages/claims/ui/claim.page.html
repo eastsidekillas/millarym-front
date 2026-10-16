@@ -1,0 +1,197 @@
+<ng-template #fieldTpl let-f>
+  <label class="grid gap-1.5" [class.sm:col-span-2]="f.wide">
+    <span class="text-xs text-muted">{{ f.label }}</span>
+    @switch (f.kind) {
+      @case ('area') {
+        <textarea class="field min-h-[72px]" rows="3" [attr.name]="f.key" [value]="value(f.key)" (input)="setValue(f.key, $any($event.target).value)" [disabled]="!canEdit"></textarea>
+      }
+      @case ('date') {
+        <input type="date" class="field w-auto" [attr.name]="f.key" [value]="value(f.key)" (change)="setValue(f.key, $any($event.target).value)" [disabled]="!canEdit" />
+      }
+      @case ('money') {
+        <input type="text" inputmode="decimal" class="field tnum w-40" [attr.name]="f.key" [value]="value(f.key)" (input)="setValue(f.key, $any($event.target).value)" [disabled]="!canEdit" />
+      }
+      @default {
+        <input type="text" class="field" [attr.name]="f.key" [placeholder]="f.placeholder || ''" [value]="value(f.key)" (input)="setValue(f.key, $any($event.target).value)" [disabled]="!canEdit" />
+      }
+    }
+  </label>
+</ng-template>
+
+<div class="mx-auto max-w-4xl">
+  <a routerLink="/claims" class="text-sm text-muted hover:text-ink">Все рекламации</a>
+  <div class="mt-1 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+    <h1 class="text-xl font-semibold">{{ title() }}</h1>
+    @if (claim(); as c) {
+      <p class="text-xs text-muted">Заведена {{ fmtTime(c.created_at) }}, {{ c.created_by.name }}. Изменена {{ fmtTime(c.updated_at) }}, {{ c.updated_by.name }}</p>
+    }
+  </div>
+
+  @if (!loaded()) {
+    <p class="mt-6 text-sm text-muted">Загружаем…</p>
+  } @else {
+    <form class="mt-5 grid gap-5" (ngSubmit)="save()" novalidate>
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h2 class="text-base font-semibold">Сведения от клиента</h2>
+        <p class="mt-0.5 text-sm text-muted">Как в акте-претензии, который прислал партнёр.</p>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Дата в акте клиента</span>
+            <input type="date" class="field w-auto" name="act_date" [value]="value('act_date')" (change)="setValue('act_date', $any($event.target).value)" [disabled]="!canEdit" />
+          </label>
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Менеджер</span>
+            <select class="field" name="manager" [(ngModel)]="form.manager" [disabled]="!canEdit">
+              <option [ngValue]="null">Не выбран</option>
+              @for (e of employees(); track e.id) {
+                <option [ngValue]="e.id">{{ e.short_name }}</option>
+              }
+            </select>
+          </label>
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Контрагент</span>
+            <input type="text" class="field" name="counterparty" placeholder="Кто прислал рекламацию" [value]="value('counterparty')" (input)="setValue('counterparty', $any($event.target).value)" [disabled]="!canEdit" />
+          </label>
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Наименование отправителя</span>
+            <select class="field" name="sender" [(ngModel)]="form.sender" [disabled]="!canEdit">
+              <option value="">Не выбрано</option>
+              @for (c of choices()?.sender ?? []; track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="grid gap-1.5 sm:col-span-2">
+            <span class="text-xs text-muted">Изделие в базе</span>
+            @if (linked(); as l) {
+              <div class="flex flex-wrap items-center gap-3 rounded-md bg-sub px-3 py-2 text-sm">
+                <span>Привязано к изделию <span class="num">{{ l.number }}</span></span>
+                @if (l.available) {
+                  <a class="text-accent hover:underline" [routerLink]="['/production']" [queryParams]="{ item: l.id }">Открыть карточку</a>
+                } @else {
+                  <span class="text-muted">удалено из Корзины, история в журнале</span>
+                }
+                @if (canEdit) {
+                  <button type="button" class="btn-ghost ml-auto h-8" (click)="unlink()">Отвязать</button>
+                }
+              </div>
+            } @else if (canEdit) {
+              <div class="relative">
+                <input type="search" class="field" placeholder="Необязательно. Номер, контрагент или модель — ищет и в Корзине" [value]="itemQuery()" (input)="searchItems($any($event.target).value)" />
+                @if (itemQuery()) {
+                  <ul class="absolute left-0 right-0 top-10 z-10 max-h-72 overflow-y-auto rounded-lg border border-line bg-surface py-1 shadow-[0_4px_12px_rgb(0_0_0/.08)]">
+                    @for (it of itemResults(); track it.id) {
+                      <li>
+                        <button type="button" class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-sub" (click)="linkItem(it.id)">
+                          <span class="num w-20 flex-none">{{ it.number }}</span>
+                          <span class="min-w-0 flex-1 truncate">{{ it.title }}{{ it.extra ? ', ' + it.extra : '' }}</span>
+                          <span class="flex-none text-xs text-muted">{{ it.trashed_at ? 'Корзина' : it.stage_label }}{{ it.reserve ? ' · ' + it.reserve : '' }}</span>
+                        </button>
+                      </li>
+                    } @empty {
+                      <li class="px-3 py-2 text-sm text-muted">{{ searchingItems() ? 'Ищем…' : 'Не нашли — заполните поля ниже вручную' }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+              <p class="text-xs text-muted">Если изделие найдётся, его название, номер, ткани и контрагент подставятся сами. Рекламация на давно отгруженный диван заводится без привязки.</p>
+            }
+          </div>
+
+          @for (f of clientFields; track f.key) {
+            <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+          }
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h2 class="text-base font-semibold">Заполняет менеджер</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Тип претензии</span>
+            <select class="field" name="claim_type" [(ngModel)]="form.claim_type" [disabled]="!canEdit">
+              @for (c of choices()?.claim_type ?? []; track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <div class="hidden sm:block"></div>
+          @for (f of managerFields; track f.key) {
+            <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+          }
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h2 class="text-base font-semibold">Заполняет мастер цеха</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1.5">
+            <span class="text-xs text-muted">Вид дефекта</span>
+            <select class="field" name="defect_type" [(ngModel)]="form.defect_type" [disabled]="!canEdit">
+              <option value="">Не определён</option>
+              @for (c of choices()?.defect_type ?? []; track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <div class="hidden sm:block"></div>
+          @for (f of masterFields; track f.key) {
+            <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+          }
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <h2 class="text-base font-semibold">Финансовая часть</h2>
+        <p class="mt-0.5 text-sm text-muted">Заполняет мастер цеха. В акт для покупателя не попадает.</p>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: { key: 'restore_cost', label: 'Расходы по восстановлению, ₽', kind: 'money' } }" />
+          <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: { key: 'finance_note', label: 'Пояснение', kind: 'area', wide: true } }" />
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-line bg-surface p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-base font-semibold">Фото брака</h2>
+          @if (claim() && canEdit) {
+            <label class="btn-outline cursor-pointer" [class.opacity-50]="uploading()">
+              {{ uploading() ? 'Загружаем…' : 'Добавить фото' }}
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" [disabled]="uploading()" (change)="addPhotos($event)" />
+            </label>
+          }
+        </div>
+        @if (!claim()) {
+          <p class="mt-2 text-sm text-muted">Фото можно добавить после сохранения.</p>
+        } @else if (photos().length) {
+          <ul class="mt-4 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+            @for (p of photos(); track p.id) {
+              <li class="group relative overflow-hidden rounded-lg border border-line">
+                <a [href]="p.photo" target="_blank" rel="noopener"><img [src]="p.photo_thumb || p.photo" alt="Фото брака" class="aspect-[4/3] w-full object-cover" loading="lazy" /></a>
+                @if (canEdit) {
+                  <button type="button" class="absolute right-1.5 top-1.5 rounded-md bg-surface/90 px-2 py-0.5 text-xs text-crit hover:bg-surface" (click)="removePhoto(p)">Убрать</button>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="mt-2 text-sm text-muted">Фото пока нет.</p>
+        }
+      </section>
+
+      @if (error()) {
+        <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
+      }
+
+      <div class="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-bg/95 px-4 py-3 md:-mx-6 md:px-6">
+        @if (claim()) {
+          <button type="button" class="btn-outline" (click)="act()">Акт для покупателя (PDF)</button>
+        }
+        @if (canEdit) {
+          <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : claim() ? 'Сохранить' : 'Завести рекламацию' }}</button>
+        }
+      </div>
+    </form>
+  }
+</div>

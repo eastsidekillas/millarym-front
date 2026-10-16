@@ -12,7 +12,8 @@ export type RightCode =
   | 'edit'
   | 'reserve'
   | 'fabrics'
-  | 'catalog';
+  | 'catalog'
+  | 'claims';
 
 export interface Me {
   id: number;
