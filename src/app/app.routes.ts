@@ -37,6 +37,21 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/journal').then((m) => m.JournalPage),
       },
       {
+        path: 'claims',
+        title: 'Рекламации — Резервы и Заказы',
+        loadComponent: () => import('@pages/claims').then((m) => m.ClaimsPage),
+      },
+      {
+        path: 'claims/new',
+        title: 'Новая рекламация — Резервы и Заказы',
+        loadComponent: () => import('@pages/claims').then((m) => m.ClaimPage),
+      },
+      {
+        path: 'claims/:id',
+        title: 'Рекламация — Резервы и Заказы',
+        loadComponent: () => import('@pages/claims').then((m) => m.ClaimPage),
+      },
+      {
         path: 'refs',
         title: 'Справочники — Резервы и Заказы',
         loadComponent: () => import('@pages/refs').then((m) => m.RefsPage),

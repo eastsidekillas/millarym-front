@@ -1,0 +1,62 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, shareReplay } from 'rxjs';
+import { Page } from '@shared/api';
+import { environment } from '@shared/config';
+import { Claim, ClaimChoices, ClaimFields, ClaimListItem, ClaimPhoto, ClaimQuery, ClaimStats } from '../model/claim.types';
+
+function toParams(query: ClaimQuery): HttpParams {
+  let p = new HttpParams();
+  for (const [key, value] of Object.entries(query)) if (value !== undefined && value !== '') p = p.set(key, String(value));
+  return p;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ClaimApi {
+  private readonly http = inject(HttpClient);
+  private readonly api = `${environment.baseURL}/claims`;
+  private choices$?: Observable<ClaimChoices>;
+
+  list(query: ClaimQuery): Observable<Page<ClaimListItem>> {
+    return this.http.get<Page<ClaimListItem>>(`${this.api}/`, { params: toParams(query) });
+  }
+
+  stats(query: ClaimQuery): Observable<ClaimStats> {
+    return this.http.get<ClaimStats>(`${this.api}/stats/`, { params: toParams(query) });
+  }
+
+  choices(): Observable<ClaimChoices> {
+    this.choices$ ??= this.http.get<ClaimChoices>(`${this.api}/choices/`).pipe(shareReplay(1));
+    return this.choices$;
+  }
+
+  get(id: number): Observable<Claim> {
+    return this.http.get<Claim>(`${this.api}/${id}/`);
+  }
+
+  create(body: Partial<ClaimFields>): Observable<Claim> {
+    return this.http.post<Claim>(`${this.api}/`, body);
+  }
+
+  update(id: number, body: Partial<ClaimFields>): Observable<Claim> {
+    return this.http.patch<Claim>(`${this.api}/${id}/`, body);
+  }
+
+  addPhoto(id: number, file: File): Observable<ClaimPhoto> {
+    const body = new FormData();
+    body.append('photo', file);
+    return this.http.post<ClaimPhoto>(`${this.api}/${id}/photos/`, body);
+  }
+
+  deletePhoto(id: number, photoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${id}/photos/${photoId}/`);
+  }
+
+  pdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.api}/${id}/pdf/`, { responseType: 'blob' });
+  }
+
+  blank(): Observable<Blob> {
+    return this.http.get(`${this.api}/blank/`, { responseType: 'blob' });
+  }
+}

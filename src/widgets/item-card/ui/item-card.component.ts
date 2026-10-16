@@ -1,10 +1,12 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Lock, LucideAngularModule, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { FABRIC_SLOTS, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
+import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
 import { ItemForm } from '@features/item-form';
 import { PrintPassport } from '@features/print-passport';
@@ -14,7 +16,7 @@ import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
 
 @Component({
   selector: 'app-item-card',
-  imports: [FormsModule, NgTemplateOutlet, ItemNumberComponent, LucideAngularModule],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, ItemNumberComponent, LucideAngularModule],
   host: { '(document:keydown.escape)': 'closed.emit()' },
   templateUrl: './item-card.component.html',
 })
@@ -29,6 +31,7 @@ export class ItemCardComponent {
   private readonly itemForm = inject(ItemForm);
   private readonly reports = inject(ReportApi);
   readonly passport = inject(PrintPassport);
+  readonly canClaim = inject(SessionStore).can('claims');
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);

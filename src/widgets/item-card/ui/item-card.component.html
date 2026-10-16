@@ -87,6 +87,9 @@
               </select>
             }
             <button type="button" class="btn-outline" [disabled]="passport.busy()" (click)="printPassport(it)">Паспорт</button>
+            @if (canClaim) {
+              <a class="btn-outline" routerLink="/claims/new" [queryParams]="{ item: it.id }">Рекламация</a>
+            }
             <button type="button" class="btn-outline" [disabled]="exporting()" (click)="exportXlsx(it)">{{ exporting() ? 'Готовим файл…' : 'В Excel' }}</button>
           </div>
           @for (a of locked(); track a.code) {

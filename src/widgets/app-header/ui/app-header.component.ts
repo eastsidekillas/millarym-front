@@ -25,6 +25,7 @@ export class AppHeaderComponent {
     { path: '/production', title: 'Производство' },
     { path: '/fabrics', title: 'Ткани' },
     { path: '/reports', title: 'Отчёты' },
+    { path: '/claims', title: 'Рекламации' },
     { path: '/journal', title: 'Журнал' },
     { path: '/refs', title: 'Справочники' },
   ];

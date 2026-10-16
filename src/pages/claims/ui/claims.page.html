@@ -1,0 +1,98 @@
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-xl font-semibold">Рекламации</h1>
+  <div class="flex flex-wrap gap-2">
+    <button type="button" class="btn-outline" (click)="blank()">Пустой бланк для партнёра</button>
+    @if (canEdit) {
+      <a class="btn-primary" routerLink="/claims/new">Новая рекламация</a>
+    }
+  </div>
+</div>
+
+<div class="mt-4 flex flex-wrap items-end gap-2">
+  <label class="grid gap-1.5">
+    <span class="text-xs text-muted">Поиск</span>
+    <input type="search" class="field w-72 max-w-full" placeholder="Номер акта, контрагент, изделие, № изделия" [value]="query().q" (input)="type($any($event.target).value)" />
+  </label>
+  <label class="grid gap-1.5">
+    <span class="text-xs text-muted">Тип претензии</span>
+    <select class="field w-auto pr-8" (change)="set('claim_type', $any($event.target).value)">
+      <option value="">Все</option>
+      @for (c of choices()?.claim_type ?? []; track c.id) {
+        <option [value]="c.id" [selected]="query().claim_type === c.id">{{ c.name }}</option>
+      }
+    </select>
+  </label>
+  <label class="grid gap-1.5">
+    <span class="text-xs text-muted">Заведены с</span>
+    <input type="date" class="field w-auto" [value]="query().from" (change)="set('from', $any($event.target).value)" />
+  </label>
+  <label class="grid gap-1.5">
+    <span class="text-xs text-muted">по</span>
+    <input type="date" class="field w-auto" [value]="query().to" (change)="set('to', $any($event.target).value)" />
+  </label>
+  @if (filtered()) {
+    <button type="button" class="btn-ghost h-9" (click)="reset()">Сбросить</button>
+  }
+  <a class="btn-ghost h-9 sm:ml-auto" routerLink="/reports" [queryParams]="{ kind: 'claims', from: query().from || null, to: query().to || null }">Отчёт в Excel</a>
+</div>
+
+@if (stats(); as st) {
+  <div class="mt-4 flex flex-wrap gap-1.5" role="group" aria-label="Вид дефекта">
+    <button type="button" class="btn-row" [class.!border-accent]="!query().defect_type" [class.!text-accent]="!query().defect_type" (click)="set('defect_type', '')">
+      Все виды дефекта <span class="tnum ml-1.5 text-muted">{{ allDefects() }}</span>
+    </button>
+    @for (d of st.defect_type; track d.id) {
+      @if (d.count || query().defect_type === d.id) {
+        <button type="button" class="btn-row" [class.!border-accent]="query().defect_type === d.id" [class.!text-accent]="query().defect_type === d.id" (click)="set('defect_type', d.id === 'none' ? '' : d.id)">
+          {{ d.name }} <span class="tnum ml-1.5 text-muted">{{ d.count }}</span>
+        </button>
+      }
+    }
+  </div>
+}
+
+<div class="mt-3 overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
+  <table class="w-full min-w-[860px] text-sm">
+    <thead>
+      <tr class="border-b border-line text-left text-xs text-muted">
+        <th class="py-2.5 pl-4 pr-2 font-normal">№ акта</th>
+        <th class="px-3 py-2.5 font-normal">Дата</th>
+        <th class="px-3 py-2.5 font-normal">Контрагент</th>
+        <th class="px-3 py-2.5 font-normal">Изделие</th>
+        <th class="px-3 py-2.5 font-normal">Вид дефекта</th>
+        <th class="px-3 py-2.5 font-normal">Тип претензии</th>
+        <th class="py-2.5 pl-3 pr-4 text-right font-normal">Фото</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of items(); track c.id) {
+        <tr class="cursor-pointer border-b border-line last:border-0 hover:bg-sub" (click)="open(c)">
+          <td class="num py-3 pl-4 pr-2"><a [routerLink]="['/claims', c.id]" (click)="$event.stopPropagation()">{{ c.number }}</a></td>
+          <td class="tnum whitespace-nowrap px-3 py-3">{{ fmt(c.act_date || c.created_at) }}</td>
+          <td class="px-3 py-3">{{ c.counterparty || '—' }}</td>
+          <td class="px-3 py-3">
+            <div class="font-medium">{{ c.product || '—' }}</div>
+            @if (c.item_number) {
+              <div class="text-xs text-muted">№ {{ c.item_number }}</div>
+            }
+          </td>
+          <td class="px-3 py-3">{{ c.defect_type_label || '—' }}</td>
+          <td class="px-3 py-3">{{ c.claim_type_label }}</td>
+          <td class="tnum py-3 pl-3 pr-4 text-right">{{ c.photos_count || '—' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="px-4 py-12 text-center text-muted">
+            {{ loading() ? 'Загружаем…' : filtered() ? 'Под эти условия рекламаций нет.' : 'Рекламаций пока нет.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<div class="mt-3 flex items-center justify-between text-sm text-muted">
+  <span>Показано <span class="tnum">{{ items().length }}</span> из <span class="tnum">{{ total() }}</span></span>
+  @if (items().length < total()) {
+    <button type="button" class="btn-outline" [disabled]="loading()" (click)="more()">Показать ещё</button>
+  }
+</div>
