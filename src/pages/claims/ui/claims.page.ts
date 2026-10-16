@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ClaimApi, ClaimListItem, ClaimQuery, ClaimStats } from '@entities/claim';
 import { SessionStore } from '@entities/session';
 import { errorText } from '@shared/api';
-import { fmtDate, openPdf } from '@shared/lib';
+import { fmtDate } from '@shared/lib';
 import { ToastService } from '@shared/ui';
 
 const PAGE = 50;
@@ -95,7 +95,7 @@ export class ClaimsPage {
 
   async blank() {
     try {
-      await openPdf(() => firstValueFrom(this.api.blank()));
+      await this.api.downloadBlank();
     } catch (err) {
       this.toast.error(errorText(err, 'Не удалось подготовить бланк.'));
     }

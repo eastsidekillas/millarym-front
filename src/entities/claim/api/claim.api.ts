@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, shareReplay } from 'rxjs';
+import { Observable, firstValueFrom, shareReplay } from 'rxjs';
 import { Page } from '@shared/api';
 import { environment } from '@shared/config';
+import { filenameFrom, saveBlob } from '@shared/lib';
 import { Claim, ClaimChoices, ClaimFields, ClaimListItem, ClaimPhoto, ClaimQuery, ClaimStats } from '../model/claim.types';
 
 function toParams(query: ClaimQuery): HttpParams {
@@ -56,7 +57,8 @@ export class ClaimApi {
     return this.http.get(`${this.api}/${id}/pdf/`, { responseType: 'blob' });
   }
 
-  blank(): Observable<Blob> {
-    return this.http.get(`${this.api}/blank/`, { responseType: 'blob' });
+  async downloadBlank(): Promise<void> {
+    const response = await firstValueFrom(this.http.get(`${this.api}/blank/`, { observe: 'response', responseType: 'blob' }));
+    saveBlob(response.body!, filenameFrom(response, 'Акт-претензия, бланк для клиента.xlsx'));
   }
 }
