@@ -47,9 +47,11 @@ const norm = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
             <tr class="border-b border-line last:border-0" [class.text-muted]="!m.active">
               <td class="hidden py-2 pl-4 sm:table-cell">
                 @if (m.photo_thumb) {
-                  <img [src]="m.photo_thumb" [alt]="m.name" class="h-9 w-9 rounded object-cover" loading="lazy" />
+                  <a [href]="m.photo" target="_blank" rel="noopener" title="Открыть фото" class="block">
+                    <img [src]="m.photo_thumb" [alt]="m.name" class="h-9 w-12 rounded bg-white object-contain ring-1 ring-line" loading="lazy" />
+                  </a>
                 } @else {
-                  <div class="h-9 w-9 rounded bg-sub"></div>
+                  <div class="h-9 w-12 rounded bg-sub"></div>
                 }
               </td>
               <td class="py-2 pl-4 pr-3 sm:px-3">
