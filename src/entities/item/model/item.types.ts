@@ -3,7 +3,7 @@ import { Ref } from '@shared/api';
 export type Stage = 'orders' | 'cut' | 'cover' | 'work' | 'fg';
 export type StageFilter = Stage | 'trash';
 export type Warning = 'fabric' | 'cut' | 'output';
-export type FabricSlot = 'main' | 'comp1' | 'comp2' | 'leather';
+export type FabricSlot = 'main' | 'comp1' | 'comp2';
 
 export interface ItemFabric {
   slot: FabricSlot;
