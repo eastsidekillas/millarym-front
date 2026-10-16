@@ -32,9 +32,9 @@ const MAX_MB = 15;
           <div class="grid gap-1.5">
             <span class="text-xs text-muted">Фото</span>
             <div class="flex items-start gap-4">
-              <div class="flex h-24 w-24 flex-none items-center justify-center overflow-hidden rounded-lg border border-line bg-sub">
+              <div class="flex h-24 w-36 flex-none items-center justify-center overflow-hidden rounded-lg border border-line" [class.bg-white]="preview()" [class.bg-sub]="!preview()">
                 @if (preview()) {
-                  <img [src]="preview()" alt="" class="h-full w-full object-cover" />
+                  <img [src]="preview()" alt="" class="h-full w-full object-contain" />
                 } @else {
                   <span class="px-2 text-center text-xs text-muted">Нет фото</span>
                 }
