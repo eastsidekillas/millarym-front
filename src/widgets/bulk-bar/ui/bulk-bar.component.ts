@@ -13,8 +13,8 @@ import { PrintPassport } from '@features/print-passport';
         <button type="button" class="btn-row-next" [disabled]="actions.busy()" (click)="move(to)">{{ nextText() }}</button>
       }
       @if (session.can('move_any')) {
-        <select class="select-sm" aria-label="Переместить на этап" #target (change)="moveAny(target.value); target.value = ''">
-          <option value="">Переместить на этап…</option>
+        <select class="select-sm" aria-label="Исправить этап" title="Через этап или назад — если ошиблись" #target (change)="moveAny(target.value); target.value = ''">
+          <option value="">Исправить этап…</option>
           @for (s of targets; track s.id) {
             <option [value]="s.id">{{ s.name }}</option>
           }

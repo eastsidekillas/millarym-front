@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Lock, LucideAngularModule, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
-import { FABRIC_SLOTS, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
+import { FABRIC_SLOTS, NEXT_STAGE, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
 import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
@@ -76,7 +76,11 @@ export class ItemCardComponent {
   readonly locked = computed(() =>
     (this.item()?.actions ?? []).filter((a) => !a.allowed && (a.code === 'move' || a.code === 'restore')),
   );
-  readonly moveTargets = computed(() => STAGES.filter((s) => s.id !== 'orders' && s.id !== this.item()?.stage));
+  // следующий этап — зелёная кнопка, здесь только переход через этап или назад
+  readonly moveTargets = computed(() => {
+    const stage = this.item()?.stage;
+    return STAGES.filter((s) => s.id !== 'orders' && s.id !== stage && (!stage || s.id !== NEXT_STAGE[stage]));
+  });
 
   constructor() {
     effect(() => {
