@@ -72,8 +72,8 @@
               </button>
             }
             @if (action('move_any')?.allowed) {
-              <select class="field w-auto pr-8" aria-label="Переместить на этап" #target (change)="moveTo(target.value); target.value = ''">
-                <option value="">Переместить на этап…</option>
+              <select class="field w-auto pr-8" aria-label="Исправить этап" title="Через этап или назад — если ошиблись" #target (change)="moveTo(target.value); target.value = ''">
+                <option value="">Исправить этап…</option>
                 @for (s of moveTargets(); track s.id) {
                   <option [value]="s.id">{{ s.name }}</option>
                 }
