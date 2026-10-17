@@ -28,9 +28,6 @@
           </td>
           <td class="px-2 py-3">
             <app-item-number [number]="it.number" [indiv]="it.indiv" />
-            @if (it.passport_outdated) {
-              <div class="whitespace-nowrap text-xs font-medium text-warn" title="Изделие изменили после печати паспорта">паспорт устарел</div>
-            }
           </td>
           @if (searching()) {
             <td class="px-3 py-3">{{ it.trashed_at ? 'Корзина' : stageName[it.stage] }}</td>

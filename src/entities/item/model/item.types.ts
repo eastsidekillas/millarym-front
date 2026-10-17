@@ -44,7 +44,6 @@ export interface Item {
   trash_reason_label: string;
   purge_at: string | null;
   passport_printed_at: string | null;
-  passport_outdated: boolean;
 }
 
 export interface ItemEvent {
