@@ -31,6 +31,7 @@ export class ClaimsPage {
       q: p.get('q') ?? '',
       claim_type: p.get('claim_type') ?? '',
       defect_type: p.get('defect_type') ?? '',
+      state: p.get('state') ?? '',
       from: p.get('from') ?? '',
       to: p.get('to') ?? '',
     };
@@ -41,6 +42,11 @@ export class ClaimsPage {
   readonly total = signal(0);
   readonly stats = signal<ClaimStats | null>(null);
   readonly loading = signal(false);
+  readonly stateCount = computed(() => {
+    const rows = this.stats()?.state ?? [];
+    const n = (id: string) => rows.find((r) => r.id === id)?.count ?? 0;
+    return { all: rows.reduce((sum, r) => sum + r.count, 0), open: n('open'), closed: n('done') + n('withdrawn'), done: n('done'), withdrawn: n('withdrawn') };
+  });
   readonly allDefects = computed(() => (this.stats()?.defect_type ?? []).reduce((sum, d) => sum + d.count, 0));
   private request = 0;
   private timer?: ReturnType<typeof setTimeout>;

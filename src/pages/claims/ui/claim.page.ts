@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { Claim, ClaimApi, ClaimFields, ClaimPhoto } from '@entities/claim';
 import { EmployeeApi } from '@entities/employee';
 import { Item, ItemApi } from '@entities/item';
@@ -220,6 +220,42 @@ export class ClaimPage {
       this.claim.set({ ...claim, photos: claim.photos.filter((p) => p.id !== photo.id) });
     } catch (err) {
       this.toast.error(errorText(err, 'Не удалось убрать фото.'));
+    }
+  }
+
+  readonly closing = signal(false);
+  readonly closeState = signal<'done' | 'withdrawn'>('done');
+  readonly closeNote = signal('');
+  readonly stateBusy = signal(false);
+
+  startClose() {
+    this.closeState.set('done');
+    this.closeNote.set('');
+    this.closing.set(true);
+  }
+
+  async close() {
+    await this.changeState((id) => this.api.close(id, this.closeState(), this.closeNote()), 'закрыта');
+    this.closing.set(false);
+  }
+
+  reopen() {
+    return this.changeState((id) => this.api.reopen(id), 'снова открыта');
+  }
+
+  // меняем только состояние: несохранённые правки в полях акта не трогаем
+  private async changeState(request: (id: number) => Observable<Claim>, done: string) {
+    const claim = this.claim();
+    if (!claim) return;
+    this.stateBusy.set(true);
+    try {
+      const r = await firstValueFrom(request(claim.id));
+      this.claim.set({ ...claim, state: r.state, state_label: r.state_label, closed_at: r.closed_at, closed_by: r.closed_by, close_note: r.close_note, updated_at: r.updated_at, updated_by: r.updated_by });
+      this.toast.show(`Рекламация ${r.number} ${done}`);
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось изменить состояние.'));
+    } finally {
+      this.stateBusy.set(false);
     }
   }
 

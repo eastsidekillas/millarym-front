@@ -9,7 +9,10 @@ export interface ClaimChoices {
   claim_type: Choice[];
   defect_type: Choice[];
   sender: Choice[];
+  state: Choice[];
 }
+
+export type ClaimState = 'open' | 'done' | 'withdrawn';
 
 export interface ClaimPhoto {
   id: number;
@@ -33,6 +36,9 @@ export interface ClaimListItem {
   defect_type: string;
   defect_type_label: string;
   photos_count: number;
+  state: ClaimState;
+  state_label: string;
+  closed_at: string | null;
 }
 
 export interface ClaimFields {
@@ -71,6 +77,11 @@ export interface Claim extends Omit<ClaimFields, 'manager' | 'item'> {
   claim_type_label: string;
   defect_type_label: string;
   sender_label: string;
+  state: ClaimState;
+  state_label: string;
+  closed_at: string | null;
+  closed_by: Ref | null;
+  close_note: string;
   photos: ClaimPhoto[];
   created_at: string;
   created_by: Ref;
@@ -86,12 +97,14 @@ export interface ClaimStats {
   total: number;
   defect_type: CountRow[];
   claim_type: CountRow[];
+  state: CountRow[];
 }
 
 export interface ClaimQuery {
   q?: string;
   claim_type?: string;
   defect_type?: string;
+  state?: string;
   from?: string;
   to?: string;
   limit?: number;
