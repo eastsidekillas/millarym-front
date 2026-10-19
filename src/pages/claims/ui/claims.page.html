@@ -14,6 +14,16 @@
     <input type="search" class="field w-72 max-w-full" placeholder="Номер акта, контрагент, изделие, № изделия" [value]="query().q" (input)="type($any($event.target).value)" />
   </label>
   <label class="grid gap-1.5">
+    <span class="text-xs text-muted">Состояние</span>
+    <select class="field w-auto pr-8" (change)="set('state', $any($event.target).value)">
+      <option value="" [selected]="!query().state">Все ({{ stateCount().all }})</option>
+      <option value="open" [selected]="query().state === 'open'">Открытые ({{ stateCount().open }})</option>
+      <option value="closed" [selected]="query().state === 'closed'">Закрытые ({{ stateCount().closed }})</option>
+      <option value="done" [selected]="query().state === 'done'">Выполнена ({{ stateCount().done }})</option>
+      <option value="withdrawn" [selected]="query().state === 'withdrawn'">Снята покупателем ({{ stateCount().withdrawn }})</option>
+    </select>
+  </label>
+  <label class="grid gap-1.5">
     <span class="text-xs text-muted">Тип претензии</span>
     <select class="field w-auto pr-8" (change)="set('claim_type', $any($event.target).value)">
       <option value="">Все</option>
@@ -52,7 +62,7 @@
 }
 
 <div class="mt-3 overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
-  <table class="w-full min-w-[860px] text-sm">
+  <table class="w-full min-w-[960px] text-sm">
     <thead>
       <tr class="border-b border-line text-left text-xs text-muted">
         <th class="py-2.5 pl-4 pr-2 font-normal">№ акта</th>
@@ -61,6 +71,7 @@
         <th class="px-3 py-2.5 font-normal">Изделие</th>
         <th class="px-3 py-2.5 font-normal">Вид дефекта</th>
         <th class="px-3 py-2.5 font-normal">Тип претензии</th>
+        <th class="px-3 py-2.5 font-normal">Состояние</th>
         <th class="py-2.5 pl-3 pr-4 text-right font-normal">Фото</th>
       </tr>
     </thead>
@@ -78,11 +89,17 @@
           </td>
           <td class="px-3 py-3">{{ c.defect_type_label || '—' }}</td>
           <td class="px-3 py-3">{{ c.claim_type_label }}</td>
+          <td class="whitespace-nowrap px-3 py-3" [class.text-muted]="c.state !== 'open'">
+            {{ c.state_label }}
+            @if (c.closed_at) {
+              <div class="tnum text-xs">{{ fmt(c.closed_at) }}</div>
+            }
+          </td>
           <td class="tnum py-3 pl-3 pr-4 text-right">{{ c.photos_count || '—' }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="7" class="px-4 py-12 text-center text-muted">
+          <td colspan="8" class="px-4 py-12 text-center text-muted">
             {{ loading() ? 'Загружаем…' : filtered() ? 'Под эти условия рекламаций нет.' : 'Рекламаций пока нет.' }}
           </td>
         </tr>

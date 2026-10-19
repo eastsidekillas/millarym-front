@@ -16,6 +16,7 @@ const SIMPLE: Partial<Record<ActionCode, SimpleAction>> = {
   cover_ready: 'cover-ready',
   ship: 'ship',
   trash: 'trash',
+  cancel: 'cancel',
   restore: 'restore',
   return_to_work: 'return-to-work',
   copy: 'copy',
@@ -27,6 +28,7 @@ const DONE: Partial<Record<ActionCode, string>> = {
   cover_ready: 'отшит',
   ship: 'отгружено и перенесено в Корзину',
   trash: 'удалено в Корзину',
+  cancel: 'заказ снят, изделие в Корзине',
   restore: 'восстановлено',
   return_to_work: 'возвращено в работу',
 };
@@ -78,6 +80,12 @@ export class ItemActions {
     const action = SIMPLE[code];
     if (!action) return null;
     if (code === 'trash' && !(await this.confirm.ask('Удалить в Корзину?', `${item.number} пролежит в Корзине 30 дней, потом удалится само. До этого его можно восстановить.`, 'Удалить', true))) {
+      return null;
+    }
+    if (
+      code === 'cancel' &&
+      !(await this.confirm.ask('Снять заказ?', `${item.number} уйдёт в Корзину с пометкой «Заказ снят» и через 30 дней удалится. Если клиент передумает обратно — восстановите из Корзины.`, 'Снять заказ', true))
+    ) {
       return null;
     }
     if (code === 'ship' && !(await this.confirm.ask('Отгрузить?', `${item.number} уйдёт в Корзину как отгруженное.`, 'Отгрузить'))) {

@@ -40,7 +40,7 @@ export interface Item {
   manager: string;
   created_at: string;
   trashed_at: string | null;
-  trash_reason: '' | 'shipped' | 'deleted';
+  trash_reason: '' | 'shipped' | 'deleted' | 'cancelled';
   trash_reason_label: string;
   purge_at: string | null;
   passport_printed_at: string | null;
@@ -68,6 +68,7 @@ export type ActionCode =
   | 'edit'
   | 'copy'
   | 'trash'
+  | 'cancel'
   | 'restore';
 
 export interface ItemAction {

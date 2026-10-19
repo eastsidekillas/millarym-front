@@ -17,7 +17,7 @@
             @if (it.indiv && it.indiv_note) {
               <p class="mt-1 text-sm">Индивидуальный: {{ it.indiv_note }}</p>
             }
-            @if (it.legacy_number) {
+            @if (it.legacy_number && it.legacy_number !== it.number) {
               <p class="text-xs text-muted">Номер в старой системе: {{ it.legacy_number }}</p>
             }
           </div>
@@ -67,7 +67,7 @@
           }
           <div class="flex flex-wrap gap-2">
             @for (a of otherActions(); track a.code) {
-              <button type="button" [class]="a.code === 'trash' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
+              <button type="button" [class]="a.code === 'trash' || a.code === 'cancel' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
                 {{ a.label }}
               </button>
             }

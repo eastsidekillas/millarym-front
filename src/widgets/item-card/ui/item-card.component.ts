@@ -70,9 +70,11 @@ export class ItemCardComponent {
       (a) => a.allowed && ['move', 'restore', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),
     ),
   );
-  readonly otherActions = computed(() =>
-    (this.item()?.actions ?? []).filter((a) => a.allowed && ['edit', 'copy', 'trash'].includes(a.code)),
-  );
+  readonly otherActions = computed(() => {
+    const actions = (this.item()?.actions ?? []).filter((a) => a.allowed && ['edit', 'copy', 'cancel', 'trash'].includes(a.code));
+    // на «Заказах» вместо «Удалить» — «Снять заказ», две красные кнопки рядом путают
+    return actions.some((a) => a.code === 'cancel') ? actions.filter((a) => a.code !== 'trash') : actions;
+  });
   readonly locked = computed(() =>
     (this.item()?.actions ?? []).filter((a) => !a.allowed && (a.code === 'move' || a.code === 'restore')),
   );
