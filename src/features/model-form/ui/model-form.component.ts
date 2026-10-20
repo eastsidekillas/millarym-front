@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi, Category } from '@entities/catalog';
 import { errorText } from '@shared/api';
-import { ModalComponent, ToastService } from '@shared/ui';
+import { ConfirmService, ModalComponent, ToastService } from '@shared/ui';
 import { ModelForm } from '../model/model-form.service';
 
 const MAX_MB = 15;
@@ -66,8 +66,15 @@ const MAX_MB = 15;
             <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
           }
 
-          <div class="-mx-6 -mb-5 flex justify-end gap-2 border-t border-line px-6 py-4">
-            <button type="button" class="btn-outline" (click)="form.close()">Отмена</button>
+          <div class="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-line px-6 py-4">
+            @if (editing(); as m) {
+              @if (m.used) {
+                <p class="mr-auto max-w-[60%] text-xs text-muted">Удалить нельзя — есть в {{ m.used }} изд. Можно скрыть.</p>
+              } @else {
+                <button type="button" class="btn-ghost mr-auto text-crit" [disabled]="saving()" (click)="remove()">Удалить</button>
+              }
+            }
+            <button type="button" class="btn-outline ml-auto" (click)="form.close()">Отмена</button>
             <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : editing() ? 'Сохранить' : 'Добавить' }}</button>
           </div>
         </form>
@@ -79,6 +86,7 @@ export class ModelFormComponent {
   readonly form = inject(ModelForm);
   private readonly api = inject(CatalogApi);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly maxMb = MAX_MB;
   readonly editing = computed(() => {
@@ -129,6 +137,22 @@ export class ModelFormComponent {
     this.file = null;
     this.removed = true;
     this.preview.set(null);
+  }
+
+  async remove() {
+    const model = this.editing();
+    if (!model || !(await this.confirm.ask('Удалить модель?', `«${model.name}» пропадёт из справочника совсем.`, 'Удалить', true))) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(this.api.deleteModel(model.id));
+      this.toast.show(`Модель «${model.name}» удалена`);
+      this.form.saved.update((v) => v + 1);
+      this.form.close();
+    } catch (err) {
+      this.error.set(errorText(err));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async save() {

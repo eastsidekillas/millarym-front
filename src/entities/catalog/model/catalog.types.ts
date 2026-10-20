@@ -4,6 +4,7 @@ export interface Category extends Ref {
   sort: number;
   active: boolean;
   models_count: number;
+  used: number;
 }
 
 export interface ProductModel extends Ref {
@@ -13,6 +14,7 @@ export interface ProductModel extends Ref {
   photo_thumb: string | null;
   active: boolean;
   in_work: number;
+  used: number;
 }
 
 export interface Fabric extends Ref {
@@ -21,6 +23,7 @@ export interface Fabric extends Ref {
   active: boolean;
   created_at: string;
   in_work: number;
+  used: number;
 }
 
 export interface FabricQuery {
@@ -34,12 +37,14 @@ export interface FabricQuery {
 export interface KitOption extends Ref {
   sort: number;
   active: boolean;
+  used: number;
 }
 
 export interface Team extends Ref {
   foreman: string;
   sort: number;
   active: boolean;
+  used: number;
 }
 
 export interface Deadlines {

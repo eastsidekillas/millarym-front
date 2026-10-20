@@ -64,6 +64,10 @@ export class CatalogApi {
     return this.http.patch<Fabric>(`${this.api}/fabrics/${id}/`, body);
   }
 
+  deleteFabric(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/fabrics/${id}/`);
+  }
+
   allModels(): Observable<ProductModel[]> {
     return this.http.get<ProductModel[]>(`${this.api}/models/`);
   }
@@ -74,6 +78,10 @@ export class CatalogApi {
 
   updateModel(id: number, body: FormData | Partial<Pick<ProductModel, 'name' | 'category' | 'active'>> | { photo: null }): Observable<ProductModel> {
     return this.http.patch<ProductModel>(`${this.api}/models/${id}/`, body).pipe(tap(() => this.forgetModels()));
+  }
+
+  deleteModel(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/models/${id}/`).pipe(tap(() => this.forgetModels()));
   }
 
   categories(): Observable<Category[]> {
@@ -89,6 +97,10 @@ export class CatalogApi {
       ? this.http.patch<T>(`${this.api}/${kind}/${id}/`, body)
       : this.http.post<T>(`${this.api}/${kind}/`, body);
     return request.pipe(tap(() => kind === 'kit-options' && (this.kit$ = undefined)));
+  }
+
+  deleteSimpleRef(kind: SimpleRefKind, id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${kind}/${id}/`).pipe(tap(() => kind === 'kit-options' && (this.kit$ = undefined)));
   }
 
   deadlines(): Observable<Deadlines> {
