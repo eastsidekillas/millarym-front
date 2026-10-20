@@ -6,7 +6,7 @@ import { EmployeeApi } from '@entities/employee';
 import { ItemApi, ItemEvent } from '@entities/item';
 import { errorText } from '@shared/api';
 import { factoryDay, fmtDayLong, fmtTime } from '@shared/lib';
-import { ToastService } from '@shared/ui';
+import { PaginatorComponent, ToastService } from '@shared/ui';
 
 const PAGE = 100;
 
@@ -34,7 +34,7 @@ interface DayGroup {
 
 @Component({
   selector: 'app-journal-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PaginatorComponent],
   templateUrl: './journal.page.html',
 })
 export class JournalPage {
@@ -79,9 +79,22 @@ export class JournalPage {
   constructor() {
     effect(() => {
       const query = this.query();
-      untracked(() => this.load(query));
+      const page = this.page();
+      untracked(() => this.load(query, page));
     });
   }
+
+  readonly page = computed(() => {
+    const n = Number(this.params().get('page'));
+    return Number.isInteger(n) && n > 1 ? n : 1;
+  });
+  readonly pageSize = PAGE;
+
+  setPage(page: number) {
+    this.router.navigate([], { queryParams: { page: page > 1 ? page : null }, queryParamsHandling: 'merge' });
+    window.scrollTo({ top: 0 });
+  }
+
 
   private query = computed(() => {
     const q: Record<string, string> = {};
@@ -98,7 +111,7 @@ export class JournalPage {
   readonly timeOf = fmtTime;
 
   set(key: string, value: string) {
-    this.router.navigate([], { queryParams: { [key]: value || null }, queryParamsHandling: 'merge', replaceUrl: true });
+    this.router.navigate([], { queryParams: { [key]: value || null, page: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   type(value: string) {
@@ -110,16 +123,16 @@ export class JournalPage {
     this.router.navigate([], { queryParams: {}, replaceUrl: true });
   }
 
-  async load(query: Record<string, string>, append = false) {
+  async load(query: Record<string, string>, page: number) {
     const id = ++this.request;
     this.loading.set(true);
     try {
-      const page = await firstValueFrom(
-        this.api.events({ ...query, limit: PAGE, offset: append ? this.events().length : 0 }),
+      const result = await firstValueFrom(
+        this.api.events({ ...query, limit: PAGE, offset: (page - 1) * PAGE }),
       );
       if (id !== this.request) return;
-      this.events.set(append ? [...this.events(), ...page.results] : page.results);
-      this.total.set(page.count);
+      this.events.set(result.results);
+      this.total.set(result.count);
     } catch (err) {
       if (id === this.request) this.toast.error(errorText(err, 'Не удалось загрузить журнал.'));
     } finally {
@@ -127,7 +140,4 @@ export class JournalPage {
     }
   }
 
-  more() {
-    this.load(this.query(), true);
-  }
 }

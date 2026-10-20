@@ -107,9 +107,6 @@
     </tbody>
   </table>
 </div>
-<div class="mt-3 flex items-center justify-between text-sm text-muted">
-  <span>Показано <span class="tnum">{{ items().length }}</span> из <span class="tnum">{{ total() }}</span></span>
-  @if (items().length < total()) {
-    <button type="button" class="btn-outline" [disabled]="loading()" (click)="more()">Показать ещё</button>
-  }
+<div class="mt-3 min-h-8">
+  <app-paginator [page]="page()" [total]="total()" [pageSize]="pageSize" [disabled]="loading()" (pageChange)="setPage($event)" />
 </div>

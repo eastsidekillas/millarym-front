@@ -6,7 +6,7 @@ import { CatalogApi } from '@entities/catalog';
 import { Counters, Item, ItemApi, ItemListParams, ItemsChanged, STAGES, Stage, StageFilter, TRASH_HINT } from '@entities/item';
 import { ItemForm } from '@features/item-form';
 import { errorText } from '@shared/api';
-import { ToastService } from '@shared/ui';
+import { PaginatorComponent, ToastService } from '@shared/ui';
 import { BulkBarComponent } from '@widgets/bulk-bar';
 import { ItemCardComponent } from '@widgets/item-card';
 import { ItemsTableComponent } from '@widgets/items-table';
@@ -26,7 +26,7 @@ type FilterId = (typeof FILTERS)[number]['id'];
 
 @Component({
   selector: 'app-production-page',
-  imports: [RouterLink, StageTabsComponent, ItemsTableComponent, ItemCardComponent, BulkBarComponent, TrashFabComponent],
+  imports: [RouterLink, PaginatorComponent, StageTabsComponent, ItemsTableComponent, ItemCardComponent, BulkBarComponent, TrashFabComponent],
   templateUrl: './production.page.html',
 })
 export class ProductionPage {
@@ -54,6 +54,11 @@ export class ProductionPage {
   });
   readonly model = computed(() => this.params().get('model') ?? '');
   readonly freeStockParams = computed(() => ({ kind: 'free-stock', models: this.model() || null }));
+  readonly page = computed(() => {
+    const n = Number(this.params().get('page'));
+    return Number.isInteger(n) && n > 1 ? n : 1;
+  });
+  readonly pageSize = PAGE;
   readonly openId = computed(() => {
     const id = Number(this.params().get('item'));
     return Number.isInteger(id) && id > 0 ? id : null;
@@ -83,8 +88,9 @@ export class ProductionPage {
   constructor() {
     effect(() => {
       const params = this.listParams();
+      const page = this.page();
       this.changed.version();
-      untracked(() => this.load(params));
+      untracked(() => this.load(params, page));
     });
     effect(() => {
       this.stage();
@@ -115,17 +121,21 @@ export class ProductionPage {
     };
   });
 
-  private async load(params: ItemListParams, append = false) {
+  private async load(params: ItemListParams, pageNumber: number) {
     const id = ++this.request;
     this.loading.set(true);
     try {
-      const offset = append ? this.items().length : 0;
       const [page, counters] = await Promise.all([
-        firstValueFrom(this.api.list({ ...params, limit: PAGE, offset })),
-        append ? Promise.resolve(this.counters()) : firstValueFrom(this.api.counters()),
+        firstValueFrom(this.api.list({ ...params, limit: PAGE, offset: (pageNumber - 1) * PAGE })),
+        firstValueFrom(this.api.counters()),
       ]);
       if (id !== this.request) return;
-      this.items.set(append ? [...this.items(), ...page.results] : page.results);
+      if (!page.results.length && pageNumber > 1) {
+        // после перемещения или удаления страница могла опустеть
+        this.go({ page: Math.max(1, Math.ceil(page.count / PAGE)) });
+        return;
+      }
+      this.items.set(page.results);
       this.total.set(page.count);
       this.counters.set(counters);
       this.refreshSelection(page.results);
@@ -148,12 +158,15 @@ export class ProductionPage {
     this.selection.set(next);
   }
 
-  more() {
-    this.load(this.listParams(), true);
+  setPage(page: number) {
+    this.go({ page: page > 1 ? page : null });
+    window.scrollTo({ top: 0 });
   }
 
   go(params: Record<string, string | number | null>) {
-    this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    // новый этап, поиск или фильтр — снова с первой страницы
+    const reset = !('page' in params) && ['stage', 'q', 'filter', 'model'].some((k) => k in params);
+    this.router.navigate([], { queryParams: reset ? { ...params, page: null } : params, queryParamsHandling: 'merge' });
   }
 
   private searchTimer?: ReturnType<typeof setTimeout>;

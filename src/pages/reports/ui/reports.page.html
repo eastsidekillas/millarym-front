@@ -50,10 +50,11 @@
               @case ('date') {}
               @case ('models') {
                 <div class="grid gap-1.5">
-                  <span class="text-xs text-muted">{{ r.kind === 'free-stock' ? p.label + ': без галочек — все свободные, ' + freeTotal() + ' шт.' : p.label }}</span>
+                  <span class="text-xs text-muted">{{ p.label }}</span>
                   <app-model-picker
                     [options]="freeModels()"
                     [showCounts]="r.kind === 'free-stock'"
+                    [total]="r.kind === 'free-stock' ? freeTotal() : null"
                     [selected]="selectedModels()"
                     (selectedChange)="setModels($event)"
                   />
@@ -155,6 +156,9 @@
               </tbody>
             }
           </table>
+        </div>
+        <div class="mb-16 mt-3 min-h-8">
+          <app-paginator [page]="rowPage()" [total]="res.rows.length" [pageSize]="rowPageSize" (pageChange)="setRowPage($event)" />
         </div>
       } @else if (loading()) {
         <p class="mt-6 text-sm text-muted">Строим отчёт…</p>

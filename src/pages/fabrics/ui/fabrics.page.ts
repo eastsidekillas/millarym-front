@@ -4,13 +4,13 @@ import { CatalogApi, Fabric, FabricQuery } from '@entities/catalog';
 import { SessionStore } from '@entities/session';
 import { FabricForm, FabricFormComponent } from '@features/fabric-form';
 import { errorText } from '@shared/api';
-import { ModalComponent, ToastService } from '@shared/ui';
+import { ModalComponent, PaginatorComponent, ToastService } from '@shared/ui';
 
 const PAGE = 48;
 
 @Component({
   selector: 'app-fabrics-page',
-  imports: [FabricFormComponent, ModalComponent],
+  imports: [FabricFormComponent, ModalComponent, PaginatorComponent],
   templateUrl: './fabrics.page.html',
 })
 export class FabricsPage {
@@ -24,6 +24,8 @@ export class FabricsPage {
   readonly showHidden = signal(false);
   readonly fabrics = signal<Fabric[]>([]);
   readonly total = signal(0);
+  readonly page = signal(1);
+  readonly pageSize = PAGE;
   readonly loading = signal(false);
   readonly viewing = signal<Fabric | null>(null);
 
@@ -32,9 +34,16 @@ export class FabricsPage {
 
   constructor() {
     effect(() => {
+      this.search();
+      this.ordering();
+      this.showHidden();
+      untracked(() => this.page.set(1));
+    });
+    effect(() => {
       const query = this.query();
+      const page = this.page();
       this.form.saved();
-      untracked(() => this.load(query));
+      untracked(() => this.load(query, page));
     });
   }
 
@@ -51,16 +60,16 @@ export class FabricsPage {
     this.timer = setTimeout(() => this.search.set(value), 250);
   }
 
-  async load(query: FabricQuery, append = false) {
+  async load(query: FabricQuery, page: number) {
     const id = ++this.request;
     this.loading.set(true);
     try {
-      const page = await firstValueFrom(
-        this.api.fabricPage({ ...query, limit: PAGE, offset: append ? this.fabrics().length : 0 }),
+      const result = await firstValueFrom(
+        this.api.fabricPage({ ...query, limit: PAGE, offset: (page - 1) * PAGE }),
       );
       if (id !== this.request) return;
-      this.fabrics.set(append ? [...this.fabrics(), ...page.results] : page.results);
-      this.total.set(page.count);
+      this.fabrics.set(result.results);
+      this.total.set(result.count);
     } catch (err) {
       this.toast.error(errorText(err, 'Не удалось загрузить ткани.'));
     } finally {
@@ -68,8 +77,9 @@ export class FabricsPage {
     }
   }
 
-  more() {
-    this.load(this.query(), true);
+  setPage(page: number) {
+    this.page.set(page);
+    window.scrollTo({ top: 0 });
   }
 
   open(fabric: Fabric) {
