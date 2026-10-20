@@ -52,6 +52,25 @@ const MAX_MB = 15;
             </div>
           </div>
 
+          <div class="grid gap-1.5">
+            <span class="text-xs text-muted">Своя комплектация</span>
+            <p class="text-xs text-muted">Кнопки при заведении изделия этой модели, рядом с общими («Левый угол», «Накладки…»). Например, «Подушки-подголовники 3 шт.»</p>
+            @if (kitOptions().length) {
+              <div class="flex flex-wrap gap-1.5">
+                @for (k of kitOptions(); track k) {
+                  <span class="chip h-7 gap-1.5 pr-1.5">
+                    {{ k }}
+                    <button type="button" class="text-muted hover:text-crit" [attr.aria-label]="'Убрать ' + k" (click)="removeKit(k)">×</button>
+                  </span>
+                }
+              </div>
+            }
+            <div class="flex gap-2">
+              <input class="field" name="kitDraft" [ngModel]="kitDraft()" (ngModelChange)="kitDraft.set($event)" (keydown.enter)="$event.preventDefault(); addKit()" placeholder="Новая кнопка" maxlength="120" autocomplete="off" />
+              <button type="button" class="btn-outline flex-none" (click)="addKit()">Добавить</button>
+            </div>
+          </div>
+
           @if (editing(); as m) {
             <label class="flex items-start gap-2.5">
               <input type="checkbox" class="mt-0.5 h-4 w-4 accent-[rgb(var(--accent))]" name="hidden" [(ngModel)]="hidden" />
@@ -101,6 +120,8 @@ export class ModelFormComponent {
   private file: File | null = null;
   private removed = false;
   readonly preview = signal<string | null>(null);
+  readonly kitOptions = signal<string[]>([]);
+  readonly kitDraft = signal('');
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -115,6 +136,8 @@ export class ModelFormComponent {
       this.file = null;
       this.removed = false;
       this.preview.set(m?.photo_thumb ?? null);
+      this.kitOptions.set(m?.kit_options ?? []);
+      this.kitDraft.set('');
       this.error.set(null);
       firstValueFrom(this.api.categories()).then((list) => this.categories.set(list));
     });
@@ -131,6 +154,19 @@ export class ModelFormComponent {
     this.removed = false;
     this.error.set(null);
     this.preview.set(URL.createObjectURL(file));
+  }
+
+  addKit() {
+    const option = this.kitDraft().replace(/\s+/g, ' ').trim();
+    if (!option) return;
+    if (option.includes(',')) return this.error.set('В кнопке комплектации без запятых: например, «Подушки-подголовники 3 шт.»');
+    if (!this.kitOptions().some((k) => k.toLowerCase() === option.toLowerCase())) this.kitOptions.set([...this.kitOptions(), option]);
+    this.kitDraft.set('');
+    this.error.set(null);
+  }
+
+  removeKit(option: string) {
+    this.kitOptions.set(this.kitOptions().filter((k) => k !== option));
   }
 
   removePhoto() {
@@ -156,6 +192,8 @@ export class ModelFormComponent {
   }
 
   async save() {
+    if (this.kitDraft().trim()) this.addKit();
+    if (this.error()) return;
     const name = this.name.trim();
     if (!name) return this.error.set('Впишите название модели.');
     if (!this.category) return this.error.set('Выберите категорию.');
@@ -171,9 +209,11 @@ export class ModelFormComponent {
         body.append('active', String(!this.hidden));
         await firstValueFrom(this.api.updateModel(model.id, body));
         if (this.removed && model.photo) await firstValueFrom(this.api.updateModel(model.id, { photo: null }));
+        await firstValueFrom(this.api.updateModel(model.id, { kit_options: this.kitOptions() }));
         this.toast.show(`Модель «${name}» сохранена`);
       } else {
-        await firstValueFrom(this.api.createModel(body));
+        const created = await firstValueFrom(this.api.createModel(body));
+        if (this.kitOptions().length) await firstValueFrom(this.api.updateModel(created.id, { kit_options: this.kitOptions() }));
         this.toast.show(`Модель «${name}» добавлена`);
       }
       this.form.saved.update((v) => v + 1);

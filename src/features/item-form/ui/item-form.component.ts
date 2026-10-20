@@ -34,7 +34,15 @@ export class ItemFormComponent {
   private readonly toast = inject(ToastService);
 
   private readonly activeModels = signal<ProductModel[]>([]);
-  readonly kit = signal<KitOption[]>([]);
+  private readonly commonKit = signal<KitOption[]>([]);
+  // своя комплектация выбранной модели — первой, за ней общие кнопки
+  readonly kit = computed<KitOption[]>(() => {
+    const choice = this.modelChoice();
+    const model = typeof choice === 'number' ? this.models().find((m) => m.id === choice) : null;
+    const own = (model?.kit_options ?? []).map((name, i) => ({ id: -1 - i, name, sort: 0, active: true, used: 0 }));
+    const names = new Set(own.map((k) => k.name.toLowerCase()));
+    return [...own, ...this.commonKit().filter((k) => !names.has(k.name.toLowerCase()))];
+  });
 
   readonly editing = computed(() => {
     const s = this.form.state();
@@ -46,7 +54,7 @@ export class ItemFormComponent {
     const list = this.activeModels();
     const current = this.editing()?.model;
     if (!current || list.some((m) => m.id === current.id)) return list;
-    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, in_work: 0, used: 0 }];
+    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, kit_options: [], in_work: 0, used: 0 }];
   });
   customName = '';
   readonly extra = signal('');
@@ -67,7 +75,7 @@ export class ItemFormComponent {
     effect(() => {
       if (!this.form.state()) return;
       firstValueFrom(this.catalog.models()).then((list) => this.activeModels.set(list));
-      firstValueFrom(this.catalog.kitOptions()).then((list) => this.kit.set(list));
+      firstValueFrom(this.catalog.kitOptions()).then((list) => this.commonKit.set(list));
     });
   }
 

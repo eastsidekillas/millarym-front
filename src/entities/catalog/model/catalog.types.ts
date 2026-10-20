@@ -13,6 +13,7 @@ export interface ProductModel extends Ref {
   photo: string | null;
   photo_thumb: string | null;
   active: boolean;
+  kit_options: string[];
   in_work: number;
   used: number;
 }
