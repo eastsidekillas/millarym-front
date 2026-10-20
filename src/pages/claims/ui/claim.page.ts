@@ -4,7 +4,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, firstValueFrom } from 'rxjs';
-import { Claim, ClaimApi, ClaimFields, ClaimPhoto } from '@entities/claim';
+import { Claim, ClaimApi, ClaimFields, ClaimFile, ClaimPhoto } from '@entities/claim';
 import { EmployeeApi } from '@entities/employee';
 import { Item, ItemApi } from '@entities/item';
 import { SessionStore } from '@entities/session';
@@ -12,7 +12,8 @@ import { errorText } from '@shared/api';
 import { fmtDateTime, openPdf } from '@shared/lib';
 import { ToastService } from '@shared/ui';
 
-type TextKey = keyof ClaimFields;
+type FormFields = Omit<ClaimFields, 'video_links'>;
+type TextKey = keyof FormFields;
 
 interface Field {
   key: TextKey;
@@ -22,7 +23,7 @@ interface Field {
   wide?: boolean;
 }
 
-const EMPTY: ClaimFields = {
+const EMPTY: FormFields = {
   act_date: null, manager: null, counterparty: '', item: null, product: '', item_number: '', color: '', part: '',
   description: '', package_data: '', waybill: '', sender: '', invoice_price: null, customer_shipped_at: null,
   demands: '', claim_type: 'review', arrived_at: null, kit: '', sent_back_at: null, appearance: '', research: '',
@@ -48,6 +49,7 @@ export class ClaimPage {
   readonly choices = toSignal(this.api.choices());
   readonly employees = toSignal(inject(EmployeeApi).list(), { initialValue: [] });
   readonly fmtTime = fmtDateTime;
+  readonly maxMb = MAX_MB;
 
   readonly clientFields: Field[] = [
     { key: 'product', label: 'Изделие', placeholder: 'Например, Диван Дуглас Н 1400 (накладки венге)', wide: true },
@@ -77,7 +79,7 @@ export class ClaimPage {
   readonly saving = signal(false);
   readonly uploading = signal(false);
   readonly error = signal<string | null>(null);
-  form: ClaimFields = { ...EMPTY };
+  form: FormFields = { ...EMPTY };
   readonly linked = signal<{ id: number; number: string; available: boolean } | null>(null);
 
   readonly itemQuery = signal('');
@@ -110,6 +112,7 @@ export class ClaimPage {
 
   private fill(claim: Claim) {
     this.claim.set(claim);
+    this.links.set(claim.video_links ?? []);
     this.linked.set(claim.item);
     const form = { ...EMPTY };
     for (const key of Object.keys(EMPTY) as TextKey[]) {
@@ -172,7 +175,70 @@ export class ClaimPage {
       else if (NULLABLE.has(key)) body[key] = empty ? null : value;
       else body[key] = value ?? '';
     }
+    body['video_links'] = this.links();
     return body as Partial<ClaimFields>;
+  }
+
+  readonly links = signal<string[]>([]);
+  readonly linkDraft = signal('');
+  readonly linkError = signal<string | null>(null);
+  readonly files = computed<ClaimFile[]>(() => this.claim()?.files ?? []);
+  readonly uploadingFile = signal(false);
+
+  addLink() {
+    const link = this.linkDraft().trim();
+    if (!link) return;
+    if (!/^https?:\/\/\S+$/.test(link)) {
+      this.linkError.set('Это не ссылка: она начинается с http:// или https://');
+      return;
+    }
+    if (!this.links().includes(link)) this.links.set([...this.links(), link]);
+    this.linkDraft.set('');
+    this.linkError.set(null);
+  }
+
+  removeLink(link: string) {
+    this.links.set(this.links().filter((l) => l !== link));
+  }
+
+  async addFiles(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    const claim = this.claim();
+    if (!claim || !files.length) return;
+    this.uploadingFile.set(true);
+    try {
+      const added: ClaimFile[] = [];
+      for (const file of files) {
+        if (file.size > MAX_MB * 1024 * 1024) {
+          this.toast.error(`«${file.name}» больше ${MAX_MB} МБ — пропущен`);
+          continue;
+        }
+        added.push(await firstValueFrom(this.api.addFile(claim.id, file)));
+      }
+      const current = this.claim()!;
+      this.claim.set({ ...current, files: [...current.files, ...added] });
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось загрузить файл.'));
+    } finally {
+      this.uploadingFile.set(false);
+    }
+  }
+
+  async removeFile(file: ClaimFile) {
+    const claim = this.claim();
+    if (!claim) return;
+    try {
+      await firstValueFrom(this.api.deleteFile(claim.id, file.id));
+      this.claim.set({ ...claim, files: claim.files.filter((f) => f.id !== file.id) });
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось убрать файл.'));
+    }
+  }
+
+  fileSize(bytes: number): string {
+    return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} МБ` : `${Math.max(1, Math.round(bytes / 1024))} КБ`;
   }
 
   async save() {

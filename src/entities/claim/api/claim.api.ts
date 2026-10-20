@@ -4,7 +4,7 @@ import { Observable, firstValueFrom, shareReplay } from 'rxjs';
 import { Page } from '@shared/api';
 import { environment } from '@shared/config';
 import { filenameFrom, saveBlob } from '@shared/lib';
-import { Claim, ClaimChoices, ClaimFields, ClaimListItem, ClaimPhoto, ClaimQuery, ClaimState, ClaimStats } from '../model/claim.types';
+import { Claim, ClaimChoices, ClaimFields, ClaimFile, ClaimListItem, ClaimPhoto, ClaimQuery, ClaimState, ClaimStats } from '../model/claim.types';
 
 function toParams(query: ClaimQuery): HttpParams {
   let p = new HttpParams();
@@ -55,6 +55,16 @@ export class ClaimApi {
     const body = new FormData();
     body.append('photo', file);
     return this.http.post<ClaimPhoto>(`${this.api}/${id}/photos/`, body);
+  }
+
+  addFile(id: number, file: File): Observable<ClaimFile> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<ClaimFile>(`${this.api}/${id}/files/`, body);
+  }
+
+  deleteFile(id: number, fileId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${id}/files/${fileId}/`);
   }
 
   deletePhoto(id: number, photoId: number): Observable<void> {
