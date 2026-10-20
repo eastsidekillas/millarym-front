@@ -46,7 +46,7 @@ export class ItemFormComponent {
     const list = this.activeModels();
     const current = this.editing()?.model;
     if (!current || list.some((m) => m.id === current.id)) return list;
-    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, in_work: 0 }];
+    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, in_work: 0, used: 0 }];
   });
   customName = '';
   readonly extra = signal('');

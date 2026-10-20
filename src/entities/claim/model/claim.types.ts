@@ -21,6 +21,15 @@ export interface ClaimPhoto {
   created_at: string;
 }
 
+export interface ClaimFile {
+  id: number;
+  name: string;
+  url: string;
+  size: number;
+  created_at: string;
+  created_by: Ref;
+}
+
 export interface ClaimListItem {
   id: number;
   number: string;
@@ -67,6 +76,7 @@ export interface ClaimFields {
   remedy: string;
   restore_cost: string | null;
   finance_note: string;
+  video_links: string[];
 }
 
 export interface Claim extends Omit<ClaimFields, 'manager' | 'item'> {
@@ -83,6 +93,7 @@ export interface Claim extends Omit<ClaimFields, 'manager' | 'item'> {
   closed_by: Ref | null;
   close_note: string;
   photos: ClaimPhoto[];
+  files: ClaimFile[];
   created_at: string;
   created_by: Ref;
   updated_at: string;

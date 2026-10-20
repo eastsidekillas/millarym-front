@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi, SimpleRefBody, Team } from '@entities/catalog';
 import { errorText } from '@shared/api';
-import { ModalComponent, ToastService } from '@shared/ui';
+import { ConfirmService, ModalComponent, ToastService } from '@shared/ui';
 import { REF_TEXT, RefForm } from '../model/ref-form.service';
 
 @Component({
@@ -36,8 +36,15 @@ import { REF_TEXT, RefForm } from '../model/ref-form.service';
           @if (error()) {
             <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
           }
-          <div class="-mx-6 -mb-5 flex justify-end gap-2 border-t border-line px-6 py-4">
-            <button type="button" class="btn-outline" (click)="form.close()">Отмена</button>
+          <div class="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-line px-6 py-4">
+            @if (s.item; as item) {
+              @if (item.used) {
+                <p class="mr-auto max-w-[60%] text-xs text-muted">{{ s.kind === 'categories' ? 'Удалить нельзя — в категории ' + item.used + ' моделей. Сначала перенесите их.' : 'Удалить нельзя — есть в ' + item.used + ' изд. Можно скрыть.' }}</p>
+              } @else {
+                <button type="button" class="btn-ghost mr-auto text-crit" [disabled]="saving()" (click)="remove()">Удалить</button>
+              }
+            }
+            <button type="button" class="btn-outline ml-auto" (click)="form.close()">Отмена</button>
             <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : s.item ? 'Сохранить' : 'Добавить' }}</button>
           </div>
         </form>
@@ -49,6 +56,7 @@ export class RefFormComponent {
   readonly form = inject(RefForm);
   private readonly api = inject(CatalogApi);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   readonly text = computed(() => REF_TEXT[this.form.state()?.kind ?? 'categories']);
 
@@ -69,6 +77,22 @@ export class RefFormComponent {
       this.hidden = s.item ? !s.item.active : false;
       this.error.set(null);
     });
+  }
+
+  async remove() {
+    const s = this.form.state();
+    if (!s?.item || !(await this.confirm.ask('Удалить?', `«${s.item.name}» пропадёт из справочника совсем.`, 'Удалить', true))) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(this.api.deleteSimpleRef(s.kind, s.item.id));
+      this.toast.show(`«${s.item.name}» удалено`);
+      this.form.saved.update((v) => v + 1);
+      this.form.close();
+    } catch (err) {
+      this.error.set(errorText(err));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async save() {
