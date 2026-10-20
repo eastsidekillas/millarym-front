@@ -43,24 +43,28 @@ const MAX_MB = 15;
             </div>
           </div>
 
-          @if (editing()) {
-            <label class="flex items-center gap-2.5">
-              <input type="checkbox" class="h-4 w-4 accent-[rgb(var(--accent))]" name="hidden" [(ngModel)]="hidden" />
-              <span class="text-sm">Скрыть из справочника <span class="text-muted">(не будет в выборе при заведении)</span></span>
-            </label>
-          }
-
           @if (error()) {
             <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
           }
 
+          @if (editing(); as f) {
+            @if (f.used) {
+              <p class="text-xs text-muted">Ткань есть в {{ f.used }} изд. — удалить нельзя, можно скрыть: в выборе при заведении её не будет, старые изделия не изменятся.</p>
+            }
+          }
+
           <div class="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-line px-6 py-4">
             @if (editing(); as f) {
-              @if (f.used) {
-                <p class="mr-auto max-w-[60%] text-xs text-muted">Удалить нельзя — есть в {{ f.used }} изд. Можно скрыть.</p>
-              } @else {
-                <button type="button" class="btn-ghost mr-auto text-crit" [disabled]="saving()" (click)="remove()">Удалить</button>
-              }
+              <div class="mr-auto flex flex-wrap gap-2">
+                @if (!f.used) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="remove()">Удалить</button>
+                }
+                @if (f.active) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="setActive(false)">Скрыть</button>
+                } @else {
+                  <button type="button" class="btn-outline" [disabled]="saving()" (click)="setActive(true)">Вернуть в справочник</button>
+                }
+              </div>
             }
             <button type="button" class="btn-outline ml-auto" (click)="form.close()">Отмена</button>
             <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : editing() ? 'Сохранить' : 'Добавить' }}</button>
@@ -83,7 +87,6 @@ export class FabricFormComponent {
   });
 
   name = '';
-  hidden = false;
   private file: File | null = null;
   private removed = false;
   readonly preview = signal<string | null>(null);
@@ -95,7 +98,6 @@ export class FabricFormComponent {
       if (!this.form.state()) return;
       const f = this.editing();
       this.name = f?.name ?? '';
-      this.hidden = f ? !f.active : false;
       this.file = null;
       this.removed = false;
       this.preview.set(f?.photo_thumb ?? null);
@@ -120,6 +122,22 @@ export class FabricFormComponent {
     this.file = null;
     this.removed = true;
     this.preview.set(null);
+  }
+
+  async setActive(active: boolean) {
+    const fabric = this.editing();
+    if (!fabric) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(this.api.updateFabric(fabric.id, { active }));
+      this.toast.show(active ? `Ткань «${fabric.name}» снова в справочнике` : `Ткань «${fabric.name}» скрыта из справочника`);
+      this.form.saved.update((v) => v + 1);
+      this.form.close();
+    } catch (err) {
+      this.error.set(errorText(err));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async remove() {
@@ -152,7 +170,6 @@ export class FabricFormComponent {
       body.append('name', name);
       if (this.file) body.append('photo', this.file);
       if (fabric) {
-        body.append('active', String(!this.hidden));
         await firstValueFrom(this.api.updateFabric(fabric.id, body));
         if (this.removed && fabric.photo) await firstValueFrom(this.api.updateFabric(fabric.id, { photo: null }));
         this.toast.show(`Ткань «${name}» сохранена`);

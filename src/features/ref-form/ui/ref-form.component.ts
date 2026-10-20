@@ -27,22 +27,27 @@ import { REF_TEXT, RefForm } from '../model/ref-form.service';
             <span class="text-xs text-muted">Порядок в списке</span>
             <input class="field tnum" type="number" min="0" max="32767" name="sort" [(ngModel)]="sort" />
           </label>
-          @if (s.item) {
-            <label class="flex items-center gap-2.5">
-              <input type="checkbox" class="h-4 w-4 accent-[rgb(var(--accent))]" name="hidden" [(ngModel)]="hidden" />
-              <span class="text-sm">Скрыть <span class="text-muted">(не будет в выборе, старые записи не меняются)</span></span>
-            </label>
-          }
           @if (error()) {
             <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
           }
+          @if (s.item; as item) {
+            @if (item.used) {
+              <p class="text-xs text-muted">{{ s.kind === 'categories' ? 'В категории ' + item.used + ' моделей — удалить нельзя, сначала перенесите их. Можно скрыть.' : 'Есть в ' + item.used + ' изд. — удалить нельзя, можно скрыть: в выборе её не будет, старые записи не изменятся.' }}</p>
+            }
+          }
+
           <div class="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-line px-6 py-4">
             @if (s.item; as item) {
-              @if (item.used) {
-                <p class="mr-auto max-w-[60%] text-xs text-muted">{{ s.kind === 'categories' ? 'Удалить нельзя — в категории ' + item.used + ' моделей. Сначала перенесите их.' : 'Удалить нельзя — есть в ' + item.used + ' изд. Можно скрыть.' }}</p>
-              } @else {
-                <button type="button" class="btn-ghost mr-auto text-crit" [disabled]="saving()" (click)="remove()">Удалить</button>
-              }
+              <div class="mr-auto flex flex-wrap gap-2">
+                @if (!item.used) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="remove()">Удалить</button>
+                }
+                @if (item.active) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="setActive(false)">Скрыть</button>
+                } @else {
+                  <button type="button" class="btn-outline" [disabled]="saving()" (click)="setActive(true)">Вернуть в справочник</button>
+                }
+              </div>
             }
             <button type="button" class="btn-outline ml-auto" (click)="form.close()">Отмена</button>
             <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : s.item ? 'Сохранить' : 'Добавить' }}</button>
@@ -63,7 +68,6 @@ export class RefFormComponent {
   name = '';
   foreman = '';
   sort = 0;
-  hidden = false;
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -74,9 +78,24 @@ export class RefFormComponent {
       this.name = s.item?.name ?? '';
       this.foreman = s.kind === 'teams' ? ((s.item as Team | null)?.foreman ?? '') : '';
       this.sort = s.item?.sort ?? 0;
-      this.hidden = s.item ? !s.item.active : false;
       this.error.set(null);
     });
+  }
+
+  async setActive(active: boolean) {
+    const s = this.form.state();
+    if (!s?.item) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(this.api.saveSimpleRef(s.kind, s.item.id, { active }));
+      this.toast.show(active ? `«${s.item.name}» снова в справочнике` : `«${s.item.name}» скрыто`);
+      this.form.saved.update((v) => v + 1);
+      this.form.close();
+    } catch (err) {
+      this.error.set(errorText(err));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async remove() {
@@ -102,7 +121,6 @@ export class RefFormComponent {
     if (!name) return this.error.set('Впишите название.');
     const body: SimpleRefBody = { name, sort: Number(this.sort) || 0 };
     if (s.kind === 'teams') body.foreman = this.foreman.trim();
-    if (s.item) body.active = !this.hidden;
     this.saving.set(true);
     this.error.set(null);
     try {
