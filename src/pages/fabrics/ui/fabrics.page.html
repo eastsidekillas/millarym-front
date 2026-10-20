@@ -64,11 +64,9 @@
   }
 </ul>
 
-@if (fabrics().length < total()) {
-  <div class="mt-4">
-    <button type="button" class="btn-outline h-8 text-[13px]" [disabled]="loading()" (click)="more()">Показать ещё</button>
-  </div>
-}
+<div class="mb-16 mt-4 min-h-8">
+  <app-paginator [page]="page()" [total]="total()" [pageSize]="pageSize" [disabled]="loading()" (pageChange)="setPage($event)" />
+</div>
 
 <app-fabric-form />
 

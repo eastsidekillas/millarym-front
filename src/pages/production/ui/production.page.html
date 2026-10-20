@@ -57,11 +57,8 @@
   (toggledAll)="toggleAll($event)"
 />
 
-<div class="mb-16 mt-3 flex min-h-8 flex-wrap items-center gap-3 text-[13px] text-muted">
-  Показано {{ items().length }} из {{ total() }}
-  @if (items().length < total()) {
-    <button type="button" class="btn-outline h-8 text-[13px]" [disabled]="loading()" (click)="more()">Показать ещё</button>
-  }
+<div class="mb-16 mt-3 min-h-8">
+  <app-paginator [page]="page()" [total]="total()" [pageSize]="pageSize" [disabled]="loading()" (pageChange)="setPage($event)" />
 </div>
 
 <app-trash-fab [count]="counters()?.trash ?? null" [active]="stage() === 'trash'" (pressed)="selectStage('trash')" />

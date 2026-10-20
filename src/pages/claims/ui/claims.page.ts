@@ -6,13 +6,13 @@ import { ClaimApi, ClaimListItem, ClaimQuery, ClaimStats } from '@entities/claim
 import { SessionStore } from '@entities/session';
 import { errorText } from '@shared/api';
 import { fmtDate } from '@shared/lib';
-import { ToastService } from '@shared/ui';
+import { PaginatorComponent, ToastService } from '@shared/ui';
 
 const PAGE = 50;
 
 @Component({
   selector: 'app-claims-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PaginatorComponent],
   templateUrl: './claims.page.html',
 })
 export class ClaimsPage {
@@ -54,21 +54,34 @@ export class ClaimsPage {
   constructor() {
     effect(() => {
       const q = this.query();
-      untracked(() => this.load(q));
+      const page = this.page();
+      untracked(() => this.load(q, page));
     });
   }
 
-  private async load(query: ClaimQuery, append = false) {
+  readonly page = computed(() => {
+    const n = Number(this.params().get('page'));
+    return Number.isInteger(n) && n > 1 ? n : 1;
+  });
+  readonly pageSize = PAGE;
+
+  setPage(page: number) {
+    this.router.navigate([], { queryParams: { page: page > 1 ? page : null }, queryParamsHandling: 'merge' });
+    window.scrollTo({ top: 0 });
+  }
+
+
+  private async load(query: ClaimQuery, pageNumber: number) {
     const id = ++this.request;
     this.loading.set(true);
     try {
-      const offset = append ? this.items().length : 0;
+      const offset = (pageNumber - 1) * PAGE;
       const [page, stats] = await Promise.all([
         firstValueFrom(this.api.list({ ...query, limit: PAGE, offset })),
-        append ? Promise.resolve(this.stats()) : firstValueFrom(this.api.stats(query)),
+        firstValueFrom(this.api.stats(query)),
       ]);
       if (id !== this.request) return;
-      this.items.set(append ? [...this.items(), ...page.results] : page.results);
+      this.items.set(page.results);
       this.total.set(page.count);
       this.stats.set(stats);
     } catch (err) {
@@ -78,12 +91,9 @@ export class ClaimsPage {
     }
   }
 
-  more() {
-    this.load(this.query(), true);
-  }
 
   set(name: keyof ClaimQuery, value: string) {
-    this.router.navigate([], { queryParams: { [name]: value || null }, queryParamsHandling: 'merge', replaceUrl: true });
+    this.router.navigate([], { queryParams: { [name]: value || null, page: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   type(value: string) {

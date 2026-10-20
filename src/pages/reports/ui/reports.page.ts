@@ -5,8 +5,10 @@ import { firstValueFrom } from 'rxjs';
 import { ModelCount, ReportApi, ReportInfo, ReportParams, ReportResult, ReportRow } from '@entities/report';
 import { errorText } from '@shared/api';
 import { factoryDay } from '@shared/lib';
-import { ToastService } from '@shared/ui';
+import { PaginatorComponent, ToastService } from '@shared/ui';
 import { ModelPickerComponent } from './model-picker.component';
+
+const ROW_PAGE = 50;
 
 interface Block {
   group: string;
@@ -15,7 +17,7 @@ interface Block {
 
 @Component({
   selector: 'app-reports-page',
-  imports: [RouterLink, ModelPickerComponent],
+  imports: [RouterLink, ModelPickerComponent, PaginatorComponent],
   templateUrl: './reports.page.html',
 })
 export class ReportsPage {
@@ -45,9 +47,13 @@ export class ReportsPage {
   readonly loading = signal(false);
   readonly downloading = signal(false);
 
+  readonly rowPageSize = ROW_PAGE;
+  readonly rowPage = signal(1);
+  // на странице — 50 строк; заголовок группы повторяется, если группа продолжается с прошлой страницы
   readonly blocks = computed<Block[]>(() => {
     const blocks: Block[] = [];
-    for (const row of this.result()?.rows ?? []) {
+    const start = (this.rowPage() - 1) * ROW_PAGE;
+    for (const row of (this.result()?.rows ?? []).slice(start, start + ROW_PAGE)) {
       const last = blocks[blocks.length - 1];
       if (last && last.group === row.group) last.rows.push(row);
       else blocks.push({ group: row.group, rows: [row] });
@@ -90,7 +96,10 @@ export class ReportsPage {
     this.loading.set(true);
     try {
       const result = await firstValueFrom(this.api.run(report.kind, values));
-      if (id === this.request) this.result.set(result);
+      if (id === this.request) {
+        this.result.set(result);
+        this.rowPage.set(1);
+      }
     } catch (err) {
       if (id === this.request) {
         this.result.set(null);
@@ -99,6 +108,11 @@ export class ReportsPage {
     } finally {
       if (id === this.request) this.loading.set(false);
     }
+  }
+
+  setRowPage(page: number) {
+    this.rowPage.set(page);
+    document.querySelector('app-reports-page table')?.scrollIntoView({ block: 'start' });
   }
 
   subtitle(text: string): string {
