@@ -71,27 +71,28 @@ const MAX_MB = 15;
             </div>
           </div>
 
-          @if (editing(); as m) {
-            <label class="flex items-start gap-2.5">
-              <input type="checkbox" class="mt-0.5 h-4 w-4 accent-[rgb(var(--accent))]" name="hidden" [(ngModel)]="hidden" />
-              <span class="text-sm">
-                Скрыть из справочника
-                <span class="block text-muted">Не будет в выборе при заведении.{{ m.in_work ? ' Изделия в работе (' + m.in_work + ') останутся с этой моделью.' : '' }}</span>
-              </span>
-            </label>
-          }
-
           @if (error()) {
             <p class="rounded-md bg-crit/10 px-3 py-2 text-sm text-crit" role="alert">{{ error() }}</p>
           }
 
+          @if (editing(); as m) {
+            @if (m.used) {
+              <p class="text-xs text-muted">Модель есть в {{ m.used }} изд. — удалить нельзя, можно скрыть: в выборе при заведении её не будет, старые изделия не изменятся.</p>
+            }
+          }
+
           <div class="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-line px-6 py-4">
             @if (editing(); as m) {
-              @if (m.used) {
-                <p class="mr-auto max-w-[60%] text-xs text-muted">Удалить нельзя — есть в {{ m.used }} изд. Можно скрыть.</p>
-              } @else {
-                <button type="button" class="btn-ghost mr-auto text-crit" [disabled]="saving()" (click)="remove()">Удалить</button>
-              }
+              <div class="mr-auto flex flex-wrap gap-2">
+                @if (!m.used) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="remove()">Удалить</button>
+                }
+                @if (m.active) {
+                  <button type="button" class="btn-danger" [disabled]="saving()" (click)="setActive(false)">Скрыть</button>
+                } @else {
+                  <button type="button" class="btn-outline" [disabled]="saving()" (click)="setActive(true)">Вернуть в справочник</button>
+                }
+              </div>
             }
             <button type="button" class="btn-outline ml-auto" (click)="form.close()">Отмена</button>
             <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Сохраняем…' : editing() ? 'Сохранить' : 'Добавить' }}</button>
@@ -116,7 +117,6 @@ export class ModelFormComponent {
 
   name = '';
   category: number | null = null;
-  hidden = false;
   private file: File | null = null;
   private removed = false;
   readonly preview = signal<string | null>(null);
@@ -132,7 +132,6 @@ export class ModelFormComponent {
       const m = this.editing();
       this.name = m?.name ?? '';
       this.category = m?.category ?? (state.mode === 'create' ? (state.category ?? null) : null);
-      this.hidden = m ? !m.active : false;
       this.file = null;
       this.removed = false;
       this.preview.set(m?.photo_thumb ?? null);
@@ -175,6 +174,22 @@ export class ModelFormComponent {
     this.preview.set(null);
   }
 
+  async setActive(active: boolean) {
+    const model = this.editing();
+    if (!model) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(this.api.updateModel(model.id, { active }));
+      this.toast.show(active ? `Модель «${model.name}» снова в справочнике` : `Модель «${model.name}» скрыта из справочника`);
+      this.form.saved.update((v) => v + 1);
+      this.form.close();
+    } catch (err) {
+      this.error.set(errorText(err));
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
   async remove() {
     const model = this.editing();
     if (!model || !(await this.confirm.ask('Удалить модель?', `«${model.name}» пропадёт из справочника совсем.`, 'Удалить', true))) return;
@@ -206,7 +221,6 @@ export class ModelFormComponent {
       body.append('category', String(this.category));
       if (this.file) body.append('photo', this.file);
       if (model) {
-        body.append('active', String(!this.hidden));
         await firstValueFrom(this.api.updateModel(model.id, body));
         if (this.removed && model.photo) await firstValueFrom(this.api.updateModel(model.id, { photo: null }));
         await firstValueFrom(this.api.updateModel(model.id, { kit_options: this.kitOptions() }));
