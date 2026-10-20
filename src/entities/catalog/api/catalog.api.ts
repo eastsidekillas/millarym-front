@@ -76,7 +76,7 @@ export class CatalogApi {
     return this.http.post<ProductModel>(`${this.api}/models/`, body).pipe(tap(() => this.forgetModels()));
   }
 
-  updateModel(id: number, body: FormData | Partial<Pick<ProductModel, 'name' | 'category' | 'active'>> | { photo: null }): Observable<ProductModel> {
+  updateModel(id: number, body: FormData | Partial<Pick<ProductModel, 'name' | 'category' | 'active' | 'kit_options'>> | { photo: null }): Observable<ProductModel> {
     return this.http.patch<ProductModel>(`${this.api}/models/${id}/`, body).pipe(tap(() => this.forgetModels()));
   }
 
