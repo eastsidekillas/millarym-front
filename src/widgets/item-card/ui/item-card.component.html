@@ -43,6 +43,22 @@
           </p>
         }
 
+        @if (it.changed_at && !it.trashed_at) {
+          <div class="grid gap-2 rounded-md bg-warn/10 px-3 py-2.5 text-sm">
+            <p class="font-medium text-warn">Изделие изменено {{ fmtTime(it.changed_at) }}</p>
+            @if (recentEdits().length) {
+              <ul class="grid gap-0.5">
+                @for (e of recentEdits(); track e.id) {
+                  <li>{{ e.text }} <span class="text-muted">— {{ e.user.name }}</span></li>
+                }
+              </ul>
+            }
+            <div>
+              <button type="button" class="btn-outline h-8" [disabled]="acking()" (click)="ackChanges(it)">Изменения учтены</button>
+            </div>
+          </div>
+        }
+
         @if (it.trashed_at) {
           <p class="rounded-md bg-sub px-3 py-2.5 text-sm">
             {{ it.trash_reason_label }} {{ fmt(it.trashed_at) }} с этапа «{{ stageName[it.stage] }}». {{ purgeText(it.purge_at)[0].toUpperCase() + purgeText(it.purge_at).slice(1) }}

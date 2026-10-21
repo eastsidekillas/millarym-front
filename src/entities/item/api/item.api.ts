@@ -14,7 +14,7 @@ import {
   Stage,
 } from '../model/item.types';
 
-export type SimpleAction = 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy';
+export type SimpleAction = 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy' | 'ack-changes';
 
 @Injectable({ providedIn: 'root' })
 export class ItemApi {
