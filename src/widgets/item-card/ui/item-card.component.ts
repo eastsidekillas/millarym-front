@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Lock, LucideAngularModule, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
-import { FABRIC_SLOTS, NEXT_STAGE, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
+import { FABRIC_SLOTS, NEXT_STAGE, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, Mark, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
 import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
@@ -32,6 +32,7 @@ export class ItemCardComponent {
   private readonly reports = inject(ReportApi);
   readonly passport = inject(PrintPassport);
   readonly canClaim = inject(SessionStore).can('claims');
+  readonly canMarks = inject(SessionStore).can('marks');
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
@@ -167,6 +168,24 @@ export class ItemCardComponent {
       this.toast.error(errorText(err, 'Не удалось отметить.'));
     } finally {
       this.acking.set(false);
+    }
+  }
+
+  readonly unmarking = signal(false);
+
+  canUnmark(it: ItemDetail, stage: Stage): boolean {
+    return this.canMarks && !it.trashed_at && it.stage === stage;
+  }
+
+  async unmark(it: ItemDetail, mark: Mark) {
+    this.unmarking.set(true);
+    try {
+      await firstValueFrom(this.api.unmark(it.id, mark));
+      this.changed.notify();
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось снять отметку.'));
+    } finally {
+      this.unmarking.set(false);
     }
   }
 
