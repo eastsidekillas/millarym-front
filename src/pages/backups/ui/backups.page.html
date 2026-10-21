@@ -3,14 +3,33 @@
     <div>
       <h1 class="text-xl font-semibold">Резервные копии</h1>
       @if (data(); as d) {
-        <p class="mt-1 max-w-2xl text-sm text-muted">
-          Каждую ночь в {{ d.schedule }} делается копия базы и фото, хранятся {{ d.keep_days }} дн. Копии лежат на том же
-          сервере — раз в неделю скачивайте свежую на другой диск.
-        </p>
+        @if (editingSchedule()) {
+          <form class="mt-2 flex flex-wrap items-end gap-3" (ngSubmit)="saveSchedule()">
+            <label class="grid gap-1">
+              <span class="label">Ночная копия в</span>
+              <input type="time" class="field w-32" name="at" required [(ngModel)]="scheduleAt" />
+            </label>
+            <label class="grid gap-1">
+              <span class="label">Хранить, дней</span>
+              <input type="number" class="field w-28" name="keep" min="1" max="90" required [(ngModel)]="scheduleKeep" />
+            </label>
+            <button type="submit" class="btn-outline" [disabled]="sending()">Сохранить</button>
+            <button type="button" class="btn-ghost h-9" (click)="editingSchedule.set(false)">Отмена</button>
+          </form>
+        } @else {
+          <p class="mt-1 max-w-2xl text-sm text-muted">
+            Каждую ночь в {{ d.at }} делается копия базы и фото, хранятся {{ d.keep_days }} дн.
+            <button type="button" class="text-accent underline-offset-2 hover:underline" (click)="editSchedule()">Изменить</button>
+            <br />Копии лежат на том же сервере — раз в неделю скачивайте свежую на другой диск.
+          </p>
+        }
       }
     </div>
     @if (allowed) {
-      <button type="button" class="btn-primary" [disabled]="sending() || busy() || !data()?.alive" (click)="backupNow()">Сделать копию сейчас</button>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn-outline" [disabled]="sending() || busy() || !data()?.alive" (click)="openUpload()">Загрузить из файла…</button>
+        <button type="button" class="btn-primary" [disabled]="sending() || busy() || !data()?.alive" (click)="backupNow()">Сделать копию сейчас</button>
+      </div>
     }
   </div>
 
@@ -64,7 +83,7 @@
           <li class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm">
             <span class="tnum w-28 flex-none text-muted">{{ h.at }}</span>
             <span class="font-medium" [class.text-crit]="!h.ok">
-              {{ h.action === 'restore' ? 'Восстановление' : 'Копия' }}{{ h.ok ? '' : ' — ошибка' }}
+              {{ historyLabel[h.action] ?? h.action }}{{ h.ok ? '' : ' — ошибка' }}
             </span>
             <span class="min-w-0 flex-1 text-muted">{{ h.text }}</span>
             <span class="text-xs text-muted">{{ h.by }}</span>
@@ -92,6 +111,35 @@
       <div class="flex justify-end gap-2">
         <button type="button" class="btn-outline" (click)="restoring.set(null)">Отмена</button>
         <button type="submit" class="btn bg-crit text-white hover:bg-crit/90" [disabled]="!confirmed() || sending()">Восстановить</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (uploadOpen()) {
+  <app-modal title="Загрузить копию из файла" width="md:max-w-lg" (closed)="uploading() || uploadOpen.set(false)">
+    <form class="grid gap-4 px-6 py-5" (ngSubmit)="upload()">
+      <p class="text-sm text-muted">
+        Например, для переезда на новый сервер: на старом скачайте «Базу» и «Фото», здесь загрузите их. Копия появится в
+        списке — дальше «Восстановить…». После восстановления входите под логинами и паролями из той базы.
+      </p>
+      <label class="grid gap-1.5">
+        <span class="text-sm">База — файл <span class="font-medium">.dump</span></span>
+        <input type="file" class="text-sm" accept=".dump" name="db" (change)="pick($event, 'db')" [disabled]="uploading()" />
+      </label>
+      <label class="grid gap-1.5">
+        <span class="text-sm">Фото — архив <span class="font-medium">.tar.gz</span>, можно не загружать</span>
+        <input type="file" class="text-sm" accept=".gz,.tgz" name="media" (change)="pick($event, 'media')" [disabled]="uploading()" />
+      </label>
+      @if (progress() !== null) {
+        <div class="grid gap-1" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+          <div class="h-2 overflow-hidden rounded-full bg-sub"><div class="h-full bg-accent transition-all" [style.width.%]="progress()"></div></div>
+          <span class="tnum text-xs text-muted">Загружено {{ progress() }}%</span>
+        </div>
+      }
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-outline" [disabled]="uploading()" (click)="uploadOpen.set(false)">Отмена</button>
+        <button type="submit" class="btn-primary" [disabled]="!dbFile || uploading()">Загрузить</button>
       </div>
     </form>
   </app-modal>

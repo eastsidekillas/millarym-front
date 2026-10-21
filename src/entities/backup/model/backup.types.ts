@@ -28,7 +28,7 @@ export interface BackupOverview {
   alive: boolean;
   alerts: string[];
   history: BackupHistoryRow[];
-  schedule: string;
+  at: string;
   keep_days: number;
 }
 

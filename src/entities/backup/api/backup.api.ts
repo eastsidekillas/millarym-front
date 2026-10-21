@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '@shared/config';
@@ -15,6 +15,17 @@ export class BackupApi {
 
   backupNow(): Observable<BackupOverview> {
     return this.http.post<BackupOverview>(`${this.api}/`, {});
+  }
+
+  saveSchedule(at: string, keepDays: number): Observable<BackupOverview> {
+    return this.http.put<BackupOverview>(`${this.api}/schedule/`, { at, keep_days: keepDays });
+  }
+
+  upload(db: File, media: File | null): Observable<HttpEvent<BackupOverview>> {
+    const body = new FormData();
+    body.append('db', db);
+    if (media) body.append('media', media);
+    return this.http.post<BackupOverview>(`${this.api}/upload/`, body, { reportProgress: true, observe: 'events' });
   }
 
   restore(stamp: string, confirm: string): Observable<BackupOverview> {
