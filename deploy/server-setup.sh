@@ -2,6 +2,8 @@
 # Развернуть или обновить CRM на сервере (Ubuntu/Debian, root).
 #   curl -fsSL https://raw.githubusercontent.com/eastsidekillas/millarym-front/main/deploy/server-setup.sh | bash -s -- test.chillgate.cc
 # Повторный запуск обновляет код и перезапускает: bash /opt/millarym/millarym-front/deploy/server-setup.sh test.chillgate.cc
+# Внутри сети завода, без домена: вместо домена — IP сервера (bash server-setup.sh 192.168.1.50), откроется http://IP.
+# Есть папка /srv/backups (диск под копии) — ночные копии пишутся туда.
 set -uo pipefail
 
 DOMAIN="${1:-}"
@@ -10,7 +12,6 @@ BACK=$ROOT/millarym-back
 FRONT=$ROOT/millarym-front
 KEY=/root/.ssh/millarym_deploy
 LOG=$ROOT/deploy.log
-DC="docker compose -f docker-compose.yml -f deploy/compose.server.yml"
 
 mkdir -p $ROOT
 exec > >(tee -a "$LOG") 2>&1
@@ -18,8 +19,17 @@ step() { echo; echo "== $(date '+%d.%m.%y %H:%M:%S') $*"; }
 die() { echo "СТОП: $*"; exit 1; }
 
 [ "$(id -u)" = 0 ] || die "запустите от root"
-[ -n "$DOMAIN" ] || die "укажите домен: bash server-setup.sh test.chillgate.cc"
-. /etc/os-release && echo "Система: $PRETTY_NAME, домен: $DOMAIN"
+[ -n "$DOMAIN" ] || die "укажите домен (bash server-setup.sh test.chillgate.cc) или IP сервера в сети завода"
+if [[ "$DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  LAN=1; SCHEME=http
+  DC="docker compose -f docker-compose.yml -f deploy/compose.lan.yml"
+  ip -4 addr | grep -q "inet $DOMAIN/" || echo "ВНИМАНИЕ: у этого сервера нет адреса $DOMAIN — проверьте IP (ip -4 addr)."
+else
+  LAN=0; SCHEME=https
+  DC="docker compose -f docker-compose.yml -f deploy/compose.server.yml"
+fi
+URL="$SCHEME://$DOMAIN"
+. /etc/os-release && echo "Система: $PRETTY_NAME, адрес: $URL"
 
 step "пакеты"
 command -v git >/dev/null && command -v curl >/dev/null || { apt-get update -q && apt-get install -y -q git curl ca-certificates; }
@@ -28,11 +38,13 @@ if ! command -v docker >/dev/null; then
 fi
 docker --version && docker compose version || die "нет docker compose"
 
+if [ "$LAN" = 0 ]; then
 step "DNS"
 IP=$(curl -fsS --max-time 10 https://api.ipify.org || true)
 DNS=$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}')
 echo "IP сервера: ${IP:-?}, $DOMAIN указывает на: ${DNS:-не найден}"
 [ -n "$DNS" ] && [ "$DNS" = "$IP" ] || echo "ВНИМАНИЕ: домен не указывает на этот сервер — сертификат не выдадут, пока DNS не обновится."
+fi
 
 step "код"
 mkdir -p /root/.ssh && chmod 700 /root/.ssh
@@ -62,19 +74,21 @@ step "настройки"
 cd $BACK
 if [ ! -f .env ]; then
   rand() { tr -dc 'A-Za-z0-9' </dev/urandom | head -c "$1"; }
+  # по http (сеть завода) браузер не отдаёт cookie с флагом Secure — вход бы не работал
+  SECURE=$([ "$LAN" = 1 ] && echo False || echo True)
   cat > .env <<ENV
 DOMAIN=$DOMAIN
 DJANGO_ENV=prod
 DJANGO_SECRET_KEY=$(rand 60)
 DEBUG=False
 ALLOWED_HOSTS=$DOMAIN
-CORS_ALLOWED_ORIGINS=https://$DOMAIN
-CSRF_TRUSTED_ORIGINS=https://$DOMAIN
+CORS_ALLOWED_ORIGINS=$URL
+CSRF_TRUSTED_ORIGINS=$URL
 POSTGRES_PASSWORD=$(rand 32)
-SITE_URL=https://$DOMAIN
+SITE_URL=$URL
 ACCESS_TOKEN_LIFETIME=8
 REFRESH_TOKEN_LIFETIME=14
-COOKIE_SECURE=True
+COOKIE_SECURE=$SECURE
 AXES_ENABLED=True
 AXES_FAILURE_LIMIT=5
 AXES_COOLOFF_MINUTES=15
@@ -85,6 +99,10 @@ ENV
 else
   echo ".env уже есть, не меняю"
   FIRST=0
+fi
+if [ -d /srv/backups ] && ! grep -q '^BACKUP_DIR=' .env; then
+  echo "BACKUP_DIR=/srv/backups" >> .env
+  echo "ночные копии — в /srv/backups ($(df -h --output=size /srv/backups | tail -1 | tr -d ' '))"
 fi
 
 step "сборка и запуск (первый раз — несколько минут)"
@@ -111,12 +129,12 @@ step "проверка"
 sleep 5
 $DC ps
 for path in / /api/v1/users/me/; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://$DOMAIN$path")
-  echo "https://$DOMAIN$path → $code"
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL$path")
+  echo "$URL$path → $code"
 done
 echo "(ожидается: / → 200, /api/v1/users/me/ → 401 без входа)"
 $DC exec -T app sh -c 'touch /app/media/.write-test && rm /app/media/.write-test' && echo "папка фото доступна приложению на запись" || echo "ОШИБКА: приложение не может писать в папку фото"
-$DC logs --tail 15 caddy app frontend scheduler 2>&1 | tail -60
+$DC logs --tail 15 app frontend scheduler backup $([ "$LAN" = 0 ] && echo caddy) 2>&1 | tail -60
 
-step "готово: https://$DOMAIN"
+step "готово: $URL"
 echo "Лог: $LOG"
