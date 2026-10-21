@@ -1,0 +1,98 @@
+<div class="mx-auto max-w-5xl">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-semibold">Резервные копии</h1>
+      @if (data(); as d) {
+        <p class="mt-1 max-w-2xl text-sm text-muted">
+          Каждую ночь в {{ d.schedule }} делается копия базы и фото, хранятся {{ d.keep_days }} дн. Копии лежат на том же
+          сервере — раз в неделю скачивайте свежую на другой диск.
+        </p>
+      }
+    </div>
+    @if (allowed) {
+      <button type="button" class="btn-primary" [disabled]="sending() || busy() || !data()?.alive" (click)="backupNow()">Сделать копию сейчас</button>
+    }
+  </div>
+
+  @if (!allowed) {
+    <p class="mt-8 text-sm text-muted">Резервные копии доступны только роли «Сисадмин».</p>
+  } @else if (data(); as d) {
+    @for (a of d.alerts; track a) {
+      <div class="mt-4 flex items-start gap-2 rounded-lg border border-crit/30 bg-crit/5 px-4 py-3 text-sm text-crit" role="alert">
+        <span class="flex pt-0.5"><lucide-icon [img]="alertIcon" /></span>
+        {{ a }}
+      </div>
+    }
+    @if (busy()) {
+      <div class="mt-4 flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm" role="status">
+        <span class="h-2 w-2 flex-none animate-pulse rounded-full bg-accent"></span>
+        {{ busyText() }}
+      </div>
+    }
+
+    <section class="mt-6 rounded-lg border border-line bg-surface">
+      <div class="hidden grid-cols-[140px_1fr_72px_72px_310px] gap-4 border-b border-line px-4 py-2.5 text-xs text-muted md:grid">
+        <span>Когда</span><span>Что</span><span class="text-right">База</span><span class="text-right">Фото</span><span></span>
+      </div>
+      @for (c of d.copies; track c.stamp) {
+        <div class="grid gap-x-4 gap-y-2 border-b border-line px-4 py-3 last:border-0 md:grid-cols-[140px_1fr_72px_72px_310px] md:items-center">
+          <span class="tnum font-medium">{{ fmt(c.at) }}</span>
+          <span class="text-muted">{{ c.note }}</span>
+          <span class="tnum text-muted md:text-right"><span class="md:hidden">База: </span>{{ size(c.db_size) }}</span>
+          <span class="tnum text-muted md:text-right"><span class="md:hidden">Фото: </span>{{ size(c.media_size) }}</span>
+          <span class="flex flex-wrap gap-2 md:justify-end">
+            <button type="button" class="btn-row gap-1.5" (click)="download(c, 'db')" [attr.aria-label]="'Скачать базу за ' + fmt(c.at)">
+              <span class="flex"><lucide-icon [img]="downloadIcon" [size]="14" /></span>База
+            </button>
+            @if (c.media_size !== null) {
+              <button type="button" class="btn-row gap-1.5" (click)="download(c, 'media')" [attr.aria-label]="'Скачать фото за ' + fmt(c.at)">
+                <span class="flex"><lucide-icon [img]="downloadIcon" [size]="14" /></span>Фото
+              </button>
+            }
+            <button type="button" class="btn-row text-crit" [disabled]="busy() || !d.alive" (click)="askRestore(c)">Восстановить…</button>
+          </span>
+        </div>
+      } @empty {
+        <p class="px-4 py-10 text-center text-sm text-muted">Копий пока нет.</p>
+      }
+    </section>
+
+    @if (d.history.length) {
+      <h2 class="mt-8 text-base font-semibold">История</h2>
+      <ul class="mt-2 divide-y divide-line rounded-lg border border-line bg-surface">
+        @for (h of d.history; track $index) {
+          <li class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm">
+            <span class="tnum w-28 flex-none text-muted">{{ h.at }}</span>
+            <span class="font-medium" [class.text-crit]="!h.ok">
+              {{ h.action === 'restore' ? 'Восстановление' : 'Копия' }}{{ h.ok ? '' : ' — ошибка' }}
+            </span>
+            <span class="min-w-0 flex-1 text-muted">{{ h.text }}</span>
+            <span class="text-xs text-muted">{{ h.by }}</span>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (loading()) {
+    <p class="mt-8 text-sm text-muted">Загружаем…</p>
+  }
+</div>
+
+@if (restoring(); as c) {
+  <app-modal [title]="'Восстановить базу из копии ' + fmt(c.at) + '?'" width="md:max-w-lg" (closed)="restoring.set(null)">
+    <form class="grid gap-4 px-6 py-5" (ngSubmit)="restore()">
+      <ul class="grid list-disc gap-1.5 pl-5 text-sm">
+        <li>Всё, что внесли после этой копии, пропадёт: новые изделия, перемещения, резервы, рекламации.</li>
+        <li>Перед восстановлением программа сама сделает копию текущей базы — если ошиблись, можно вернуться к ней.</li>
+        <li>На 1–2 минуты программа будет недоступна у всех сотрудников.</li>
+      </ul>
+      <label class="grid gap-1.5">
+        <span class="text-sm">Чтобы подтвердить, введите <span class="font-semibold">{{ confirmWord }}</span></span>
+        <input class="field" name="confirm" autocomplete="off" [(ngModel)]="confirm" />
+      </label>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-outline" (click)="restoring.set(null)">Отмена</button>
+        <button type="submit" class="btn bg-crit text-white hover:bg-crit/90" [disabled]="!confirmed() || sending()">Восстановить</button>
+      </div>
+    </form>
+  </app-modal>
+}

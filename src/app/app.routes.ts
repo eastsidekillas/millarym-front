@@ -57,6 +57,11 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/refs').then((m) => m.RefsPage),
       },
       {
+        path: 'backups',
+        title: 'Резервные копии — Резервы и Заказы',
+        loadComponent: () => import('@pages/backups').then((m) => m.BackupsPage),
+      },
+      {
         path: '**',
         title: 'Не найдено — Резервы и Заказы',
         loadComponent: () => import('@pages/not-found').then((m) => m.NotFoundPage),
