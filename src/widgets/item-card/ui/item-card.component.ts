@@ -148,6 +148,28 @@ export class ItemCardComponent {
     this.passport.print([it.id]);
   }
 
+  readonly acking = signal(false);
+  // правки после последнего «Изменения учтены», без комментариев
+  readonly recentEdits = computed(() => {
+    const events = this.item()?.events ?? [];
+    const ack = events.findIndex((e) => e.text === 'Изменения учтены');
+    return (ack === -1 ? events : events.slice(0, ack)).filter(
+      (e) => e.kind === 'edit' && !e.text.startsWith('Комментарий') && !e.text.startsWith('Перенесено из старой системы'),
+    );
+  });
+
+  async ackChanges(it: ItemDetail) {
+    this.acking.set(true);
+    try {
+      await firstValueFrom(this.api.run(it.id, 'ack-changes'));
+      this.changed.notify();
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось отметить.'));
+    } finally {
+      this.acking.set(false);
+    }
+  }
+
   async exportXlsx(it: ItemDetail) {
     this.exporting.set(true);
     try {
