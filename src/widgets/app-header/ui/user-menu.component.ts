@@ -1,5 +1,6 @@
 import { Component, ElementRef, computed, inject, signal, viewChildren } from '@angular/core';
-import { ChevronDown, CircleUserRound, KeyRound, LogOut, LucideAngularModule } from 'lucide-angular';
+import { Router } from '@angular/router';
+import { ChevronDown, CircleUserRound, DatabaseBackup, KeyRound, LogOut, LucideAngularModule } from 'lucide-angular';
 import { SessionStore } from '@entities/session';
 import { ChangePassword } from '@features/change-password';
 import { Logout } from '@features/logout';
@@ -37,7 +38,13 @@ import { Logout } from '@features/logout';
             <span class="flex text-muted"><lucide-icon [img]="keyIcon" /></span>
             Сменить пароль
           </button>
-          <button #item type="button" role="menuitem" class="menu-item" (click)="logout.run()" (keydown)="move($event, 1)">
+          @if (canBackups) {
+            <button #item type="button" role="menuitem" class="menu-item" (click)="openBackups()" (keydown)="move($event, 1)">
+              <span class="flex text-muted"><lucide-icon [img]="backupIcon" /></span>
+              Резервные копии
+            </button>
+          }
+          <button #item type="button" role="menuitem" class="menu-item" (click)="logout.run()" (keydown)="move($event, canBackups ? 2 : 1)">
             <span class="flex text-muted"><lucide-icon [img]="logoutIcon" /></span>
             Выйти
           </button>
@@ -52,7 +59,9 @@ export class UserMenuComponent {
   private readonly password = inject(ChangePassword);
   readonly logout = inject(Logout);
 
+  private readonly router = inject(Router);
   readonly me = computed(() => this.session.me());
+  readonly canBackups = this.session.can('backups');
   readonly open = signal(false);
   private readonly items = viewChildren<ElementRef<HTMLButtonElement>>('item');
   private readonly trigger = viewChildren<ElementRef<HTMLButtonElement>>('trigger');
@@ -61,6 +70,7 @@ export class UserMenuComponent {
   readonly chevron = ChevronDown;
   readonly keyIcon = KeyRound;
   readonly logoutIcon = LogOut;
+  readonly backupIcon = DatabaseBackup;
 
   toggle() {
     if (this.open()) this.close();
@@ -89,6 +99,11 @@ export class UserMenuComponent {
   changePassword() {
     this.close();
     this.password.open();
+  }
+
+  openBackups() {
+    this.close();
+    this.router.navigate(['/backups']);
   }
 
   outside(event: Event) {

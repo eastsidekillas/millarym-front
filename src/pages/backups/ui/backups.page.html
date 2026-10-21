@@ -1,0 +1,146 @@
+<div class="mx-auto max-w-5xl">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-semibold">Резервные копии</h1>
+      @if (data(); as d) {
+        @if (editingSchedule()) {
+          <form class="mt-2 flex flex-wrap items-end gap-3" (ngSubmit)="saveSchedule()">
+            <label class="grid gap-1">
+              <span class="label">Ночная копия в</span>
+              <input type="time" class="field w-32" name="at" required [(ngModel)]="scheduleAt" />
+            </label>
+            <label class="grid gap-1">
+              <span class="label">Хранить, дней</span>
+              <input type="number" class="field w-28" name="keep" min="1" max="90" required [(ngModel)]="scheduleKeep" />
+            </label>
+            <button type="submit" class="btn-outline" [disabled]="sending()">Сохранить</button>
+            <button type="button" class="btn-ghost h-9" (click)="editingSchedule.set(false)">Отмена</button>
+          </form>
+        } @else {
+          <p class="mt-1 max-w-2xl text-sm text-muted">
+            Каждую ночь в {{ d.at }} делается копия базы и фото, хранятся {{ d.keep_days }} дн.
+            <button type="button" class="text-accent underline-offset-2 hover:underline" (click)="editSchedule()">Изменить</button>
+            <br />Копии лежат на том же сервере — раз в неделю скачивайте свежую на другой диск.
+          </p>
+        }
+      }
+    </div>
+    @if (allowed) {
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn-outline" [disabled]="sending() || busy() || !data()?.alive" (click)="openUpload()">Загрузить из файла…</button>
+        <button type="button" class="btn-primary" [disabled]="sending() || busy() || !data()?.alive" (click)="backupNow()">Сделать копию сейчас</button>
+      </div>
+    }
+  </div>
+
+  @if (!allowed) {
+    <p class="mt-8 text-sm text-muted">Резервные копии доступны только роли «Сисадмин».</p>
+  } @else if (data(); as d) {
+    @for (a of d.alerts; track a) {
+      <div class="mt-4 flex items-start gap-2 rounded-lg border border-crit/30 bg-crit/5 px-4 py-3 text-sm text-crit" role="alert">
+        <span class="flex pt-0.5"><lucide-icon [img]="alertIcon" /></span>
+        {{ a }}
+      </div>
+    }
+    @if (busy()) {
+      <div class="mt-4 flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm" role="status">
+        <span class="h-2 w-2 flex-none animate-pulse rounded-full bg-accent"></span>
+        {{ busyText() }}
+      </div>
+    }
+
+    <section class="mt-6 rounded-lg border border-line bg-surface">
+      <div class="hidden grid-cols-[140px_1fr_72px_72px_310px] gap-4 border-b border-line px-4 py-2.5 text-xs text-muted md:grid">
+        <span>Когда</span><span>Что</span><span class="text-right">База</span><span class="text-right">Фото</span><span></span>
+      </div>
+      @for (c of d.copies; track c.stamp) {
+        <div class="grid gap-x-4 gap-y-2 border-b border-line px-4 py-3 last:border-0 md:grid-cols-[140px_1fr_72px_72px_310px] md:items-center">
+          <span class="tnum font-medium">{{ fmt(c.at) }}</span>
+          <span class="text-muted">{{ c.note }}</span>
+          <span class="tnum text-muted md:text-right"><span class="md:hidden">База: </span>{{ size(c.db_size) }}</span>
+          <span class="tnum text-muted md:text-right"><span class="md:hidden">Фото: </span>{{ size(c.media_size) }}</span>
+          <span class="flex flex-wrap gap-2 md:justify-end">
+            <button type="button" class="btn-row gap-1.5" (click)="download(c, 'db')" [attr.aria-label]="'Скачать базу за ' + fmt(c.at)">
+              <span class="flex"><lucide-icon [img]="downloadIcon" [size]="14" /></span>База
+            </button>
+            @if (c.media_size !== null) {
+              <button type="button" class="btn-row gap-1.5" (click)="download(c, 'media')" [attr.aria-label]="'Скачать фото за ' + fmt(c.at)">
+                <span class="flex"><lucide-icon [img]="downloadIcon" [size]="14" /></span>Фото
+              </button>
+            }
+            <button type="button" class="btn-row text-crit" [disabled]="busy() || !d.alive" (click)="askRestore(c)">Восстановить…</button>
+          </span>
+        </div>
+      } @empty {
+        <p class="px-4 py-10 text-center text-sm text-muted">Копий пока нет.</p>
+      }
+    </section>
+
+    @if (d.history.length) {
+      <h2 class="mt-8 text-base font-semibold">История</h2>
+      <ul class="mt-2 divide-y divide-line rounded-lg border border-line bg-surface">
+        @for (h of d.history; track $index) {
+          <li class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm">
+            <span class="tnum w-28 flex-none text-muted">{{ h.at }}</span>
+            <span class="font-medium" [class.text-crit]="!h.ok">
+              {{ historyLabel[h.action] ?? h.action }}{{ h.ok ? '' : ' — ошибка' }}
+            </span>
+            <span class="min-w-0 flex-1 text-muted">{{ h.text }}</span>
+            <span class="text-xs text-muted">{{ h.by }}</span>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (loading()) {
+    <p class="mt-8 text-sm text-muted">Загружаем…</p>
+  }
+</div>
+
+@if (restoring(); as c) {
+  <app-modal [title]="'Восстановить базу из копии ' + fmt(c.at) + '?'" width="md:max-w-lg" (closed)="restoring.set(null)">
+    <form class="grid gap-4 px-6 py-5" (ngSubmit)="restore()">
+      <ul class="grid list-disc gap-1.5 pl-5 text-sm">
+        <li>Всё, что внесли после этой копии, пропадёт: новые изделия, перемещения, резервы, рекламации.</li>
+        <li>Перед восстановлением программа сама сделает копию текущей базы — если ошиблись, можно вернуться к ней.</li>
+        <li>На 1–2 минуты программа будет недоступна у всех сотрудников.</li>
+      </ul>
+      <label class="grid gap-1.5">
+        <span class="text-sm">Чтобы подтвердить, введите <span class="font-semibold">{{ confirmWord }}</span></span>
+        <input class="field" name="confirm" autocomplete="off" [(ngModel)]="confirm" />
+      </label>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-outline" (click)="restoring.set(null)">Отмена</button>
+        <button type="submit" class="btn bg-crit text-white hover:bg-crit/90" [disabled]="!confirmed() || sending()">Восстановить</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (uploadOpen()) {
+  <app-modal title="Загрузить копию из файла" width="md:max-w-lg" (closed)="uploading() || uploadOpen.set(false)">
+    <form class="grid gap-4 px-6 py-5" (ngSubmit)="upload()">
+      <p class="text-sm text-muted">
+        Например, для переезда на новый сервер: на старом скачайте «Базу» и «Фото», здесь загрузите их. Копия появится в
+        списке — дальше «Восстановить…». После восстановления входите под логинами и паролями из той базы.
+      </p>
+      <label class="grid gap-1.5">
+        <span class="text-sm">База — файл <span class="font-medium">.dump</span></span>
+        <input type="file" class="text-sm" accept=".dump" name="db" (change)="pick($event, 'db')" [disabled]="uploading()" />
+      </label>
+      <label class="grid gap-1.5">
+        <span class="text-sm">Фото — архив <span class="font-medium">.tar.gz</span>, можно не загружать</span>
+        <input type="file" class="text-sm" accept=".gz,.tgz" name="media" (change)="pick($event, 'media')" [disabled]="uploading()" />
+      </label>
+      @if (progress() !== null) {
+        <div class="grid gap-1" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+          <div class="h-2 overflow-hidden rounded-full bg-sub"><div class="h-full bg-accent transition-all" [style.width.%]="progress()"></div></div>
+          <span class="tnum text-xs text-muted">Загружено {{ progress() }}%</span>
+        </div>
+      }
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn-outline" [disabled]="uploading()" (click)="uploadOpen.set(false)">Отмена</button>
+        <button type="submit" class="btn-primary" [disabled]="!dbFile || uploading()">Загрузить</button>
+      </div>
+    </form>
+  </app-modal>
+}

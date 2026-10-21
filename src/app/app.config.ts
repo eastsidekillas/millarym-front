@@ -11,6 +11,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { LucideIconConfig } from 'lucide-angular';
 import { routes } from './app.routes';
 import { authInterceptor } from './providers/auth.interceptor';
+import { maintenanceInterceptor } from './providers/maintenance.interceptor';
 
 registerLocaleData(localeRu, 'ru');
 
@@ -19,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([maintenanceInterceptor, authInterceptor])),
     { provide: LOCALE_ID, useValue: 'ru' },
     { provide: LucideIconConfig, useFactory: () => Object.assign(new LucideIconConfig(), { size: 16, strokeWidth: 1.75 }) },
   ],

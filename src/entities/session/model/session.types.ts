@@ -13,7 +13,8 @@ export type RightCode =
   | 'reserve'
   | 'fabrics'
   | 'catalog'
-  | 'claims';
+  | 'claims'
+  | 'backups';
 
 export interface Me {
   id: number;
