@@ -140,15 +140,15 @@
             <div>
               <dt class="text-xs text-muted">Ткань пришла</dt>
               <dd class="tnum">
-                @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} } @else { <span class="font-medium text-warn">ждём</span> }
+                @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} @if (canUnmark(it, 'orders')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'fabric_arrived')">отменить</button> } } @else { <span class="font-medium text-warn">ждём</span> }
               </dd>
             </div>
           }
           @if (it.sew_at) {
-            <div><dt class="text-xs text-muted">Выдано в шитьё</dt><dd class="tnum">{{ fmt(it.sew_at) }}</dd></div>
+            <div><dt class="text-xs text-muted">Выдано в шитьё</dt><dd class="tnum">{{ fmt(it.sew_at) }}@if (!it.cover_ready_at) { @if (canUnmark(it, 'cut')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'sew')">отменить</button> } }</dd></div>
           }
           @if (it.cover_ready_at) {
-            <div><dt class="text-xs text-muted">Отшит</dt><dd class="tnum">{{ fmt(it.cover_ready_at) }}</dd></div>
+            <div><dt class="text-xs text-muted">Отшит</dt><dd class="tnum">{{ fmt(it.cover_ready_at) }}@if (canUnmark(it, 'cut')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'cover_ready')">отменить</button> }</dd></div>
           }
           @if (it.work_at) {
             <div><dt class="text-xs text-muted">Выдано в работу</dt><dd class="tnum">{{ fmt(it.work_at) }}</dd></div>

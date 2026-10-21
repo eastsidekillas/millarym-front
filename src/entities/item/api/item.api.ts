@@ -14,6 +14,7 @@ import {
   Stage,
 } from '../model/item.types';
 
+export type Mark = 'fabric_arrived' | 'sew' | 'cover_ready';
 export type SimpleAction = 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy' | 'ack-changes';
 
 @Injectable({ providedIn: 'root' })
@@ -60,6 +61,10 @@ export class ItemApi {
 
   run(id: number, action: SimpleAction): Observable<ItemDetail> {
     return this.http.post<ItemDetail>(`${this.api}/${id}/${action}/`, {});
+  }
+
+  unmark(id: number, mark: Mark): Observable<ItemDetail> {
+    return this.http.post<ItemDetail>(`${this.api}/${id}/unmark/`, { mark });
   }
 
   events(params: Record<string, string | number>): Observable<Page<ItemEvent>> {
