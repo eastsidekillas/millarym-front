@@ -3,6 +3,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/eastsidekillas/millarym-front/main/deploy/server-setup.sh | bash -s -- test.chillgate.cc
 # Повторный запуск обновляет код и перезапускает: bash /opt/millarym/millarym-front/deploy/server-setup.sh test.chillgate.cc
 # Внутри сети завода, без домена: вместо домена — IP сервера (bash server-setup.sh 192.168.1.50), откроется http://IP.
+# Сменился IP или домен (переезд) — тот же запуск с новым адресом, настройки поправятся сами.
 # Есть папка /srv/backups (диск под копии) — ночные копии пишутся туда.
 set -uo pipefail
 
@@ -97,8 +98,19 @@ ENV
   echo ".env создан (секретный ключ и пароль базы — случайные)"
   FIRST=1
 else
-  echo ".env уже есть, не меняю"
   FIRST=0
+  OLD=$(sed -n 's/^DOMAIN=//p' .env)
+  if [ -n "$OLD" ] && [ "$OLD" != "$DOMAIN" ]; then
+    # переезд: сервер получил другой IP (сеть завода) или домен — адрес программы меняется везде
+    SECURE=$([ "$LAN" = 1 ] && echo False || echo True)
+    cp .env ".env.before-$(date +%Y%m%d-%H%M%S)"
+    sed -i -e "s|^DOMAIN=.*|DOMAIN=$DOMAIN|" -e "s|^ALLOWED_HOSTS=.*|ALLOWED_HOSTS=$DOMAIN|" \
+      -e "s|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=$URL|" -e "s|^CSRF_TRUSTED_ORIGINS=.*|CSRF_TRUSTED_ORIGINS=$URL|" \
+      -e "s|^SITE_URL=.*|SITE_URL=$URL|" -e "s|^COOKIE_SECURE=.*|COOKIE_SECURE=$SECURE|" .env
+    echo "адрес программы: $OLD → $DOMAIN (старые настройки сохранены в .env.before-…)"
+  else
+    echo ".env уже есть, не меняю"
+  fi
 fi
 if [ -d /srv/backups ] && ! grep -q '^BACKUP_DIR=' .env; then
   echo "BACKUP_DIR=/srv/backups" >> .env
