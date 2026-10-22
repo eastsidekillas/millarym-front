@@ -63,6 +63,10 @@ export class ItemApi {
     return this.http.post<ItemDetail>(`${this.api}/${id}/${action}/`, {});
   }
 
+  markDate(id: number, mark: Mark, date: string): Observable<ItemDetail> {
+    return this.http.post<ItemDetail>(`${this.api}/${id}/mark-date/`, { mark, date });
+  }
+
   unmark(id: number, mark: Mark): Observable<ItemDetail> {
     return this.http.post<ItemDetail>(`${this.api}/${id}/unmark/`, { mark });
   }

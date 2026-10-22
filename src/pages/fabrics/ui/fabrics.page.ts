@@ -1,16 +1,17 @@
 import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { LucideAngularModule, Maximize2 } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi, Fabric, FabricQuery } from '@entities/catalog';
 import { SessionStore } from '@entities/session';
 import { FabricForm, FabricFormComponent } from '@features/fabric-form';
 import { errorText } from '@shared/api';
-import { ModalComponent, PaginatorComponent, ToastService } from '@shared/ui';
+import { PaginatorComponent, PhotoViewer, ToastService } from '@shared/ui';
 
 const PAGE = 48;
 
 @Component({
   selector: 'app-fabrics-page',
-  imports: [FabricFormComponent, ModalComponent, PaginatorComponent],
+  imports: [FabricFormComponent, PaginatorComponent, LucideAngularModule],
   templateUrl: './fabrics.page.html',
 })
 export class FabricsPage {
@@ -27,7 +28,8 @@ export class FabricsPage {
   readonly page = signal(1);
   readonly pageSize = PAGE;
   readonly loading = signal(false);
-  readonly viewing = signal<Fabric | null>(null);
+  private readonly viewer = inject(PhotoViewer);
+  readonly zoomIcon = Maximize2;
 
   private timer?: ReturnType<typeof setTimeout>;
   private request = 0;
@@ -82,9 +84,17 @@ export class FabricsPage {
     window.scrollTo({ top: 0 });
   }
 
+  get canEdit(): boolean {
+    return this.session.can('fabrics');
+  }
+
   open(fabric: Fabric) {
-    if (this.session.can('fabrics')) this.form.edit(fabric);
-    else if (fabric.photo) this.viewing.set(fabric);
+    if (this.canEdit) this.form.edit(fabric);
+    else this.zoom(fabric);
+  }
+
+  zoom(fabric: Fabric) {
+    if (fabric.photo) this.viewer.open(fabric.photo, fabric.name);
   }
 
   swatch(name: string): string {

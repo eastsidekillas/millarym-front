@@ -136,19 +136,16 @@
           @if (it.team) {
             <div><dt class="text-xs text-muted">Бригада</dt><dd>{{ it.team.name }}</dd></div>
           }
-          @if (it.stage === 'orders' || it.fabric_arrived_at) {
-            <div>
-              <dt class="text-xs text-muted">Ткань пришла</dt>
-              <dd class="tnum">
-                @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} @if (canUnmark(it, 'orders')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'fabric_arrived')">отменить</button> } } @else { <span class="font-medium text-warn">ждём</span> }
-              </dd>
-            </div>
+          @if (it.fabric_arrived_at) {
+            <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'fabric_arrived', label: 'Ткань пришла', value: it.fabric_arrived_at, undo: canUnmark(it, 'orders') }" />
+          } @else if (it.stage === 'orders') {
+            <div><dt class="text-xs text-muted">Ткань пришла</dt><dd class="font-medium text-warn">ждём</dd></div>
           }
           @if (it.sew_at) {
-            <div><dt class="text-xs text-muted">Выдано в шитьё</dt><dd class="tnum">{{ fmt(it.sew_at) }}@if (!it.cover_ready_at) { @if (canUnmark(it, 'cut')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'sew')">отменить</button> } }</dd></div>
+            <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'sew', label: 'Выдано в шитьё', value: it.sew_at, undo: !it.cover_ready_at && canUnmark(it, 'cut') }" />
           }
           @if (it.cover_ready_at) {
-            <div><dt class="text-xs text-muted">Отшит</dt><dd class="tnum">{{ fmt(it.cover_ready_at) }}@if (canUnmark(it, 'cut')) { <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, 'cover_ready')">отменить</button> }</dd></div>
+            <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'cover_ready', label: 'Отшит', value: it.cover_ready_at, undo: canUnmark(it, 'cut') }" />
           }
           @if (it.work_at) {
             <div><dt class="text-xs text-muted">Выдано в работу</dt><dd class="tnum">{{ fmt(it.work_at) }}</dd></div>
@@ -179,7 +176,9 @@
                     @if (row.fabric; as f) {
                       <span class="inline-flex items-center gap-2">
                         @if (f.fabric.photo_thumb) {
-                          <img [src]="f.fabric.photo_thumb" alt="" class="h-7 w-7 rounded object-cover ring-1 ring-black/10" />
+                          <button type="button" class="flex flex-none rounded hover:ring-2 hover:ring-accent" [attr.aria-label]="'Фото ткани ' + f.fabric.name" (click)="viewer.open(f.fabric.photo ?? f.fabric.photo_thumb, f.fabric.name)">
+                            <img [src]="f.fabric.photo_thumb" alt="" class="h-10 w-10 rounded object-cover ring-1 ring-black/10" />
+                          </button>
                         }
                         {{ f.fabric.name }}
                       </span>
@@ -229,4 +228,27 @@
     <span class="mt-0.5 flex flex-none"><lucide-icon [img]="icons.lock" [size]="12" /></span>
     <span>{{ lockText(a) }}</span>
   </p>
+</ng-template>
+
+<ng-template #markRow let-it="it" let-mark="mark" let-label="label" let-value="value" let-undo="undo">
+  <div [class.col-span-2]="editingMark() === mark">
+    <dt class="text-xs text-muted">{{ label }}</dt>
+    <dd class="tnum">
+      @if (editingMark() === mark) {
+        <form class="mt-1 flex flex-wrap items-center gap-2" (ngSubmit)="saveMarkDate(it, mark)">
+          <input type="date" class="field h-8 w-40 text-[13px]" name="markDate" required [attr.aria-label]="label" [(ngModel)]="markDate" [max]="todayIso" [min]="createdIso(it)" />
+          <button type="submit" class="btn-row" [disabled]="!markDate || unmarking()">Сохранить</button>
+          <button type="button" class="text-xs text-muted underline hover:text-ink" (click)="editingMark.set(null)">отмена</button>
+        </form>
+      } @else {
+        {{ fmt(value) }}
+        @if (canMarks && !it.trashed_at) {
+          <button type="button" class="ml-2 text-xs text-muted underline hover:text-ink" [attr.aria-label]="'Изменить дату: ' + label" (click)="editMark(mark, value)">изменить</button>
+        }
+        @if (undo) {
+          <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, mark)">отменить</button>
+        }
+      }
+    </dd>
+  </div>
 </ng-template>

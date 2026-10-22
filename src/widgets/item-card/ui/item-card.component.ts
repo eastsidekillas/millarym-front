@@ -11,8 +11,8 @@ import { ItemActions } from '@features/item-actions';
 import { ItemForm } from '@features/item-form';
 import { PrintPassport } from '@features/print-passport';
 import { errorText } from '@shared/api';
-import { ToastService } from '@shared/ui';
-import { daysSince, daysUntil, fmtDate, fmtDateTime } from '@shared/lib';
+import { PhotoViewer, ToastService } from '@shared/ui';
+import { daysSince, daysUntil, factoryDay, fmtDate, fmtDateTime } from '@shared/lib';
 
 @Component({
   selector: 'app-item-card',
@@ -41,6 +41,7 @@ export class ItemCardComponent {
   readonly exporting = signal(false);
 
   readonly icons = { close: X, lock: Lock };
+  readonly viewer = inject(PhotoViewer);
   readonly fmt = fmtDate;
   readonly fmtTime = fmtDateTime;
   readonly daysSince = daysSince;
@@ -172,6 +173,31 @@ export class ItemCardComponent {
   }
 
   readonly unmarking = signal(false);
+  readonly editingMark = signal<Mark | null>(null);
+  markDate = '';
+  readonly todayIso = factoryDay(new Date()) ?? '';
+
+  createdIso(it: ItemDetail): string {
+    return factoryDay(it.created_at) ?? '';
+  }
+
+  editMark(mark: Mark, value: string) {
+    this.markDate = value;
+    this.editingMark.set(mark);
+  }
+
+  async saveMarkDate(it: ItemDetail, mark: Mark) {
+    this.unmarking.set(true);
+    try {
+      await firstValueFrom(this.api.markDate(it.id, mark, this.markDate));
+      this.editingMark.set(null);
+      this.changed.notify();
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось изменить дату.'));
+    } finally {
+      this.unmarking.set(false);
+    }
+  }
 
   canUnmark(it: ItemDetail, stage: Stage): boolean {
     return this.canMarks && !it.trashed_at && it.stage === stage;
