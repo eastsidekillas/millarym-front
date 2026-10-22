@@ -3,12 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { ChangePasswordComponent } from '@features/change-password';
 import { TeamDialogComponent } from '@features/item-actions';
 import { ItemFormComponent } from '@features/item-form';
-import { ConfirmComponent, ToastComponent } from '@shared/ui';
+import { ConfirmComponent, PhotoViewerComponent, ToastComponent } from '@shared/ui';
 import { AppHeaderComponent } from '@widgets/app-header';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, AppHeaderComponent, ItemFormComponent, TeamDialogComponent, ChangePasswordComponent, ConfirmComponent, ToastComponent],
+  imports: [RouterOutlet, AppHeaderComponent, ItemFormComponent, TeamDialogComponent, ChangePasswordComponent, ConfirmComponent, ToastComponent, PhotoViewerComponent],
   template: `
     <div class="flex min-h-full flex-col">
       <app-header />
@@ -21,6 +21,7 @@ import { AppHeaderComponent } from '@widgets/app-header';
     <app-change-password />
     <app-confirm />
     <app-toast />
+    <app-photo-viewer />
   `,
 })
 export class MainLayoutComponent {}

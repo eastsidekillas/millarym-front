@@ -8,7 +8,7 @@ export type FabricSlot = 'main' | 'comp1' | 'comp2';
 export interface ItemFabric {
   slot: FabricSlot;
   slot_label: string;
-  fabric: Ref & { photo_thumb: string | null };
+  fabric: Ref & { photo_thumb: string | null; photo: string | null };
   meters: string | null;
 }
 
