@@ -1,7 +1,7 @@
 <div class="mx-auto max-w-5xl">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <h1 class="text-xl font-semibold">Резервные копии</h1>
+      <h1 class="text-xl font-semibold leading-9">Резервные копии</h1>
       @if (data(); as d) {
         @if (editingSchedule()) {
           <form class="mt-2 flex flex-wrap items-end gap-3" (ngSubmit)="saveSchedule()">
@@ -104,7 +104,7 @@
         <li>Перед восстановлением программа сама сделает копию текущей базы — если ошиблись, можно вернуться к ней.</li>
         <li>На 1–2 минуты программа будет недоступна у всех сотрудников.</li>
       </ul>
-      <label class="grid gap-1.5">
+      <label class="grid content-start gap-1.5">
         <span class="text-sm">Чтобы подтвердить, введите <span class="font-semibold">{{ confirmWord }}</span></span>
         <input class="field" name="confirm" autocomplete="off" [(ngModel)]="confirm" />
       </label>
@@ -123,11 +123,11 @@
         Например, для переезда на новый сервер: на старом скачайте «Базу» и «Фото», здесь загрузите их. Копия появится в
         списке — дальше «Восстановить…». После восстановления входите под логинами и паролями из той базы.
       </p>
-      <label class="grid gap-1.5">
+      <label class="grid content-start gap-1.5">
         <span class="text-sm">База — файл <span class="font-medium">.dump</span></span>
         <input type="file" class="text-sm" accept=".dump" name="db" (change)="pick($event, 'db')" [disabled]="uploading()" />
       </label>
-      <label class="grid gap-1.5">
+      <label class="grid content-start gap-1.5">
         <span class="text-sm">Фото — архив <span class="font-medium">.tar.gz</span>, можно не загружать</span>
         <input type="file" class="text-sm" accept=".gz,.tgz" name="media" (change)="pick($event, 'media')" [disabled]="uploading()" />
       </label>

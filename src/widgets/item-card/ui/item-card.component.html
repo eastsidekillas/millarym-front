@@ -81,32 +81,38 @@
               }
             </div>
           }
-          <div class="flex flex-wrap gap-2">
+          <!-- ровная сетка: кнопки одной ширины, опасные действия — последними -->
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
             @for (a of otherActions(); track a.code) {
-              <button type="button" [class]="a.code === 'trash' || a.code === 'cancel' ? 'btn-danger' : 'btn-outline'" [disabled]="actions.busy()" (click)="run(a)">
-                {{ a.label }}
-              </button>
+              @if (a.code !== 'trash' && a.code !== 'cancel') {
+                <button type="button" class="btn-outline px-3" [disabled]="actions.busy()" (click)="run(a)">{{ a.label }}</button>
+              }
             }
-            @if (action('move_any')?.allowed) {
-              <select class="field w-auto pr-8" aria-label="Исправить этап" title="Через этап или назад — если ошиблись" #target (change)="moveTo(target.value); target.value = ''">
-                <option value="">Исправить этап…</option>
-                @for (s of moveTargets(); track s.id) {
-                  <option [value]="s.id">{{ s.name }}</option>
-                }
-              </select>
-            }
-            <button type="button" class="btn-outline" [disabled]="passport.busy()" (click)="printPassport(it)">Паспорт</button>
+            <button type="button" class="btn-outline px-3" [disabled]="passport.busy()" (click)="printPassport(it)">Паспорт</button>
             @if (canClaim) {
-              <a class="btn-outline" routerLink="/claims/new" [queryParams]="{ item: it.id }">Рекламация</a>
+              <a class="btn-outline px-3" routerLink="/claims/new" [queryParams]="{ item: it.id }">Рекламация</a>
             }
-            <button type="button" class="btn-outline" [disabled]="exporting()" (click)="exportXlsx(it)">{{ exporting() ? 'Готовим файл…' : 'В Excel' }}</button>
+            <button type="button" class="btn-outline px-3" [disabled]="exporting()" (click)="exportXlsx(it)">{{ exporting() ? 'Готовим файл…' : 'В Excel' }}</button>
+            @for (a of otherActions(); track a.code) {
+              @if (a.code === 'trash' || a.code === 'cancel') {
+                <button type="button" class="btn-danger px-3" [disabled]="actions.busy()" (click)="run(a)">{{ a.label }}</button>
+              }
+            }
           </div>
+          @if (action('move_any')?.allowed) {
+            <select class="field pr-8" aria-label="Исправить этап" title="Через этап или назад — если ошиблись" #target (change)="moveTo(target.value); target.value = ''">
+              <option value="">Исправить этап…</option>
+              @for (s of moveTargets(); track s.id) {
+                <option [value]="s.id">{{ s.name }}</option>
+              }
+            </select>
+          }
           @for (a of locked(); track a.code) {
             <ng-container *ngTemplateOutlet="lock; context: { $implicit: a }" />
           }
         </div>
 
-        <section class="grid gap-1.5">
+        <section class="grid content-start gap-1.5">
           <label class="text-xs text-muted" for="card-reserve">Резерв</label>
           @if (action('reserve')?.allowed) {
             <form class="flex gap-2" (ngSubmit)="saveReserve()">
@@ -241,13 +247,15 @@
           <button type="button" class="text-xs text-muted underline hover:text-ink" (click)="editingMark.set(null)">отмена</button>
         </form>
       } @else {
-        {{ fmt(value) }}
+        <span class="flex flex-wrap items-baseline gap-x-3">
+        <span>{{ fmt(value) }}</span>
         @if (canMarks && !it.trashed_at) {
-          <button type="button" class="ml-2 text-xs text-muted underline hover:text-ink" [attr.aria-label]="'Изменить дату: ' + label" (click)="editMark(mark, value)">изменить</button>
+          <button type="button" class="text-xs text-muted underline hover:text-ink" [attr.aria-label]="'Изменить дату: ' + label" (click)="editMark(mark, value)">изменить</button>
         }
         @if (undo) {
-          <button type="button" class="ml-2 text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, mark)">отменить</button>
+          <button type="button" class="text-xs text-muted underline hover:text-crit" [disabled]="unmarking()" (click)="unmark(it, mark)">отменить</button>
         }
+        </span>
       }
     </dd>
   </div>

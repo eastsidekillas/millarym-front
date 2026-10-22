@@ -13,12 +13,12 @@ import { REF_TEXT, RefForm } from '../model/ref-form.service';
     @if (form.state(); as s) {
       <app-modal [title]="s.item ? text().one + ' «' + s.item.name + '»' : text().create" width="md:max-w-md" (closed)="form.close()">
         <form class="grid gap-5 px-6 py-5" (ngSubmit)="save()" novalidate>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Название</span>
             <input class="field" name="name" [(ngModel)]="name" [placeholder]="text().placeholder" autocomplete="off" />
           </label>
           @if (s.kind === 'teams') {
-            <label class="grid gap-1.5">
+            <label class="grid content-start gap-1.5">
               <span class="text-xs text-muted">Бригадир</span>
               <input class="field" name="foreman" [(ngModel)]="foreman" placeholder="Необязательно" autocomplete="off" />
             </label>

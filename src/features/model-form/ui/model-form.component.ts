@@ -15,11 +15,11 @@ const MAX_MB = 15;
     @if (form.state()) {
       <app-modal [title]="editing() ? 'Модель «' + editing()!.name + '»' : 'Новая модель'" width="md:max-w-lg" (closed)="form.close()">
         <form class="grid gap-5 px-6 py-5" (ngSubmit)="save()" novalidate>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Название</span>
             <input class="field" name="name" [(ngModel)]="name" placeholder="Как в 1С, например Бостон (4 кат.)" autocomplete="off" />
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Категория</span>
             <select class="field" name="category" [(ngModel)]="category">
               <option [ngValue]="null" disabled>Выберите категорию</option>
@@ -29,7 +29,7 @@ const MAX_MB = 15;
             </select>
           </label>
 
-          <div class="grid gap-1.5">
+          <div class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Фото</span>
             <div class="flex items-start gap-4">
               <div class="flex h-24 w-36 flex-none items-center justify-center overflow-hidden rounded-lg border border-line" [class.bg-white]="preview()" [class.bg-sub]="!preview()">
@@ -52,7 +52,7 @@ const MAX_MB = 15;
             </div>
           </div>
 
-          <div class="grid gap-1.5">
+          <div class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Своя комплектация</span>
             <p class="text-xs text-muted">Кнопки при заведении изделия этой модели, рядом с общими («Левый угол», «Накладки…»). Например, «Подушки-подголовники 3 шт.»</p>
             @if (kitOptions().length) {

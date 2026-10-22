@@ -13,16 +13,16 @@ import { ChangePassword } from '../model/change-password.service';
     @if (dialog.opened()) {
       <app-modal title="Смена пароля" width="md:max-w-md" (closed)="dialog.close()">
         <form class="grid gap-5 px-6 py-5" (ngSubmit)="save()" novalidate>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Текущий пароль</span>
             <input class="field" type="password" name="old" [(ngModel)]="old" autocomplete="current-password" />
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Новый пароль</span>
             <input class="field" type="password" name="new" [(ngModel)]="fresh" autocomplete="new-password" />
             <span class="text-xs text-muted">Не короче 8 символов, не только цифры и не похож на логин.</span>
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Новый пароль ещё раз</span>
             <input class="field" type="password" name="repeat" [(ngModel)]="repeat" autocomplete="new-password" />
           </label>
