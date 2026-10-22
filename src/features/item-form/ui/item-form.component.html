@@ -5,11 +5,11 @@
     (closed)="form.close()"
   >
     <form class="grid gap-x-4 gap-y-5 px-6 py-5 sm:grid-cols-2" (ngSubmit)="submit()" novalidate>
-      <div class="grid gap-1.5">
+      <div class="grid content-start gap-1.5">
         <span class="text-xs text-muted" id="item-model-label">Модель</span>
         <app-model-picker [models]="models()" [value]="modelChoice()" (valueChange)="modelChoice.set($event)" />
       </div>
-      <label class="grid gap-1.5">
+      <label class="grid content-start gap-1.5">
         <span class="text-xs text-muted">Комплектация / дополнения</span>
         <input class="field" name="extra" [value]="extra()" (input)="extra.set($any($event.target).value)" placeholder="Например, левый угол" />
       </label>
@@ -30,7 +30,7 @@
       }
 
       @if (!editing()) {
-        <label class="grid gap-1.5 sm:col-span-2">
+        <label class="grid content-start gap-1.5 sm:col-span-2">
           <span class="text-xs text-muted">Резерв</span>
           <input
             class="field"
@@ -65,19 +65,19 @@
         @for (row of slots; track row.slot; let first = $first) {
           <div class="grid grid-cols-[104px_1fr_88px] items-center gap-2">
             <span class="text-sm text-muted">{{ row.label }}</span>
-            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Обязательно. Начните вводить название' : ''" />
+            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Обязательно, начните вводить' : ''" />
             <input class="field tnum" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal" placeholder="м" [attr.aria-label]="'Метраж: ' + row.label" />
           </div>
         }
       </div>
 
       @if (!editing()) {
-        <label class="grid gap-1.5">
+        <label class="grid content-start gap-1.5">
           <span class="text-xs text-muted">Количество единиц</span>
           <input type="number" min="1" max="50" class="field tnum" name="qty" [(ngModel)]="qty" />
         </label>
       }
-      <label class="grid gap-1.5" [class.sm:col-span-2]="editing()">
+      <label class="grid content-start gap-1.5" [class.sm:col-span-2]="editing()">
         <span class="text-xs text-muted">Комментарий</span>
         <input class="field" name="comment" [(ngModel)]="comment" />
       </label>

@@ -22,7 +22,7 @@ type TabId = (typeof TABS)[number]['id'];
   imports: [ModelsTabComponent, SimpleTabComponent, DeadlinesTabComponent, ModelFormComponent, RefFormComponent],
   template: `
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <h1 class="text-xl font-semibold">Справочники</h1>
+      <h1 class="text-xl font-semibold leading-9">Справочники</h1>
       @if (!canEdit) {
         <p class="text-sm text-muted">Менять справочники могут: директор и руководитель швейного цеха.</p>
       }

@@ -1,13 +1,13 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
-  <h1 class="text-xl font-semibold">Ткани</h1>
+  <h1 class="text-xl font-semibold leading-9">Ткани</h1>
   @if (session.can('fabrics')) {
     <button type="button" class="btn-primary" (click)="form.create()">Добавить ткань</button>
   }
 </div>
 
 <div class="mb-4 mt-4 flex flex-wrap items-center gap-2">
-  <input type="search" class="field max-w-xs" placeholder="Название ткани" aria-label="Поиск ткани" (input)="type($any($event.target).value)" />
-  <select class="select-sm h-9" aria-label="Порядок" [value]="ordering()" (change)="ordering.set($any($event.target).value)">
+  <input type="search" class="field sm:max-w-xs" placeholder="Название ткани" aria-label="Поиск ткани" (input)="type($any($event.target).value)" />
+  <select class="field pr-8 sm:w-auto" aria-label="Порядок" [value]="ordering()" (change)="ordering.set($any($event.target).value)">
     <option value="name">По названию</option>
     <option value="-in_work">Сначала те, что в работе</option>
     <option value="-created_at">Сначала новые</option>

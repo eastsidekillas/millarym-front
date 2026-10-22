@@ -1,38 +1,38 @@
-<h1 class="text-xl font-semibold">Журнал</h1>
+<h1 class="text-xl font-semibold leading-9">Журнал</h1>
 <p class="mt-1 max-w-[72ch] text-sm text-muted">Кто и что сделал с изделиями. Записи не меняются и не удаляются.</p>
 
 <div class="mb-4 mt-4 flex flex-wrap items-end gap-2">
-  <label class="grid gap-1">
+  <label class="grid w-full content-start gap-1.5 sm:w-auto">
     <span class="text-xs text-muted">Сотрудник</span>
-    <select class="select-sm h-9" [value]="user()" (change)="set('user', $any($event.target).value)">
+    <select class="field pr-8 sm:w-auto" [value]="user()" (change)="set('user', $any($event.target).value)">
       <option value="">Все</option>
       @for (e of employees(); track e.id) {
         <option [value]="'' + e.id" [selected]="user() === '' + e.id">{{ e.short_name }}</option>
       }
     </select>
   </label>
-  <label class="grid gap-1">
+  <label class="grid w-full content-start gap-1.5 sm:w-auto">
     <span class="text-xs text-muted">Действие</span>
-    <select class="select-sm h-9" [value]="kind()" (change)="set('kind', $any($event.target).value)">
+    <select class="field pr-8 sm:w-auto" [value]="kind()" (change)="set('kind', $any($event.target).value)">
       @for (k of kinds; track k.id) {
         <option [value]="k.id" [selected]="kind() === k.id">{{ k.title }}</option>
       }
     </select>
   </label>
-  <label class="grid gap-1">
+  <label class="grid min-w-0 flex-1 basis-[calc(50%-4px)] content-start gap-1.5 sm:flex-none sm:basis-auto">
     <span class="text-xs text-muted">С</span>
-    <input type="date" class="field h-9 w-auto" [value]="from()" (change)="set('from', $any($event.target).value)" />
+    <input type="date" class="field min-w-0 sm:w-auto" [value]="from()" (change)="set('from', $any($event.target).value)" />
   </label>
-  <label class="grid gap-1">
+  <label class="grid min-w-0 flex-1 basis-[calc(50%-4px)] content-start gap-1.5 sm:flex-none sm:basis-auto">
     <span class="text-xs text-muted">По</span>
-    <input type="date" class="field h-9 w-auto" [value]="to()" (change)="set('to', $any($event.target).value)" />
+    <input type="date" class="field min-w-0 sm:w-auto" [value]="to()" (change)="set('to', $any($event.target).value)" />
   </label>
-  <label class="grid min-w-[220px] flex-1 gap-1 sm:max-w-xs">
+  <label class="grid w-full content-start gap-1.5 sm:w-auto sm:min-w-[220px] sm:max-w-xs sm:flex-1">
     <span class="text-xs text-muted">Номер, резерв или текст</span>
     <input type="search" class="field" [value]="q()" (input)="type($any($event.target).value)" placeholder="Например, 7965 или Фоминых" />
   </label>
   @if (hasFilters()) {
-    <button type="button" class="btn-ghost" (click)="reset()">Сбросить</button>
+    <button type="button" class="btn-ghost h-9" (click)="reset()">Сбросить</button>
   }
 </div>
 

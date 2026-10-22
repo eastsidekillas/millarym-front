@@ -1,7 +1,13 @@
-<h1 class="text-xl font-semibold">Отчёты</h1>
+<h1 class="text-xl font-semibold leading-9">Отчёты</h1>
 
 <div class="mt-4 grid gap-6 lg:grid-cols-[240px_1fr]">
-  <nav aria-label="Отчёты">
+  <!-- на телефоне список из девяти отчётов отодвигал сам отчёт за экран — там выбор списком -->
+  <select class="field lg:hidden" aria-label="Отчёт" (change)="select($any($event.target).value)">
+    @for (r of reports(); track r.kind) {
+      <option [value]="r.kind" [selected]="kind() === r.kind">{{ r.title }}</option>
+    }
+  </select>
+  <nav class="hidden lg:block" aria-label="Отчёты">
     <ul class="grid gap-0.5">
       @for (r of reports(); track r.kind) {
         <li>
@@ -49,7 +55,7 @@
               }
               @case ('date') {}
               @case ('models') {
-                <div class="grid gap-1.5">
+                <div class="grid content-start gap-1.5">
                   <span class="text-xs text-muted">{{ p.label }}</span>
                   <app-model-picker
                     [options]="freeModels()"
@@ -65,7 +71,7 @@
           @if (r.params[0]?.type === 'date') {
             <div class="flex flex-wrap items-end gap-2">
               @for (p of r.params; track p.name) {
-                <label class="grid gap-1.5">
+                <label class="grid content-start gap-1.5">
                   <span class="text-xs text-muted">{{ p.label }}</span>
                   <input type="date" class="field w-auto" [value]="values()[p.name]" (change)="set(p.name, $any($event.target).value)" />
                 </label>
@@ -107,7 +113,7 @@
           </details>
         }
 
-        <div class="mt-3 overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
+        <div class="relative mt-3 overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
           <table class="w-full min-w-[760px] text-sm">
             <thead>
               <tr class="border-b border-line text-left text-xs text-muted">

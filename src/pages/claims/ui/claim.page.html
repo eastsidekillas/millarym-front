@@ -1,5 +1,5 @@
 <ng-template #fieldTpl let-f>
-  <label class="grid gap-1.5" [class.sm:col-span-2]="f.wide">
+  <label class="grid content-start gap-1.5" [class.sm:col-span-2]="f.wide">
     <span class="text-xs text-muted">{{ f.label }}</span>
     @switch (f.kind) {
       @case ('area') {
@@ -21,7 +21,7 @@
 <div class="mx-auto max-w-4xl">
   <a routerLink="/claims" class="text-sm text-muted hover:text-ink">Все рекламации</a>
   <div class="mt-1 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-    <h1 class="text-xl font-semibold">{{ title() }}</h1>
+    <h1 class="text-xl font-semibold leading-9">{{ title() }}</h1>
     @if (claim(); as c) {
       <p class="text-xs text-muted">Заведена {{ fmtTime(c.created_at) }}, {{ c.created_by.name }}. Изменена {{ fmtTime(c.updated_at) }}, {{ c.updated_by.name }}</p>
     }
@@ -48,7 +48,7 @@
             <label class="flex items-center gap-2"><input type="radio" name="close-state" [checked]="closeState() === 'done'" (change)="closeState.set('done')" /> Выполнена — брак устранён</label>
             <label class="flex items-center gap-2"><input type="radio" name="close-state" [checked]="closeState() === 'withdrawn'" (change)="closeState.set('withdrawn')" /> Снята — покупатель исправил сам или отказался</label>
           </div>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Чем закончилась (необязательно)</span>
             <textarea class="field min-h-[60px]" rows="2" [value]="closeNote()" (input)="closeNote.set($any($event.target).value)" placeholder="Например, заменили подлокотник, отправили 21.10"></textarea>
           </label>
@@ -75,11 +75,11 @@
         <p class="mt-0.5 text-sm text-muted">Как в акте-претензии, который прислал партнёр.</p>
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Дата в акте клиента</span>
             <input type="date" class="field w-auto" name="act_date" [value]="value('act_date')" (change)="setValue('act_date', $any($event.target).value)" [disabled]="!canEdit" />
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Менеджер</span>
             <select class="field" name="manager" [(ngModel)]="form.manager" [disabled]="!canEdit">
               <option [ngValue]="null">Не выбран</option>
@@ -88,11 +88,11 @@
               }
             </select>
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Контрагент</span>
             <input type="text" class="field" name="counterparty" placeholder="Кто прислал рекламацию" [value]="value('counterparty')" (input)="setValue('counterparty', $any($event.target).value)" [disabled]="!canEdit" />
           </label>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Наименование отправителя</span>
             <select class="field" name="sender" [(ngModel)]="form.sender" [disabled]="!canEdit">
               <option value="">Не выбрано</option>
@@ -102,7 +102,7 @@
             </select>
           </label>
 
-          <div class="grid gap-1.5 sm:col-span-2">
+          <div class="grid content-start gap-1.5 sm:col-span-2">
             <span class="text-xs text-muted">Изделие в базе</span>
             @if (linked(); as l) {
               <div class="flex flex-wrap items-center gap-3 rounded-md bg-sub px-3 py-2 text-sm">
@@ -148,7 +148,7 @@
       <section class="rounded-lg border border-line bg-surface p-5">
         <h2 class="text-base font-semibold">Заполняет менеджер</h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Тип претензии</span>
             <select class="field" name="claim_type" [(ngModel)]="form.claim_type" [disabled]="!canEdit">
               @for (c of choices()?.claim_type ?? []; track c.id) {
@@ -166,7 +166,7 @@
       <section class="rounded-lg border border-line bg-surface p-5">
         <h2 class="text-base font-semibold">Заполняет мастер цеха</h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Вид дефекта</span>
             <select class="field" name="defect_type" [(ngModel)]="form.defect_type" [disabled]="!canEdit">
               <option value="">Не определён</option>

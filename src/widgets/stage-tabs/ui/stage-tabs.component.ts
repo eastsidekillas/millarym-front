@@ -3,6 +3,7 @@ import { Counters, STAGES, Stage } from '@entities/item';
 
 @Component({
   selector: 'app-stage-tabs',
+  host: { class: 'block min-w-0 max-w-full' },
   template: `
     <div class="flex min-w-0 overflow-x-auto" role="tablist" aria-label="Этапы">
       <div class="flex flex-none rounded-lg border border-line bg-surface p-0.5">

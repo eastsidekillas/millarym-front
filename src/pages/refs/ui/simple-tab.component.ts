@@ -27,7 +27,7 @@ const HINT: Record<SimpleRefKind, string> = {
         <button type="button" class="btn-primary" (click)="form.open(kind())">{{ add[kind()] }}</button>
       }
     </div>
-    <div class="overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
       <table class="w-full min-w-[520px] text-sm">
         <thead>
           <tr class="border-b border-line text-left text-xs text-muted">

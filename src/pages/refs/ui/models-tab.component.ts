@@ -14,8 +14,8 @@ const norm = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
   selector: 'app-models-tab',
   template: `
     <div class="mb-4 flex flex-wrap items-center gap-2">
-      <input type="search" class="field max-w-xs" placeholder="Название модели" aria-label="Поиск модели" (input)="search.set($any($event.target).value)" />
-      <select class="select-sm h-9" aria-label="Категория" (change)="setCategory($any($event.target).value)">
+      <input type="search" class="field sm:max-w-xs" placeholder="Название модели" aria-label="Поиск модели" (input)="search.set($any($event.target).value)" />
+      <select class="field pr-8 sm:w-auto" aria-label="Категория" (change)="setCategory($any($event.target).value)">
         <option value="">Все категории</option>
         @for (c of categories(); track c.id) {
           <option [value]="c.id" [selected]="c.id === +category()">{{ c.name }} ({{ c.models_count }})</option>
@@ -31,7 +31,7 @@ const norm = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
       }
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-surface" [class.opacity-60]="loading()">
       <table class="w-full min-w-[640px] text-sm">
         <thead>
           <tr class="border-b border-line text-left text-xs text-muted">

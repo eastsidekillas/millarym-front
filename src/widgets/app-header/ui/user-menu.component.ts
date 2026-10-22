@@ -1,9 +1,10 @@
 import { Component, ElementRef, computed, inject, signal, viewChildren } from '@angular/core';
 import { Router } from '@angular/router';
-import { ChevronDown, CircleUserRound, DatabaseBackup, KeyRound, LogOut, LucideAngularModule } from 'lucide-angular';
+import { ChevronDown, CircleUserRound, DatabaseBackup, KeyRound, LogOut, LucideAngularModule, Monitor, Moon, Sun } from 'lucide-angular';
 import { SessionStore } from '@entities/session';
 import { ChangePassword } from '@features/change-password';
 import { Logout } from '@features/logout';
+import { ThemeMode, ThemeService } from '@shared/lib';
 
 @Component({
   selector: 'app-user-menu',
@@ -29,10 +30,28 @@ import { Logout } from '@features/logout';
         <span class="flex text-muted transition-transform" [class.rotate-180]="open()"><lucide-icon [img]="chevron" /></span>
       </button>
       @if (open()) {
-        <div class="absolute right-0 top-full z-40 mt-1 w-60 rounded-lg border border-line bg-surface py-1 shadow-[0_4px_12px_rgb(0_0_0/.08)]" role="menu" [attr.aria-label]="me.short_name">
+        <div class="absolute right-0 top-full z-40 mt-1 w-64 rounded-lg border border-line bg-surface py-1 shadow-[0_4px_12px_rgb(0_0_0/.08)]" role="menu" [attr.aria-label]="me.short_name">
           <div class="border-b border-line px-3 pb-2 pt-1.5 lg:hidden">
             <div class="text-sm font-medium">{{ me.short_name }}</div>
             <div class="text-xs text-muted">{{ me.role }}</div>
+          </div>
+          <div class="border-b border-line px-3 pb-2.5 pt-1.5">
+            <div class="mb-1.5 text-xs text-muted" id="theme-label">Оформление</div>
+            <div class="grid grid-cols-3 gap-1 rounded-lg bg-sub p-0.5" role="radiogroup" aria-labelledby="theme-label">
+              @for (t of themes; track t.id) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="flex h-8 items-center justify-center gap-1.5 rounded-md text-xs"
+                  [class]="theme.mode() === t.id ? 'bg-surface font-medium text-ink shadow-[0_1px_2px_rgb(0_0_0/.12)]' : 'text-muted hover:text-ink'"
+                  [attr.aria-checked]="theme.mode() === t.id"
+                  [title]="t.title"
+                  (click)="theme.set(t.id)"
+                >
+                  <span class="flex"><lucide-icon [img]="t.icon" [size]="14" /></span>{{ t.label }}
+                </button>
+              }
+            </div>
           </div>
           <button #item type="button" role="menuitem" class="menu-item" (click)="changePassword()" (keydown)="move($event, 0)">
             <span class="flex text-muted"><lucide-icon [img]="keyIcon" /></span>
@@ -71,6 +90,12 @@ export class UserMenuComponent {
   readonly keyIcon = KeyRound;
   readonly logoutIcon = LogOut;
   readonly backupIcon = DatabaseBackup;
+  readonly theme = inject(ThemeService);
+  readonly themes: { id: ThemeMode; label: string; title: string; icon: typeof Sun }[] = [
+    { id: 'system', label: 'Авто', title: 'Как в системе', icon: Monitor },
+    { id: 'light', label: 'Светлая', title: 'Светлая тема', icon: Sun },
+    { id: 'dark', label: 'Тёмная', title: 'Тёмная тема', icon: Moon },
+  ];
 
   toggle() {
     if (this.open()) this.close();

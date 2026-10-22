@@ -7,13 +7,14 @@ import { LucideAngularModule, Trash2 } from 'lucide-angular';
   template: `
     <button
       type="button"
-      class="fixed bottom-5 right-5 z-30 flex h-10 items-center gap-2 rounded-lg border px-4 text-sm shadow-[0_1px_2px_rgb(0_0_0/.06)]"
-      [class]="active() ? 'border-accent bg-accent font-medium text-onaccent' : 'border-line bg-surface hover:bg-sub'"
+      class="btn border"
+      [class]="active() ? 'border-accent bg-accent text-onaccent' : 'border-line bg-surface text-ink hover:bg-sub'"
+      [attr.aria-pressed]="active()"
       (click)="pressed.emit()"
     >
-      <lucide-icon [img]="trashIcon" />
+      <span class="flex" [class]="active() ? 'text-onaccent' : 'text-muted'"><lucide-icon [img]="trashIcon" /></span>
       Корзина
-      <span class="tnum" [class]="active() ? 'text-onaccent/75' : 'text-muted'">{{ count() ?? '' }}</span>
+      <span class="tnum font-normal" [class]="active() ? 'text-onaccent/75' : 'text-muted'">{{ count() ?? '' }}</span>
     </button>
   `,
 })

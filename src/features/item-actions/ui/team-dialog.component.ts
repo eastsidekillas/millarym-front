@@ -20,7 +20,7 @@ import { ItemActions } from '../model/item-actions.service';
           } @else if (!teams().length) {
             <p class="text-sm">Бригад пока нет. Добавьте их в админке, в разделе «Бригады».</p>
           } @else {
-            <div class="grid gap-1.5" role="radiogroup" aria-label="Бригада">
+            <div class="grid content-start gap-1.5" role="radiogroup" aria-label="Бригада">
               @for (t of teams(); track t.id) {
                 <button
                   type="button"

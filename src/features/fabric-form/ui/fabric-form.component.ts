@@ -15,12 +15,12 @@ const MAX_MB = 15;
     @if (form.state()) {
       <app-modal [title]="editing() ? 'Ткань «' + editing()!.name + '»' : 'Новая ткань'" width="md:max-w-lg" (closed)="form.close()">
         <form class="grid gap-5 px-6 py-5" (ngSubmit)="save()" novalidate>
-          <label class="grid gap-1.5">
+          <label class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Название</span>
             <input class="field" name="name" [(ngModel)]="name" placeholder="Как на ярлыке рулона, например kioto beige" autocomplete="off" />
           </label>
 
-          <div class="grid gap-1.5">
+          <div class="grid content-start gap-1.5">
             <span class="text-xs text-muted">Фото</span>
             <div class="flex items-start gap-4">
               <div class="flex h-28 w-28 flex-none items-center justify-center overflow-hidden rounded-lg border border-line bg-sub">
