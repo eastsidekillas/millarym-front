@@ -119,6 +119,8 @@ fi
 
 step "сборка и запуск (первый раз — несколько минут)"
 $DC up -d --build --remove-orphans || die "docker compose up"
+# скрипт службы копий подключён файлом из репозитория — после обновления кода перечитываем его
+$DC restart backup >/dev/null 2>&1 || true
 for i in $(seq 90); do
   st=$($DC ps -a --format '{{.Service}} {{.State}} {{.ExitCode}}' | awk '$1=="migration"{print $2" "$3}')
   case "$st" in "exited 0") break;; exited*) break;; esac
@@ -150,5 +152,9 @@ echo "(ожидается: / → 200, /api/v1/users/me/ → 401 без вход�
 $DC exec -T app sh -c 'touch /app/media/.write-test && rm /app/media/.write-test' && echo "папка фото доступна приложению на запись" || echo "ОШИБКА: приложение не может писать в папку фото"
 $DC logs --tail 15 app frontend scheduler backup $([ "$LAN" = 0 ] && echo caddy) 2>&1 | tail -60
 
+# меню обслуживания: команда crm
+ln -sf "$BACK/deploy/crm.sh" /usr/local/bin/crm
+
 step "готово: $URL"
 echo "Лог: $LOG"
+echo "Обслуживание (копии, обновление, перенос, пароли): crm"
