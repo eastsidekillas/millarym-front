@@ -120,6 +120,7 @@ export class ModelsTabComponent {
   constructor() {
     effect(() => {
       this.form.saved();
+      this.api.changed();
       untracked(() => this.load());
     });
   }

@@ -93,6 +93,7 @@ export class SimpleTabComponent {
     effect(() => {
       const kind = this.kind();
       this.form.saved();
+      this.api.changed();
       untracked(() => this.load(kind));
     });
   }

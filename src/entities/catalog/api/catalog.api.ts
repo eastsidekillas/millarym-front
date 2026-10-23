@@ -1,9 +1,10 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, map, shareReplay, tap } from 'rxjs';
 import { Page } from '@shared/api';
 import { environment } from '@shared/config';
 import {
+  CatalogImport,
   Category,
   Deadlines,
   Fabric,
@@ -21,6 +22,8 @@ export class CatalogApi {
   private readonly http = inject(HttpClient);
   private readonly api = environment.baseURL;
 
+  /** Справочники загрузили из Excel — вкладки перечитывают списки. */
+  readonly changed = signal(0);
   private models$?: Observable<ProductModel[]>;
   private kit$?: Observable<KitOption[]>;
 
@@ -109,6 +112,24 @@ export class CatalogApi {
 
   updateDeadlines(body: Partial<Deadlines>): Observable<Deadlines> {
     return this.http.patch<Deadlines>(`${this.api}/deadlines/`, body);
+  }
+
+  exportXlsx(): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.api}/catalog/export/`, { observe: 'response', responseType: 'blob' });
+  }
+
+  importXlsx(file: File, dryRun: boolean): Observable<CatalogImport> {
+    const body = new FormData();
+    body.append('file', file);
+    const url = `${this.api}/catalog/import/` + (dryRun ? '?dry_run=1' : '');
+    return this.http.post<CatalogImport>(url, body).pipe(
+      tap((r) => {
+        if (!r.applied) return;
+        this.models$ = undefined;
+        this.kit$ = undefined;
+        this.changed.update((v) => v + 1);
+      }),
+    );
   }
 
   private forgetModels() {
