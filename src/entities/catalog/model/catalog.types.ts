@@ -76,5 +76,6 @@ export interface CatalogImportSheet {
 export interface CatalogImport {
   applied: boolean;
   has_errors: boolean;
+  foreign: boolean;
   sheets: CatalogImportSheet[];
 }
