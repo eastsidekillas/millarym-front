@@ -63,3 +63,18 @@ export interface SimpleRefBody {
   foreman?: string;
   active?: boolean;
 }
+
+export interface CatalogImportSheet {
+  title: string;
+  created: string[];
+  updated: string[];
+  unchanged: number;
+  errors: string[];
+  skipped: string;
+}
+
+export interface CatalogImport {
+  applied: boolean;
+  has_errors: boolean;
+  sheets: CatalogImportSheet[];
+}

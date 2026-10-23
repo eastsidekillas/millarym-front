@@ -1,5 +1,7 @@
 export { CatalogApi } from './api/catalog.api';
 export type {
+  CatalogImport,
+  CatalogImportSheet,
   Category,
   Deadlines,
   Fabric,

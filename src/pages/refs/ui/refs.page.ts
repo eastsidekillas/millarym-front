@@ -1,10 +1,16 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { CatalogApi } from '@entities/catalog';
 import { SessionStore } from '@entities/session';
 import { ModelFormComponent } from '@features/model-form';
 import { RefFormComponent } from '@features/ref-form';
+import { errorText } from '@shared/api';
+import { filenameFrom, saveBlob } from '@shared/lib';
+import { ToastService } from '@shared/ui';
 import { DeadlinesTabComponent } from './deadlines-tab.component';
+import { ImportDialogComponent } from './import-dialog.component';
 import { ModelsTabComponent } from './models-tab.component';
 import { SimpleTabComponent } from './simple-tab.component';
 
@@ -19,13 +25,21 @@ type TabId = (typeof TABS)[number]['id'];
 
 @Component({
   selector: 'app-refs-page',
-  imports: [ModelsTabComponent, SimpleTabComponent, DeadlinesTabComponent, ModelFormComponent, RefFormComponent],
+  imports: [ModelsTabComponent, SimpleTabComponent, DeadlinesTabComponent, ModelFormComponent, RefFormComponent, ImportDialogComponent],
   template: `
-    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <h1 class="text-xl font-semibold leading-9">Справочники</h1>
-      @if (!canEdit) {
-        <p class="text-sm text-muted">Менять справочники могут: директор и руководитель швейного цеха.</p>
-      }
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <h1 class="text-xl font-semibold leading-9">Справочники</h1>
+        @if (!canEdit) {
+          <p class="text-sm text-muted">Менять справочники могут: директор и руководитель швейного цеха.</p>
+        }
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn-outline" [disabled]="exporting()" (click)="exportXlsx()">{{ exporting() ? 'Готовим файл…' : 'Выгрузить в Excel' }}</button>
+        @if (canImport) {
+          <button type="button" class="btn-outline" (click)="importOpen.set(true)">Загрузить из Excel…</button>
+        }
+      </div>
     </div>
 
     <div class="mt-4 flex gap-1 overflow-x-auto border-b border-line" role="tablist" aria-label="Справочники">
@@ -60,12 +74,31 @@ type TabId = (typeof TABS)[number]['id'];
 
     <app-model-form />
     <app-ref-form />
+    <app-import-dialog [(open)]="importOpen" />
   `,
 })
 export class RefsPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly catalog = inject(CatalogApi);
+  private readonly toast = inject(ToastService);
   readonly canEdit = inject(SessionStore).can('catalog');
+  // ткани тоже лежат в файле — их может загрузить тот, у кого право на ткани
+  readonly canImport = this.canEdit || inject(SessionStore).can('fabrics');
+  readonly exporting = signal(false);
+  readonly importOpen = signal(false);
+
+  async exportXlsx() {
+    this.exporting.set(true);
+    try {
+      const response = await firstValueFrom(this.catalog.exportXlsx());
+      saveBlob(response.body!, filenameFrom(response, 'Справочники.xlsx'));
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось выгрузить справочники.'));
+    } finally {
+      this.exporting.set(false);
+    }
+  }
   readonly tabs = TABS;
 
   private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
