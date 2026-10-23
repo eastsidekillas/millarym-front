@@ -28,10 +28,12 @@ export interface Item {
   stage_label: string;
   stage_since: string;
   team: Ref | null;
+  fabric_ordered_at: string | null;
   fabric_arrived_at: string | null;
   sew_at: string | null;
   cover_ready_at: string | null;
   work_at: string | null;
+  fg_at: string | null;
   indiv: boolean;
   indiv_note: string;
   due_at: string | null;
@@ -59,6 +61,7 @@ export interface ItemEvent {
 
 export type ActionCode =
   | 'move'
+  | 'fabric_ordered'
   | 'fabric_arrived'
   | 'sew'
   | 'cover_ready'
