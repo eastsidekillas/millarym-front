@@ -15,8 +15,9 @@ import {
   StageFilter,
 } from '../model/item.types';
 
-export type Mark = 'fabric_arrived' | 'sew' | 'cover_ready';
-export type SimpleAction = 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy' | 'ack-changes';
+/** «fg» — только для правки даты перевода на СГП. */
+export type Mark = 'fabric_ordered' | 'fabric_arrived' | 'sew' | 'cover_ready' | 'fg';
+export type SimpleAction = 'fabric-ordered' | 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy' | 'ack-changes';
 
 @Injectable({ providedIn: 'root' })
 export class ItemApi {
@@ -58,12 +59,12 @@ export class ItemApi {
     return this.http.patch<ItemDetail>(`${this.api}/${id}/`, body);
   }
 
-  move(id: number, to: Stage, team?: number | null): Observable<ItemDetail> {
-    return this.http.post<ItemDetail>(`${this.api}/${id}/move/`, { to, team: team ?? null });
+  move(id: number, to: Stage, team?: number | null, date?: string | null): Observable<ItemDetail> {
+    return this.http.post<ItemDetail>(`${this.api}/${id}/move/`, { to, team: team ?? null, date: date ?? null });
   }
 
-  bulkMove(ids: number[], to: Stage, team?: number | null): Observable<Item[]> {
-    return this.http.post<Item[]>(`${this.api}/bulk-move/`, { ids, to, team: team ?? null });
+  bulkMove(ids: number[], to: Stage, team?: number | null, date?: string | null): Observable<Item[]> {
+    return this.http.post<Item[]>(`${this.api}/bulk-move/`, { ids, to, team: team ?? null, date: date ?? null });
   }
 
   reserve(id: number, reserve: string): Observable<ItemDetail> {

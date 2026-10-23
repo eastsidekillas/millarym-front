@@ -33,6 +33,7 @@ export class ItemCardComponent {
   readonly passport = inject(PrintPassport);
   readonly canClaim = inject(SessionStore).can('claims');
   readonly canMarks = inject(SessionStore).can('marks');
+  readonly canFg = inject(SessionStore).can('move_work_fg');
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
@@ -69,7 +70,7 @@ export class ItemCardComponent {
   );
   readonly mainActions = computed(() =>
     (this.item()?.actions ?? []).filter(
-      (a) => a.allowed && ['move', 'restore', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),
+      (a) => a.allowed && ['move', 'restore', 'fabric_ordered', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),
     ),
   );
   readonly otherActions = computed(() => {

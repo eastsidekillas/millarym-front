@@ -56,7 +56,14 @@
             <td class="tnum whitespace-nowrap px-3 py-3">
               @switch (col.key) {
                 @case ('fabric') {
-                  @if (it.fabric_arrived_at) { {{ fmt(it.fabric_arrived_at) }} } @else { <span class="font-medium text-warn">ждём</span> }
+                  @if (it.fabric_arrived_at) {
+                    {{ fmt(it.fabric_arrived_at) }}
+                  } @else if (it.fabric_ordered_at) {
+                    <span class="font-medium text-warn">ждём</span>
+                    <span class="block text-xs text-muted">заказана {{ fmt(it.fabric_ordered_at) }}</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
                 }
                 @case ('sew') {
                   @if (it.sew_at) { {{ fmt(it.sew_at) }} } @else { <span class="text-muted">—</span> }
@@ -96,7 +103,11 @@
             } @else {
               @if (session.can('marks')) {
                 @if (it.stage === 'orders' && !it.fabric_arrived_at) {
-                  <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'fabric_arrived')">Ткань пришла</button>
+                  @if (it.fabric_ordered_at) {
+                    <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'fabric_arrived')">Ткань пришла</button>
+                  } @else {
+                    <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'fabric_ordered')">Ткань заказана</button>
+                  }
                 }
                 @if (it.stage === 'cut' && !it.sew_at) {
                   <button type="button" class="btn-row mr-1.5" [disabled]="actions.busy()" (click)="actions.run(it, 'sew')">В шитьё</button>

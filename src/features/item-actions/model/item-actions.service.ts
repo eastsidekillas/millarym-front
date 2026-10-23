@@ -5,12 +5,18 @@ import { ActionCode, Item, ItemApi, ItemDetail, ItemsChanged, STAGE_NAME, Simple
 import { errorText } from '@shared/api';
 import { ConfirmService, ToastService } from '@shared/ui';
 
+export interface DateRequest {
+  count: number;
+  resolve: (date: string | null) => void;
+}
+
 export interface TeamRequest {
   count: number;
   resolve: (team: Team | null) => void;
 }
 
 const SIMPLE: Partial<Record<ActionCode, SimpleAction>> = {
+  fabric_ordered: 'fabric-ordered',
   fabric_arrived: 'fabric-arrived',
   sew: 'sew',
   cover_ready: 'cover-ready',
@@ -23,6 +29,7 @@ const SIMPLE: Partial<Record<ActionCode, SimpleAction>> = {
 };
 
 const DONE: Partial<Record<ActionCode, string>> = {
+  fabric_ordered: 'ткань заказана',
   fabric_arrived: 'ткань пришла',
   sew: 'выдано в шитьё',
   cover_ready: 'отшит',
@@ -43,6 +50,7 @@ export class ItemActions {
   private readonly confirm = inject(ConfirmService);
 
   readonly teamRequest = signal<TeamRequest | null>(null);
+  readonly dateRequest = signal<DateRequest | null>(null);
   readonly busy = signal(false);
 
   askTeam(count: number): Promise<Team | null> {
@@ -57,23 +65,46 @@ export class ItemActions {
     );
   }
 
+  /** Дата перевода на СГП: сегодня или раньше — если кнопку нажали не в тот день. */
+  askDate(count: number): Promise<string | null> {
+    return new Promise((resolve) =>
+      this.dateRequest.set({
+        count,
+        resolve: (date) => {
+          this.dateRequest.set(null);
+          resolve(date);
+        },
+      }),
+    );
+  }
+
   async move(item: Target, to: Stage): Promise<ItemDetail | null> {
     let team: Team | null = null;
+    let date: string | null = null;
     if (to === 'work') {
       team = await this.askTeam(1);
       if (!team) return null;
     }
-    return this.call(this.api.move(item.id, to, team?.id), `${item.number} на этапе «${STAGE_NAME[to]}»`);
+    if (to === 'fg') {
+      date = await this.askDate(1);
+      if (!date) return null;
+    }
+    return this.call(this.api.move(item.id, to, team?.id, date), `${item.number} на этапе «${STAGE_NAME[to]}»`);
   }
 
   async bulkMove(items: Target[], to: Stage): Promise<Item[] | null> {
     let team: Team | null = null;
+    let date: string | null = null;
     if (to === 'work') {
       team = await this.askTeam(items.length);
       if (!team) return null;
     }
+    if (to === 'fg') {
+      date = await this.askDate(items.length);
+      if (!date) return null;
+    }
     const numbers = items.map((i) => i.number).join(', ');
-    return this.call(this.api.bulkMove(items.map((i) => i.id), to, team?.id), `На этапе «${STAGE_NAME[to]}»: ${numbers}`);
+    return this.call(this.api.bulkMove(items.map((i) => i.id), to, team?.id, date), `На этапе «${STAGE_NAME[to]}»: ${numbers}`);
   }
 
   async run(item: Target, code: ActionCode): Promise<ItemDetail | null> {
