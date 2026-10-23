@@ -27,6 +27,12 @@ import { ModalComponent, ToastService } from '@shared/ui';
             } @else {
               <p class="text-sm">Проверка прошла. Вот что изменится:</p>
             }
+            @if (r.foreign) {
+              <p class="text-[13px] text-muted">
+                Файл выгружен из другой базы (другой сервер) или старой версией программы — записи сопоставлены по названиям.
+                Переименование в таком файле станет новой записью.
+              </p>
+            }
             <div class="grid gap-3">
               @for (s of r.sheets; track s.title) {
                 <section class="rounded-lg border border-line px-4 py-3">
