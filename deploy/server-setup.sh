@@ -129,7 +129,9 @@ done
 step "справочники"
 $DC run --rm -T -v "$BACK/data:/data:ro" app django-admin import_models /data/models-2026-10-15.csv --create-categories | tail -3
 
-if [ "$FIRST" = 1 ]; then
+USERS=$($DC run --rm -T app django-admin shell -v 0 -c "from app_auth.models import User; print(User.objects.count())" 2>/dev/null | tail -1)
+# сотрудников нет и после очистки базы (deploy/reset-db.sh), не только при первой установке
+if [ "$FIRST" = 1 ] || [ "$USERS" = "0" ]; then
   step "сотрудники"
   umask 077
   $DC run --rm -T app django-admin create_users > /root/millarym-passwords.txt 2>&1
