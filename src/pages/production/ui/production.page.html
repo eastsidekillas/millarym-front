@@ -46,6 +46,20 @@
   </div>
 </div>
 
+@if (stage() === null && searchChips().length) {
+  <div class="mb-3 flex flex-wrap items-center gap-1.5" role="group" aria-label="Где искать">
+    <span class="mr-1 text-xs text-muted">Где:</span>
+    <button type="button" class="chip" [class.chip-on]="!searchIn()" [attr.aria-pressed]="!searchIn()" (click)="searchOn(null)">
+      Все этапы <span class="tnum ml-1.5 font-normal" [class.text-muted]="searchIn()">{{ searchTotal() }}</span>
+    </button>
+    @for (c of searchChips(); track c.id) {
+      <button type="button" class="chip" [class.chip-on]="searchIn() === c.id" [attr.aria-pressed]="searchIn() === c.id" (click)="searchOn(c.id)">
+        {{ c.name }} <span class="tnum ml-1.5 font-normal" [class.text-muted]="searchIn() !== c.id">{{ c.count }}</span>
+      </button>
+    }
+  </div>
+}
+
 @if (selectedItems().length) {
   <app-bulk-bar [items]="selectedItems()" (cleared)="clearSelection()" (done)="clearSelection()" />
 }
