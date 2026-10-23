@@ -6,7 +6,15 @@ export type ItemFormState = { mode: 'create' } | { mode: 'edit'; item: ItemDetai
 @Injectable({ providedIn: 'root' })
 export class ItemForm {
   readonly state = signal<ItemFormState | null>(null);
+  /** Что получилось после «Создать»: окно с номерами и печатью паспортов, пока сотрудник его не закроет. */
+  readonly done = signal<Item[] | null>(null);
+  /** Окно с номерами закрыто — список переходит на этап новых изделий. */
   readonly created = signal<Item[] | null>(null);
+
+  finish(): void {
+    this.created.set(this.done());
+    this.done.set(null);
+  }
 
   create(): void {
     this.state.set({ mode: 'create' });

@@ -51,7 +51,8 @@ export class AppHeaderComponent {
       const onProduction = this.router.url.startsWith('/production');
       const current = onProduction ? this.router.parseUrl(this.router.url).queryParams : {};
       this.router.navigate(['/production'], {
-        queryParams: { ...current, q: q || null, item: null, page: null },
+        // новый поиск — снова по всем этапам, иначе прошлый выбор этапа незаметно сужал бы результат
+        queryParams: { ...current, q: q || null, in: null, item: null, page: null },
         replaceUrl: onProduction,
       });
     }, 250);

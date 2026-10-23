@@ -48,6 +48,19 @@ export class ProductionPage {
     return STAGE_IDS.includes(s) ? s : 'orders';
   });
   readonly stage = computed<StageFilter | null>(() => (this.q() && this.tab() !== 'trash' ? null : this.tab()));
+  /** Поиск по всем этапам можно сузить до одного: ?in=cut. */
+  readonly searchIn = computed<StageFilter | null>(() => {
+    const s = this.params().get('in') as StageFilter;
+    return this.stage() === null && STAGE_IDS.includes(s) ? s : null;
+  });
+  readonly searchStages = signal<Record<StageFilter, number> | null>(null);
+  readonly searchChips = computed(() => {
+    const counts = this.searchStages();
+    if (!counts) return [];
+    const all = [...STAGES.map((s) => ({ id: s.id as StageFilter, name: s.name })), { id: 'trash' as StageFilter, name: 'Корзина' }];
+    return all.map((s) => ({ ...s, count: counts[s.id] ?? 0 })).filter((s) => s.count || s.id === this.searchIn());
+  });
+  readonly searchTotal = computed(() => Object.values(this.searchStages() ?? {}).reduce((a, b) => a + b, 0));
   readonly filter = computed<FilterId>(() => {
     const f = this.params().get('filter') ?? '';
     return FILTERS.some((x) => x.id === f) ? (f as FilterId) : '';
@@ -74,7 +87,11 @@ export class ProductionPage {
 
   readonly hint = computed(() => {
     const stage = this.stage();
-    if (stage === null) return `Поиск по всем этапам, найдено ${this.total()}.`;
+    if (stage === null) {
+      const where = this.searchIn();
+      const name = where === 'trash' ? 'Корзина' : STAGES.find((s) => s.id === where)?.name;
+      return where ? `Поиск на этапе «${name}», найдено ${this.total()}.` : `Поиск по всем этапам, найдено ${this.total()}.`;
+    }
     if (stage === 'trash') return this.q() ? `Поиск в Корзине, найдено ${this.total()}.` : TRASH_HINT;
     return STAGES.find((s) => s.id === stage)?.hint ?? '';
   });
@@ -94,6 +111,7 @@ export class ProductionPage {
     });
     effect(() => {
       this.stage();
+      this.searchIn();
       this.filter();
       this.model();
       untracked(() => this.selection.set(new Map()));
@@ -111,7 +129,7 @@ export class ProductionPage {
   private listParams = computed<ItemListParams>(() => {
     const f = this.filter();
     return {
-      stage: this.stage() ?? undefined,
+      stage: this.stage() ?? this.searchIn() ?? undefined,
       q: this.q() || undefined,
       model: this.model() || undefined,
       free: f === 'free',
@@ -125,9 +143,11 @@ export class ProductionPage {
     const id = ++this.request;
     this.loading.set(true);
     try {
-      const [page, counters] = await Promise.all([
+      const searching = this.stage() === null;
+      const [page, counters, stages] = await Promise.all([
         firstValueFrom(this.api.list({ ...params, limit: PAGE, offset: (pageNumber - 1) * PAGE })),
         firstValueFrom(this.api.counters()),
+        searching ? firstValueFrom(this.api.searchStages(params)) : Promise.resolve(null),
       ]);
       if (id !== this.request) return;
       if (!page.results.length && pageNumber > 1) {
@@ -138,6 +158,7 @@ export class ProductionPage {
       this.items.set(page.results);
       this.total.set(page.count);
       this.counters.set(counters);
+      this.searchStages.set(stages);
       this.refreshSelection(page.results);
     } catch (err) {
       if (id === this.request) this.toast.error(errorText(err, 'Не удалось загрузить список.'));
@@ -165,7 +186,7 @@ export class ProductionPage {
 
   go(params: Record<string, string | number | null>) {
     // новый этап, поиск или фильтр — снова с первой страницы
-    const reset = !('page' in params) && ['stage', 'q', 'filter', 'model'].some((k) => k in params);
+    const reset = !('page' in params) && ['stage', 'q', 'in', 'filter', 'model'].some((k) => k in params);
     this.router.navigate([], { queryParams: reset ? { ...params, page: null } : params, queryParamsHandling: 'merge' });
   }
 
@@ -177,7 +198,11 @@ export class ProductionPage {
   }
 
   selectStage(stage: Stage | 'trash') {
-    this.go({ stage, q: null, item: null });
+    this.go({ stage, q: null, in: null, item: null });
+  }
+
+  searchOn(stage: StageFilter | null) {
+    this.go({ in: stage });
   }
 
   setFilter(id: string) {

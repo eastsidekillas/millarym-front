@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi, FabricPickerComponent, KitOption, ModelChoice, ModelPickerComponent, PickedFabric, ProductModel } from '@entities/catalog';
-import { FABRIC_SLOTS, FabricInput, FabricSlot, ItemApi, ItemsChanged, STAGE_NAME } from '@entities/item';
+import { FABRIC_SLOTS, FabricInput, FabricSlot, ItemApi, ItemsChanged } from '@entities/item';
 import { errorText } from '@shared/api';
 import { ModalComponent, ToastService } from '@shared/ui';
 import { ItemForm } from '../model/item-form.service';
@@ -181,9 +181,7 @@ export class ItemFormComponent {
             fabrics,
           }),
         );
-        const numbers = created.map((i) => i.number).join(', ');
-        this.toast.show(`${created.length > 1 ? 'Созданы' : 'Создано'} ${numbers}, этап «${STAGE_NAME[created[0].stage]}»`);
-        this.form.created.set(created);
+        this.form.done.set(created);
       }
       this.changed.notify();
       this.form.close();

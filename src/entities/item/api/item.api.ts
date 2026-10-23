@@ -12,6 +12,7 @@ import {
   ItemListParams,
   ItemUpdate,
   Stage,
+  StageFilter,
 } from '../model/item.types';
 
 export type Mark = 'fabric_arrived' | 'sew' | 'cover_ready';
@@ -29,6 +30,16 @@ export class ItemApi {
       p = p.set(key, String(value === true ? 1 : value));
     }
     return this.http.get<Page<Item>>(`${this.api}/`, { params: p });
+  }
+
+  /** Сколько найденного на каждом этапе: { orders: 2, cut: 13, …, trash: 1 }. */
+  searchStages(params: ItemListParams): Observable<Record<StageFilter, number>> {
+    let p = new HttpParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === '' || value === false || key === 'stage') continue;
+      p = p.set(key, String(value === true ? 1 : value));
+    }
+    return this.http.get<Record<StageFilter, number>>(`${this.api}/search-stages/`, { params: p });
   }
 
   counters(): Observable<Counters> {
