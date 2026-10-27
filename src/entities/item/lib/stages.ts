@@ -69,9 +69,9 @@ export function itemAlert(item: Item): ItemAlert | null {
   return { level: 'warn', text: `крой не готов ${days} дн.` };
 }
 
-export function meters(value: string | null): string {
+export function meters(value: string | null, unit: 'm' | 'pcs' = 'm'): string {
   if (value === null || value === '') return '';
-  return `${String(Number(value)).replace('.', ',')} м`;
+  return `${String(Number(value)).replace('.', ',')} ${unit === 'pcs' ? 'шт' : 'м'}`;
 }
 
 export function purgeText(purgeAt: string | null): string {

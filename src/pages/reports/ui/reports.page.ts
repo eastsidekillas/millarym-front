@@ -12,6 +12,7 @@ const ROW_PAGE = 50;
 
 interface Block {
   group: string;
+  photo: string | null;
   rows: ReportRow[];
 }
 
@@ -56,7 +57,7 @@ export class ReportsPage {
     for (const row of (this.result()?.rows ?? []).slice(start, start + ROW_PAGE)) {
       const last = blocks[blocks.length - 1];
       if (last && last.group === row.group) last.rows.push(row);
-      else blocks.push({ group: row.group, rows: [row] });
+      else blocks.push({ group: row.group, photo: row.group_photo?.url ?? null, rows: [row] });
     }
     return blocks;
   });

@@ -94,7 +94,7 @@ export class FabricsPage {
   }
 
   zoom(fabric: Fabric) {
-    if (fabric.photo) this.viewer.open(fabric.photo, fabric.name);
+    if (fabric.photo) this.viewer.open(fabric.photo, fabric.name, fabric.photo_jpeg);
   }
 
   swatch(name: string): string {

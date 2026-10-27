@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CatalogApi, FabricPickerComponent, KitOption, ModelChoice, ModelPickerComponent, PickedFabric, ProductModel } from '@entities/catalog';
-import { FABRIC_SLOTS, FabricInput, FabricSlot, ItemApi, ItemsChanged } from '@entities/item';
+import { AmountUnit, FABRIC_SLOTS, FabricInput, FabricSlot, ItemApi, ItemsChanged } from '@entities/item';
 import { errorText } from '@shared/api';
 import { ModalComponent, ToastService } from '@shared/ui';
 import { ItemForm } from '../model/item-form.service';
@@ -12,6 +12,7 @@ interface SlotRow {
   label: string;
   fabric: PickedFabric | null;
   meters: string;
+  unit: AmountUnit;
 }
 
 function kitGroup(name: string): string {
@@ -54,7 +55,7 @@ export class ItemFormComponent {
     const list = this.activeModels();
     const current = this.editing()?.model;
     if (!current || list.some((m) => m.id === current.id)) return list;
-    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, active: false, kit_options: [], in_work: 0, used: 0 }];
+    return [...list, { id: current.id, name: current.name, category_name: 'скрыта', category: 0, photo: null, photo_thumb: null, photo_jpeg: null, active: false, kit_options: [], in_work: 0, used: 0 }];
   });
   customName = '';
   readonly extra = signal('');
@@ -62,6 +63,7 @@ export class ItemFormComponent {
   indiv = signal(false);
   indivNote = '';
   comment = '';
+  tableNo = '';
   qty = 1;
   slots: SlotRow[] = [];
   readonly saving = signal(false);
@@ -89,6 +91,7 @@ export class ItemFormComponent {
     this.indiv.set(item?.indiv ?? false);
     this.indivNote = item?.indiv_note ?? '';
     this.comment = item?.comment ?? '';
+    this.tableNo = item?.table_no ?? '';
     this.qty = 1;
     this.slots = FABRIC_SLOTS.map(({ slot, label }) => {
       const f = item?.fabrics.find((x) => x.slot === slot);
@@ -97,6 +100,7 @@ export class ItemFormComponent {
         label,
         fabric: f ? { id: f.fabric.id, name: f.fabric.name, photo_thumb: f.fabric.photo_thumb } : null,
         meters: f?.meters ? String(Number(f.meters)) : '',
+        unit: f?.unit ?? 'm',
       };
     });
   }
@@ -130,13 +134,14 @@ export class ItemFormComponent {
     }
     const bad = this.slots.find((r) => r.meters.trim() && isNaN(Number(r.meters.replace(',', '.'))));
     if (bad) {
-      this.error.set(`Метраж «${bad.label}» — число, например 12,5.`);
+      this.error.set(bad.unit === 'pcs' ? `Количество «${bad.label}» — число.` : `Метраж «${bad.label}» — число, например 12,5.`);
       return null;
     }
     return rows.map((r) => ({
       slot: r.slot,
       fabric: r.fabric!.id,
       meters: r.meters.trim() ? r.meters.replace(',', '.').trim() : null,
+      unit: r.slot === 'main' ? 'm' : r.unit,
     }));
   }
 
@@ -163,6 +168,7 @@ export class ItemFormComponent {
             indiv: this.indiv(),
             indiv_note: this.indivNote,
             comment: this.comment,
+            table_no: this.tableNo,
             fabrics,
           }),
         );
@@ -177,6 +183,7 @@ export class ItemFormComponent {
             indiv: this.indiv(),
             indiv_note: this.indivNote,
             comment: this.comment,
+            table_no: this.tableNo,
             qty: Math.max(1, Math.min(50, Number(this.qty) || 1)),
             fabrics,
           }),
