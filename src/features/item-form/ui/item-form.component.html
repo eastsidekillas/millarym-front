@@ -63,10 +63,22 @@
       <div class="grid gap-2 sm:col-span-2">
         <span class="text-xs text-muted">Ткани и метраж</span>
         @for (row of slots; track row.slot; let first = $first) {
-          <div class="grid grid-cols-[104px_1fr_88px] items-center gap-2">
-            <span class="text-sm text-muted">{{ row.label }}</span>
+          <div class="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1 sm:grid-cols-[104px_1fr_auto]">
+            <span class="col-span-2 text-sm text-muted sm:col-span-1">{{ row.label }}</span>
             <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Обязательно, начните вводить' : ''" />
-            <input class="field tnum" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal" placeholder="м" [attr.aria-label]="'Метраж: ' + row.label" />
+            <div class="flex items-center gap-1.5">
+              <input class="field tnum w-[72px]" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal"
+                [attr.aria-label]="(row.unit === 'pcs' ? 'Штук: ' : 'Метраж: ') + row.label" />
+              @if (first) {
+                <span class="w-[60px] text-sm text-muted">м</span>
+              } @else {
+                <!-- компаньон бывает в штуках: подушки, канты -->
+                <select class="field w-[60px] px-2" [name]="'u-' + row.slot" [(ngModel)]="row.unit" [attr.aria-label]="'Единица: ' + row.label">
+                  <option value="m">м</option>
+                  <option value="pcs">шт</option>
+                </select>
+              }
+            </div>
           </div>
         }
       </div>
@@ -77,7 +89,11 @@
           <input type="number" min="1" max="50" class="field tnum" name="qty" [(ngModel)]="qty" />
         </label>
       }
-      <label class="grid content-start gap-1.5" [class.sm:col-span-2]="editing()">
+      <label class="grid content-start gap-1.5">
+        <span class="text-xs text-muted">Номер стола</span>
+        <input class="field tnum" name="tableNo" [(ngModel)]="tableNo" maxlength="30" autocomplete="off" />
+      </label>
+      <label class="grid content-start gap-1.5 sm:col-span-2">
         <span class="text-xs text-muted">Комментарий</span>
         <input class="field" name="comment" [(ngModel)]="comment" />
       </label>

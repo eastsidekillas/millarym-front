@@ -2,9 +2,9 @@ import { Component, computed, effect, inject, input, output, signal, untracked }
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Lock, LucideAngularModule, X } from 'lucide-angular';
+import { Lock, LucideAngularModule, Pencil, X } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
-import { FABRIC_SLOTS, NEXT_STAGE, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, Mark, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
+import { AmountUnit, FABRIC_SLOTS, FabricSlot, NEXT_STAGE, ItemAction, ItemApi, ItemDetail, ItemNumberComponent, ItemsChanged, LOCK_TEXT, Mark, MOVE_LABEL, STAGES, STAGE_NAME, Stage, itemAlert, meters, purgeText } from '@entities/item';
 import { ReportApi } from '@entities/report';
 import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
@@ -34,6 +34,7 @@ export class ItemCardComponent {
   readonly canClaim = inject(SessionStore).can('claims');
   readonly canMarks = inject(SessionStore).can('marks');
   readonly canFg = inject(SessionStore).can('move_work_fg');
+  readonly canAmount = inject(SessionStore).can('edit') || inject(SessionStore).can('marks');
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
@@ -41,7 +42,7 @@ export class ItemCardComponent {
   reserve = '';
   readonly exporting = signal(false);
 
-  readonly icons = { close: X, lock: Lock };
+  readonly icons = { close: X, lock: Lock, edit: Pencil };
   readonly viewer = inject(PhotoViewer);
   readonly fmt = fmtDate;
   readonly fmtTime = fmtDateTime;
@@ -66,8 +67,38 @@ export class ItemCardComponent {
     return it ? itemAlert(it) : null;
   });
   readonly fabricRows = computed(() =>
-    FABRIC_SLOTS.map(({ slot, label }) => ({ label, fabric: this.item()?.fabrics.find((f) => f.slot === slot) ?? null })),
+    FABRIC_SLOTS.map(({ slot, label }) => ({ slot, label, fabric: this.item()?.fabrics.find((f) => f.slot === slot) ?? null })),
   );
+
+  readonly editingAmount = signal<FabricSlot | null>(null);
+  readonly savingAmount = signal(false);
+  amount = '';
+  amountUnit: AmountUnit = 'm';
+
+  editAmount(slot: FabricSlot, value: string | null, unit: AmountUnit) {
+    this.amount = value === null ? '' : String(Number(value));
+    this.amountUnit = unit;
+    this.editingAmount.set(slot);
+  }
+
+  async saveAmount(it: ItemDetail, slot: FabricSlot) {
+    const text = String(this.amount ?? '').trim().replace(',', '.');
+    if (text !== '' && !(Number(text) >= 0)) {
+      this.toast.error('Метраж — число, например 12,5.');
+      return;
+    }
+    this.savingAmount.set(true);
+    try {
+      const fresh = await firstValueFrom(this.api.fabricAmount(it.id, slot, text === '' ? null : text, slot === 'main' ? 'm' : this.amountUnit));
+      this.item.set(fresh);
+      this.editingAmount.set(null);
+      this.changed.notify();
+    } catch (err) {
+      this.toast.error(errorText(err, 'Не удалось сохранить метраж.'));
+    } finally {
+      this.savingAmount.set(false);
+    }
+  }
   readonly mainActions = computed(() =>
     (this.item()?.actions ?? []).filter(
       (a) => a.allowed && ['move', 'restore', 'fabric_ordered', 'fabric_arrived', 'sew', 'cover_ready', 'ship', 'return_to_work'].includes(a.code),

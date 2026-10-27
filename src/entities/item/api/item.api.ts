@@ -4,11 +4,13 @@ import { Observable } from 'rxjs';
 import { Page } from '@shared/api';
 import { environment } from '@shared/config';
 import {
+  AmountUnit,
   Counters,
   Item,
   ItemCreate,
   ItemDetail,
   ItemEvent,
+  FabricSlot,
   ItemListParams,
   ItemUpdate,
   Stage,
@@ -77,6 +79,11 @@ export class ItemApi {
 
   markDate(id: number, mark: Mark, date: string): Observable<ItemDetail> {
     return this.http.post<ItemDetail>(`${this.api}/${id}/mark-date/`, { mark, date });
+  }
+
+  /** Метраж (или штуки у компаньона) — в любой момент, без «Изменить»: его часто вписывает закройный цех. */
+  fabricAmount(id: number, slot: FabricSlot, meters: string | null, unit: AmountUnit): Observable<ItemDetail> {
+    return this.http.post<ItemDetail>(`${this.api}/${id}/fabric-amount/`, { slot, meters, unit });
   }
 
   unmark(id: number, mark: Mark): Observable<ItemDetail> {

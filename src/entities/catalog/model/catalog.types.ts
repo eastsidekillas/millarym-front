@@ -12,6 +12,7 @@ export interface ProductModel extends Ref {
   category_name: string;
   photo: string | null;
   photo_thumb: string | null;
+  photo_jpeg: string | null;
   active: boolean;
   kit_options: string[];
   in_work: number;
@@ -21,6 +22,7 @@ export interface ProductModel extends Ref {
 export interface Fabric extends Ref {
   photo: string | null;
   photo_thumb: string | null;
+  photo_jpeg: string | null;
   active: boolean;
   created_at: string;
   in_work: number;

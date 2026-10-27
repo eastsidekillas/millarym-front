@@ -172,6 +172,9 @@
           @if (it.indiv && it.due_at) {
             <div><dt class="text-xs text-muted">Срок заказа</dt><dd class="tnum">{{ fmt(it.due_at) }}</dd></div>
           }
+          @if (it.table_no) {
+            <div><dt class="text-xs text-muted">Номер стола</dt><dd class="tnum">{{ it.table_no }}</dd></div>
+          }
           <div>
             <dt class="text-xs text-muted">Паспорт</dt>
             <dd class="tnum">
@@ -195,7 +198,7 @@
                     @if (row.fabric; as f) {
                       <span class="inline-flex items-center gap-2">
                         @if (f.fabric.photo_thumb) {
-                          <button type="button" class="flex flex-none rounded hover:ring-2 hover:ring-accent" [attr.aria-label]="'Фото ткани ' + f.fabric.name" (click)="viewer.open(f.fabric.photo ?? f.fabric.photo_thumb, f.fabric.name)">
+                          <button type="button" class="flex flex-none rounded hover:ring-2 hover:ring-accent" [attr.aria-label]="'Фото ткани ' + f.fabric.name" (click)="viewer.open(f.fabric.photo ?? f.fabric.photo_thumb, f.fabric.name, f.fabric.photo_jpeg)">
                             <img [src]="f.fabric.photo_thumb" alt="" class="h-10 w-10 rounded object-cover ring-1 ring-black/10" />
                           </button>
                         }
@@ -205,7 +208,35 @@
                       <span class="text-muted">—</span>
                     }
                   </td>
-                  <td class="tnum py-2 text-right">{{ meters(row.fabric?.meters ?? null) }}</td>
+                  <td class="tnum py-2 text-right">
+                    @if (row.fabric && editingAmount() === row.slot) {
+                      <form class="flex flex-wrap items-center justify-end gap-1.5" (ngSubmit)="saveAmount(it, row.slot)">
+                        <input type="text" inputmode="decimal" class="field h-8 w-16 text-right text-[13px]" name="amount"
+                          [attr.aria-label]="(amountUnit === 'pcs' ? 'Штук: ' : 'Метраж: ') + row.label" [(ngModel)]="amount" (keydown.escape)="$event.stopPropagation(); editingAmount.set(null)" />
+                        @if (row.slot !== 'main') {
+                          <select class="field h-8 w-[60px] text-[13px]" name="unit" aria-label="Единица" [(ngModel)]="amountUnit">
+                            <option value="m">м</option>
+                            <option value="pcs">шт</option>
+                          </select>
+                        } @else {
+                          <span class="text-muted">м</span>
+                        }
+                        <button type="submit" class="btn-row" [disabled]="savingAmount()">Сохранить</button>
+                        <button type="button" class="text-xs text-muted underline hover:text-ink" (click)="editingAmount.set(null)">отмена</button>
+                      </form>
+                    } @else if (row.fabric && canAmount && !it.trashed_at) {
+                      <button type="button" class="inline-flex items-center gap-1 -mr-1 rounded px-1 hover:bg-sub" [attr.aria-label]="'Изменить метраж: ' + row.label" (click)="editAmount(row.slot, row.fabric.meters, row.fabric.unit)">
+                        @if (row.fabric.meters !== null) {
+                          {{ meters(row.fabric.meters, row.fabric.unit) }}
+                        } @else {
+                          <span class="text-muted">вписать</span>
+                        }
+                        <span class="flex text-muted"><lucide-icon [img]="icons.edit" [size]="12" /></span>
+                      </button>
+                    } @else {
+                      {{ meters(row.fabric?.meters ?? null, row.fabric?.unit) }}
+                    }
+                  </td>
                 </tr>
               }
             </tbody>

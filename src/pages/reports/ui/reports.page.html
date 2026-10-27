@@ -126,7 +126,16 @@
               <tbody>
                 @if (b.group) {
                   <tr>
-                    <th [attr.colspan]="res.columns.length" class="bg-sub px-3 py-2 text-left text-[13px] font-medium">{{ b.group }}</th>
+                    <th [attr.colspan]="res.columns.length" class="bg-sub px-3 py-2 text-left text-[13px] font-medium">
+                      @if (b.photo) {
+                        <span class="flex items-center gap-3">
+                          <img [src]="b.photo" alt="" class="h-14 w-28 flex-none rounded bg-white object-contain ring-1 ring-black/10" loading="lazy" />
+                          {{ b.group }}
+                        </span>
+                      } @else {
+                        {{ b.group }}
+                      }
+                    </th>
                   </tr>
                 }
                 @for (row of b.rows; track row.item_id) {

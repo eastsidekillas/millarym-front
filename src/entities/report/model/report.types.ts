@@ -28,6 +28,8 @@ export interface ReportRow {
   photos: { name: string; url: string | null }[];
   mark: '' | 'warn' | 'crit';
   group: string;
+  /** Фото модели — в заголовке группы, одно на всю группу (свободные остатки). */
+  group_photo: { name: string; url: string | null } | null;
 }
 
 export interface ReportResult {

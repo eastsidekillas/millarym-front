@@ -27,7 +27,7 @@ export class FabricListComponent {
   readonly fabrics = input.required<ItemFabric[]>();
 
   show(f: ItemFabric) {
-    this.viewer.open(f.fabric.photo ?? f.fabric.photo_thumb ?? '', f.fabric.name);
+    this.viewer.open(f.fabric.photo ?? f.fabric.photo_thumb ?? '', f.fabric.name, f.fabric.photo_jpeg);
   }
 
   swatch(name: string): string {

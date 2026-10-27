@@ -4,12 +4,15 @@ export type Stage = 'orders' | 'cut' | 'cover' | 'work' | 'fg';
 export type StageFilter = Stage | 'trash';
 export type Warning = 'fabric' | 'cut' | 'output';
 export type FabricSlot = 'main' | 'comp1' | 'comp2';
+/** Штуки — только у компаньонов: подушки, канты из готовых изделий. */
+export type AmountUnit = 'm' | 'pcs';
 
 export interface ItemFabric {
   slot: FabricSlot;
   slot_label: string;
-  fabric: Ref & { photo_thumb: string | null; photo: string | null };
+  fabric: Ref & { photo_thumb: string | null; photo: string | null; photo_jpeg: string | null };
   meters: string | null;
+  unit: AmountUnit;
 }
 
 export interface Item {
@@ -21,6 +24,7 @@ export interface Item {
   title: string;
   extra: string;
   comment: string;
+  table_no: string;
   reserve: string;
   reserved_at: string | null;
   is_free: boolean;
@@ -105,6 +109,7 @@ export interface FabricInput {
   slot: FabricSlot;
   fabric: number;
   meters: string | null;
+  unit: AmountUnit;
 }
 
 export interface ItemCreate {
@@ -116,6 +121,7 @@ export interface ItemCreate {
   indiv: boolean;
   indiv_note: string;
   comment: string;
+  table_no: string;
   qty: number;
 }
 
