@@ -128,8 +128,8 @@ for i in $(seq 90); do
 done
 [ "$st" = "exited 0" ] && echo "миграции применены" || { $DC logs --tail 60 migration; die "миграции: $st"; }
 
-step "справочники"
-$DC run --rm -T -v "$BACK/data:/data:ro" app django-admin import_models /data/models-2026-10-15.csv --create-categories | tail -3
+# Справочники при обновлении не трогаем: модели и ткани ведутся в программе
+# (Справочники → «Загрузить из Excel…»), старый список моделей больше не подгружается.
 
 USERS=$($DC run --rm -T app django-admin shell -v 0 -c "from app_auth.models import User; print(User.objects.count())" 2>/dev/null | tail -1)
 # сотрудников нет и после очистки базы (deploy/reset-db.sh), не только при первой установке
