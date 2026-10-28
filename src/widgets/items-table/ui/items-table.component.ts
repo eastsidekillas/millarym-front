@@ -4,7 +4,7 @@ import { SessionStore } from '@entities/session';
 import { ItemActions } from '@features/item-actions';
 import { daysSince, daysUntil, fmtDate } from '@shared/lib';
 
-type Column = 'fabric' | 'sew' | 'cover_ready' | 'work';
+type Column = 'fabric' | 'sew' | 'cover_ready' | 'work' | 'marks';
 
 const STAGE_COLUMNS: Partial<Record<StageFilter, { key: Column; title: string }[]>> = {
   orders: [{ key: 'fabric', title: 'Ткань пришла' }],
@@ -42,7 +42,10 @@ export class ItemsTableComponent {
 
   readonly searching = computed(() => this.stage() === null);
   readonly trash = computed(() => this.stage() === 'trash');
-  readonly columns = computed(() => STAGE_COLUMNS[this.stage() ?? 'fg'] ?? []);
+  // в поиске по всем этапам — одна колонка: у каждого изделия отметки его этапа (ткань, шитьё, работа)
+  readonly columns = computed(() =>
+    this.searching() ? [{ key: 'marks' as Column, title: 'Отметки' }] : (STAGE_COLUMNS[this.stage() ?? 'fg'] ?? []),
+  );
   readonly allSelected = computed(() => this.items().length > 0 && this.items().every((i) => this.selected().has(i.id)));
 
   canNext(item: Item): boolean {

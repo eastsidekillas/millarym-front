@@ -71,6 +71,32 @@
                 @case ('cover_ready') {
                   @if (it.cover_ready_at) { {{ fmt(it.cover_ready_at) }} } @else { <span class="text-muted">—</span> }
                 }
+                @case ('marks') {
+                  @if (it.trashed_at) {
+                    <span class="text-muted">—</span>
+                  } @else if (it.stage === 'orders') {
+                    @if (it.fabric_arrived_at) {
+                      {{ fmt(it.fabric_arrived_at) }}
+                      <span class="block text-xs text-muted">ткань пришла</span>
+                    } @else if (it.fabric_ordered_at) {
+                      <span class="font-medium text-warn">ждём</span>
+                      <span class="block text-xs text-muted">заказана {{ fmt(it.fabric_ordered_at) }}</span>
+                    } @else {
+                      <span class="text-muted">ткань не заказана</span>
+                    }
+                  } @else if (it.stage === 'cut' && it.cover_ready_at) {
+                    {{ fmt(it.cover_ready_at) }}
+                    <span class="block text-xs text-muted">отшит</span>
+                  } @else if (it.stage === 'cut' && it.sew_at) {
+                    {{ fmt(it.sew_at) }}
+                    <span class="block text-xs text-muted">в шитье</span>
+                  } @else if (it.stage === 'work' && it.work_at) {
+                    {{ fmt(it.work_at) }}
+                    <span class="block text-xs text-muted">в работе{{ it.team ? ', ' + it.team.name : '' }}</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                }
                 @case ('work') {
                   {{ fmt(it.work_at) || '—' }}
                   @if (it.team) {
