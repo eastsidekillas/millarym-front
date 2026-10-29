@@ -77,6 +77,6 @@ export class ClaimApi {
 
   async downloadBlank(): Promise<void> {
     const response = await firstValueFrom(this.http.get(`${this.api}/blank/`, { observe: 'response', responseType: 'blob' }));
-    saveBlob(response.body!, filenameFrom(response, 'Акт-претензия, бланк для клиента.xlsx'));
+    saveBlob(response.body!, filenameFrom(response, 'Акт-претензия, бланк для клиента.xls'));
   }
 }
