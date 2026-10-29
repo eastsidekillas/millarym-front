@@ -13,8 +13,8 @@ import { ModalComponent, ToastService } from '@shared/ui';
       <app-modal title="Загрузить справочники из Excel" subtitle="Файл, выгруженный кнопкой «Выгрузить в Excel» и исправленный" width="md:max-w-2xl" (closed)="close()">
         <div class="grid gap-4 px-6 py-5">
           <label class="grid content-start gap-1.5">
-            <span class="text-sm">Файл Excel (.xls или .xlsx)</span>
-            <input type="file" class="text-sm" accept=".xls,.xlsx" [disabled]="busy()" (change)="pick($event)" />
+            <span class="text-sm">Файл .xlsx</span>
+            <input type="file" class="text-sm" accept=".xlsx" [disabled]="busy()" (change)="pick($event)" />
           </label>
 
           @if (report(); as r) {

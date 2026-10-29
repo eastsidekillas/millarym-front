@@ -31,11 +31,11 @@ export class ReportApi {
   }
 
   async download(kind: string, params: ReportParams): Promise<void> {
-    await this.save(`${this.api}/reports/${kind}/xlsx/`, toParams(params), `${kind}.xls`);
+    await this.save(`${this.api}/reports/${kind}/xlsx/`, toParams(params), `${kind}.xlsx`);
   }
 
   async downloadItem(id: number, number: string): Promise<void> {
-    await this.save(`${this.api}/items/${id}/export/`, new HttpParams(), `Изделие ${number.replace('/', '-')}.xls`);
+    await this.save(`${this.api}/items/${id}/export/`, new HttpParams(), `Изделие ${number.replace('/', '-')}.xlsx`);
   }
 
   private async save(url: string, params: HttpParams, fallback: string): Promise<void> {

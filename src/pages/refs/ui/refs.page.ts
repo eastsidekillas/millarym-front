@@ -92,7 +92,7 @@ export class RefsPage {
     this.exporting.set(true);
     try {
       const response = await firstValueFrom(this.catalog.exportXlsx());
-      saveBlob(response.body!, filenameFrom(response, 'Справочники.xls'));
+      saveBlob(response.body!, filenameFrom(response, 'Справочники.xlsx'));
     } catch (err) {
       this.toast.error(errorText(err, 'Не удалось выгрузить справочники.'));
     } finally {
