@@ -7,12 +7,18 @@ import { ConfirmService, ToastService } from '@shared/ui';
 
 export interface DateRequest {
   count: number;
+  to: 'cover' | 'fg';
   resolve: (date: string | null) => void;
+}
+
+export interface TeamChoice {
+  team: Team;
+  date: string;
 }
 
 export interface TeamRequest {
   count: number;
-  resolve: (team: Team | null) => void;
+  resolve: (choice: TeamChoice | null) => void;
 }
 
 const SIMPLE: Partial<Record<ActionCode, SimpleAction>> = {
@@ -53,23 +59,25 @@ export class ItemActions {
   readonly dateRequest = signal<DateRequest | null>(null);
   readonly busy = signal(false);
 
-  askTeam(count: number): Promise<Team | null> {
+  /** Бригада и дата выдачи в работу. */
+  askTeam(count: number): Promise<TeamChoice | null> {
     return new Promise((resolve) =>
       this.teamRequest.set({
         count,
-        resolve: (team) => {
+        resolve: (choice) => {
           this.teamRequest.set(null);
-          resolve(team);
+          resolve(choice);
         },
       }),
     );
   }
 
-  /** Дата перевода на СГП: сегодня или раньше — если кнопку нажали не в тот день. */
-  askDate(count: number): Promise<string | null> {
+  /** Дата перевода на склад чехлов или СГП: сегодня или раньше — если кнопку нажали не в тот день. */
+  askDate(count: number, to: 'cover' | 'fg'): Promise<string | null> {
     return new Promise((resolve) =>
       this.dateRequest.set({
         count,
+        to,
         resolve: (date) => {
           this.dateRequest.set(null);
           resolve(date);
@@ -82,11 +90,12 @@ export class ItemActions {
     let team: Team | null = null;
     let date: string | null = null;
     if (to === 'work') {
-      team = await this.askTeam(1);
-      if (!team) return null;
+      const choice = await this.askTeam(1);
+      if (!choice) return null;
+      ({ team, date } = choice);
     }
-    if (to === 'fg') {
-      date = await this.askDate(1);
+    if (to === 'cover' || to === 'fg') {
+      date = await this.askDate(1, to);
       if (!date) return null;
     }
     return this.call(this.api.move(item.id, to, team?.id, date), `${item.number} на этапе «${STAGE_NAME[to]}»`);
@@ -96,11 +105,12 @@ export class ItemActions {
     let team: Team | null = null;
     let date: string | null = null;
     if (to === 'work') {
-      team = await this.askTeam(items.length);
-      if (!team) return null;
+      const choice = await this.askTeam(items.length);
+      if (!choice) return null;
+      ({ team, date } = choice);
     }
-    if (to === 'fg') {
-      date = await this.askDate(items.length);
+    if (to === 'cover' || to === 'fg') {
+      date = await this.askDate(items.length, to);
       if (!date) return null;
     }
     const numbers = items.map((i) => i.number).join(', ');

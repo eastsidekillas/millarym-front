@@ -1,32 +1,30 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { factoryDay } from '@shared/lib';
 import { ModalComponent } from '@shared/ui';
 import { ItemActions } from '../model/item-actions.service';
+import { DayFieldComponent, todayIso } from './day-field.component';
+
+const TEXT = {
+  cover: { title: 'На склад чехлов', subtitle: 'Когда отшитые чехлы сдали на склад', label: 'Дата перевода на склад чехлов' },
+  fg: { title: 'На СГП', subtitle: 'Когда изделие переведено на склад готовой продукции', label: 'Дата перевода на СГП' },
+};
 
 @Component({
   selector: 'app-date-dialog',
-  imports: [FormsModule, ModalComponent],
+  imports: [FormsModule, ModalComponent, DayFieldComponent],
   template: `
     @if (actions.dateRequest(); as req) {
       <app-modal
-        [title]="req.count > 1 ? 'На СГП ' + req.count + ' изд.' : 'На СГП'"
-        subtitle="Когда изделие переведено на склад готовой продукции"
+        [title]="text().title + (req.count > 1 ? ' ' + req.count + ' изд.' : '')"
+        [subtitle]="text().subtitle"
         width="md:max-w-md"
         (closed)="req.resolve(null)"
       >
-        <form class="grid gap-5 px-6 py-5" (ngSubmit)="date && req.resolve(date)">
-          <label class="grid content-start gap-1.5">
-            <span class="text-xs text-muted">Дата перевода на СГП</span>
-            <input type="date" class="field" name="date" required [(ngModel)]="date" [max]="today" />
-          </label>
-          <div class="flex flex-wrap gap-2">
-            <button type="button" class="chip" [class.chip-on]="date === today" (click)="date = today">Сегодня</button>
-            <button type="button" class="chip" [class.chip-on]="date === yesterday" (click)="date = yesterday">Вчера</button>
-          </div>
+        <form class="grid gap-5 px-6 py-5" (ngSubmit)="valid() && req.resolve(date())">
+          <app-day-field [label]="text().label" [(value)]="date" />
           <div class="flex justify-end gap-2">
             <button type="button" class="btn-outline" (click)="req.resolve(null)">Отмена</button>
-            <button type="submit" class="btn-primary" [disabled]="!date || date > today">На СГП</button>
+            <button type="submit" class="btn-primary" [disabled]="!valid()">{{ text().title }}</button>
           </div>
         </form>
       </app-modal>
@@ -35,18 +33,13 @@ import { ItemActions } from '../model/item-actions.service';
 })
 export class DateDialogComponent {
   readonly actions = inject(ItemActions);
-  today = '';
-  yesterday = '';
-  date = '';
+  readonly date = signal('');
+  readonly text = computed(() => TEXT[this.actions.dateRequest()?.to ?? 'fg']);
+  readonly valid = computed(() => !!this.date() && this.date() <= todayIso());
 
   constructor() {
     effect(() => {
-      if (!this.actions.dateRequest()) return;
-      // окно могли оставить открытым через полночь — «сегодня» считаем при каждом открытии
-      const now = new Date();
-      this.today = factoryDay(now) ?? '';
-      this.yesterday = factoryDay(new Date(now.getTime() - 86_400_000)) ?? '';
-      this.date = this.today;
+      if (this.actions.dateRequest()) this.date.set(todayIso());
     });
   }
 }

@@ -34,6 +34,7 @@ export class ItemCardComponent {
   readonly canClaim = inject(SessionStore).can('claims');
   readonly canMarks = inject(SessionStore).can('marks');
   readonly canFg = inject(SessionStore).can('move_work_fg');
+  readonly canWork = inject(SessionStore).can('move_cover_work');
   readonly canAmount = inject(SessionStore).can('edit') || inject(SessionStore).can('marks');
   private readonly toast = inject(ToastService);
 
@@ -112,10 +113,12 @@ export class ItemCardComponent {
   readonly locked = computed(() =>
     (this.item()?.actions ?? []).filter((a) => !a.allowed && (a.code === 'move' || a.code === 'restore')),
   );
-  // следующий этап — зелёная кнопка, здесь только переход через этап или назад
+  // следующий этап — зелёная кнопка, здесь только переход через этап или назад.
+  // На «Заказы» — только изделие с резервом: если по ошибке нажали «В крой»
   readonly moveTargets = computed(() => {
-    const stage = this.item()?.stage;
-    return STAGES.filter((s) => s.id !== 'orders' && s.id !== stage && (!stage || s.id !== NEXT_STAGE[stage]));
+    const it = this.item();
+    const stage = it?.stage;
+    return STAGES.filter((s) => (s.id !== 'orders' || !!it?.reserve) && s.id !== stage && (!stage || s.id !== NEXT_STAGE[stage]));
   });
 
   constructor() {

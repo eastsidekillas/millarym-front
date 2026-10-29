@@ -164,7 +164,7 @@
             <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'cover_ready', label: 'Отшит', value: it.cover_ready_at, undo: canUnmark(it, 'cut'), edit: canMarks }" />
           }
           @if (it.work_at) {
-            <div><dt class="text-xs text-muted">Выдано в работу</dt><dd class="tnum">{{ fmt(it.work_at) }}</dd></div>
+            <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'work', label: 'Выдано в работу', value: it.work_at, undo: false, edit: canWork }" />
           }
           @if (it.fg_at && it.stage === 'fg') {
             <ng-container *ngTemplateOutlet="markRow; context: { it, mark: 'fg', label: 'На СГП', value: it.fg_at, undo: false, edit: canFg }" />

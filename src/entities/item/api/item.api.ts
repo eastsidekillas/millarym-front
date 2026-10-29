@@ -17,8 +17,8 @@ import {
   StageFilter,
 } from '../model/item.types';
 
-/** «fg» — только для правки даты перевода на СГП. */
-export type Mark = 'fabric_ordered' | 'fabric_arrived' | 'sew' | 'cover_ready' | 'fg';
+/** «work» и «fg» — только для правки даты выдачи в работу и перевода на СГП. */
+export type Mark = 'fabric_ordered' | 'fabric_arrived' | 'sew' | 'cover_ready' | 'work' | 'fg';
 export type SimpleAction = 'fabric-ordered' | 'fabric-arrived' | 'sew' | 'cover-ready' | 'ship' | 'trash' | 'cancel' | 'restore' | 'return-to-work' | 'copy' | 'ack-changes';
 
 @Injectable({ providedIn: 'root' })

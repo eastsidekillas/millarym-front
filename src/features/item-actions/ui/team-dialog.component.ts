@@ -2,15 +2,16 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { CatalogApi, Team } from '@entities/catalog';
 import { ModalComponent } from '@shared/ui';
 import { ItemActions } from '../model/item-actions.service';
+import { DayFieldComponent, todayIso } from './day-field.component';
 
 @Component({
   selector: 'app-team-dialog',
-  imports: [ModalComponent],
+  imports: [ModalComponent, DayFieldComponent],
   template: `
     @if (actions.teamRequest(); as req) {
       <app-modal
         [title]="req.count > 1 ? 'Выдать в работу ' + req.count + ' изд.' : 'Выдать в работу'"
-        subtitle="Выберите бригаду, которая будет собирать"
+        subtitle="Бригада, которая будет собирать, и день выдачи"
         width="md:max-w-md"
         (closed)="req.resolve(null)"
       >
@@ -29,7 +30,7 @@ import { ItemActions } from '../model/item-actions.service';
                   class="flex h-10 items-center justify-between rounded-lg border px-3 text-left text-sm"
                   [class]="selected()?.id === t.id ? 'border-accent bg-accent/[.08]' : 'border-line hover:bg-sub'"
                   (click)="selected.set(t)"
-                  (dblclick)="req.resolve(t)"
+                  (dblclick)="choose(req.resolve, t)"
                 >
                   <span>{{ t.name }}</span>
                   @if (t.foreman && t.foreman !== t.name) {
@@ -39,9 +40,10 @@ import { ItemActions } from '../model/item-actions.service';
               }
             </div>
           }
+          <app-day-field label="Дата выдачи в работу" [(value)]="date" />
           <div class="flex justify-end gap-2">
             <button type="button" class="btn-outline" (click)="req.resolve(null)">Отмена</button>
-            <button type="button" class="btn-primary" [disabled]="!selected()" (click)="req.resolve(selected())">Выдать</button>
+            <button type="button" class="btn-primary" [disabled]="!selected() || !date() || date() > today" (click)="choose(req.resolve, selected())">Выдать</button>
           </div>
         </div>
       </app-modal>
@@ -55,11 +57,19 @@ export class TeamDialogComponent {
   readonly teams = signal<Team[]>([]);
   readonly loading = signal(false);
   readonly selected = signal<Team | null>(null);
+  readonly date = signal('');
+  today = '';
+
+  choose(resolve: (choice: { team: Team; date: string } | null) => void, team: Team | null) {
+    if (team && this.date() && this.date() <= this.today) resolve({ team, date: this.date() });
+  }
 
   constructor() {
     effect(() => {
       if (!this.actions.teamRequest()) return;
       this.selected.set(null);
+      this.today = todayIso();
+      this.date.set(this.today);
       this.loading.set(true);
       this.catalog.teams().subscribe({
         next: (teams) => {
