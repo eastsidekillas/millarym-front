@@ -102,6 +102,12 @@
             </select>
           </label>
 
+          <div class="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+            @for (f of shipmentFields; track f.key) {
+              <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+            }
+          </div>
+
           <div class="grid content-start gap-1.5 sm:col-span-2">
             <span class="text-xs text-muted">Изделие в базе</span>
             @if (linked(); as l) {
@@ -139,7 +145,13 @@
             }
           </div>
 
-          @for (f of clientFields; track f.key) {
+          @for (f of productFields; track f.key) {
+            <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+          }
+          @if (hasOldPart()) {
+            <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: partField }" />
+          }
+          @for (f of textFields; track f.key) {
             <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
           }
         </div>
