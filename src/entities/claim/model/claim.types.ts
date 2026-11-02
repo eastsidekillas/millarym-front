@@ -66,6 +66,7 @@ export interface ClaimFields {
   invoice_price: string | null;
   customer_shipped_at: string | null;
   demands: string;
+  manager_work: string;
   claim_type: string;
   arrived_at: string | null;
   kit: string;

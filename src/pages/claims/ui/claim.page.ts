@@ -26,7 +26,7 @@ interface Field {
 const EMPTY: FormFields = {
   act_date: null, manager: null, counterparty: '', item: null, product: '', item_number: '', color: '', part: '',
   description: '', package_data: '', waybill: '', sender: '', invoice_price: null, customer_shipped_at: null,
-  demands: '', claim_type: 'review', arrived_at: null, kit: '', sent_back_at: null, appearance: '', research: '',
+  demands: '', manager_work: '', claim_type: 'review', arrived_at: null, kit: '', sent_back_at: null, appearance: '', research: '',
   defect_type: '', remedy: '', restore_cost: null, finance_note: '',
 };
 
@@ -51,18 +51,27 @@ export class ClaimPage {
   readonly fmtTime = fmtDateTime;
   readonly maxMb = MAX_MB;
 
-  readonly clientFields: Field[] = [
-    { key: 'product', label: 'Изделие', placeholder: 'Например, Диван Дуглас Н 1400 (накладки венге)', wide: true },
-    { key: 'item_number', label: 'Номер изделия', placeholder: 'Например, 26/0048 или 9578/ЗАК' },
-    { key: 'color', label: 'Цвет, ткани', placeholder: 'Например, Арбен Ultra grafit' },
-    { key: 'part', label: 'Деталь', kind: 'area' },
-    { key: 'description', label: 'Описание претензии', kind: 'area' },
-    { key: 'package_data', label: 'Данные с упаковки', kind: 'area' },
+  // порядок полей — по схеме из ТЗ: отгрузка в одну строку, ниже изделие, тексты во всю ширину
+  readonly shipmentFields: Field[] = [
     { key: 'waybill', label: '№ ТН и дата отгрузки' },
     { key: 'invoice_price', label: 'Цена по накладной, ₽', kind: 'money' },
     { key: 'customer_shipped_at', label: 'Дата отгрузки конечному покупателю', kind: 'date' },
-    { key: 'demands', label: 'Требования покупателя', kind: 'area', wide: true },
   ];
+  readonly productFields: Field[] = [
+    { key: 'product', label: 'Изделие (если не нашли в базе)', placeholder: 'Например, Диван Дуглас Н 1400 (накладки венге)', wide: true },
+    { key: 'item_number', label: 'Номер изделия', placeholder: 'Например, 26/0048 или 9578/ЗАК' },
+    { key: 'color', label: 'Цвет, ткани', placeholder: 'Например, Арбен Ultra grafit' },
+  ];
+  readonly textFields: Field[] = [
+    { key: 'package_data', label: 'Данные с упаковки', kind: 'area', wide: true },
+    { key: 'description', label: 'Описание претензии', kind: 'area', wide: true },
+    { key: 'demands', label: 'Требования покупателя', kind: 'area', wide: true },
+    { key: 'manager_work', label: 'Работа менеджера по рекламации', kind: 'area', wide: true },
+  ];
+  // «Деталь» из формы убрана; показываем только у старых актов, где она заполнена, чтобы текст не пропал
+  readonly partField: Field = { key: 'part', label: 'Деталь', kind: 'area', wide: true };
+  readonly hasOldPart = computed(() => !!this.claim()?.part);
+
   readonly managerFields: Field[] = [
     { key: 'arrived_at', label: 'Дата поступления на склад', kind: 'date' },
     { key: 'sent_back_at', label: 'Дата отправки покупателю', kind: 'date' },
