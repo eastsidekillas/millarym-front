@@ -7,7 +7,8 @@ const norm = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
 
 @Component({
   selector: 'app-model-picker',
-  host: { class: 'relative block', '(document:click)': 'outside($event)' },
+  // pointerdown, а не click: окно (app-modal) гасит click, и document:click внутри него не срабатывает
+  host: { class: 'relative block', '(document:pointerdown)': 'outside($event)', '(focusout)': 'blurred($event)' },
   template: `
     <input
       class="field"
@@ -18,7 +19,6 @@ const norm = (text: string) => text.toLowerCase().replaceAll('ё', 'е');
       [placeholder]="value() === 'custom' ? 'Нет в справочнике — впишите название ниже' : 'Начните вводить название модели'"
       [value]="open() ? text() : selectedName()"
       (input)="type($any($event.target).value)"
-      (focus)="show()"
       (click)="show()"
       (keydown)="key($event)"
       autocomplete="off"
@@ -126,5 +126,10 @@ export class ModelPickerComponent {
 
   outside(event: Event) {
     if (!this.host.nativeElement.contains(event.target as Node)) this.open.set(false);
+  }
+
+  blurred(event: FocusEvent) {
+    const next = event.relatedTarget as Node | null;
+    if (next && !this.host.nativeElement.contains(next)) this.open.set(false);
   }
 }
