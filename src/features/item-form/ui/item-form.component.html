@@ -65,7 +65,7 @@
         @for (row of slots; track row.slot; let first = $first) {
           <div class="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1 sm:grid-cols-[104px_1fr_auto]">
             <span class="col-span-2 text-sm text-muted sm:col-span-1">{{ row.label }}</span>
-            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Обязательно, начните вводить' : ''" />
+            <app-fabric-picker [(value)]="row.fabric" [label]="row.label" [placeholder]="first ? 'Начните вводить, можно позже' : ''" />
             <div class="flex items-center gap-1.5">
               <input class="field tnum w-[72px]" [name]="'m-' + row.slot" [attr.data-slot]="row.slot" [(ngModel)]="row.meters" inputmode="decimal"
                 [attr.aria-label]="(row.unit === 'pcs' ? 'Штук: ' : 'Метраж: ') + row.label" />

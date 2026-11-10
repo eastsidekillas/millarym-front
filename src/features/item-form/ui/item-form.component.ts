@@ -127,12 +127,9 @@ export class ItemFormComponent {
   }
 
   private fabrics(): FabricInput[] | null {
+    // ткани не обязательны: заказ заводят сразу, ткань дописывают, когда её согласуют
     const rows = this.slots.filter((r) => r.fabric);
-    if (!this.slots[0].fabric) {
-      this.error.set('Выберите основную ткань из справочника.');
-      return null;
-    }
-    const bad = this.slots.find((r) => r.meters.trim() && isNaN(Number(r.meters.replace(',', '.'))));
+    const bad = rows.find((r) => r.meters.trim() && isNaN(Number(r.meters.replace(',', '.'))));
     if (bad) {
       this.error.set(bad.unit === 'pcs' ? `Количество «${bad.label}» — число.` : `Метраж «${bad.label}» — число, например 12,5.`);
       return null;
