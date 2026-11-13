@@ -30,6 +30,10 @@ export class ReportApi {
     return this.http.get<ModelCount[]>(`${this.api}/reports/free-stock/models/`);
   }
 
+  nomenclaturePartners(): Observable<ModelCount[]> {
+    return this.http.get<ModelCount[]>(`${this.api}/reports/nomenclature/partners/`);
+  }
+
   async download(kind: string, params: ReportParams): Promise<void> {
     await this.save(`${this.api}/reports/${kind}/xlsx/`, toParams(params), `${kind}.xlsx`);
   }

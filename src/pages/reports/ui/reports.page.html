@@ -54,6 +54,20 @@
                 </label>
               }
               @case ('date') {}
+              @case ('partners') {
+                <div class="grid content-start gap-1.5">
+                  <span class="text-xs text-muted">{{ p.label }}</span>
+                  <app-model-picker
+                    [options]="partners()"
+                    allLabel="Партнёры не выбраны"
+                    searchLabel="Найти партнёра"
+                    pickedLabel="Выбрано партнёров"
+                    emptyLabel="Партнёров нет"
+                    [selected]="selectedPartners()"
+                    (selectedChange)="setPartners($event)"
+                  />
+                </div>
+              }
               @case ('models') {
                 <div class="grid content-start gap-1.5">
                   <span class="text-xs text-muted">{{ p.label }}</span>
