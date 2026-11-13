@@ -53,9 +53,11 @@
                 }
               </ul>
             }
-            <div>
-              <button type="button" class="btn-outline h-8" [disabled]="acking()" (click)="ackChanges(it)">Изменения учтены</button>
-            </div>
+            @if (canAck) {
+              <div>
+                <button type="button" class="btn-outline h-8" [disabled]="acking()" (click)="ackChanges(it)">Изменения учтены</button>
+              </div>
+            }
           </div>
         }
 
