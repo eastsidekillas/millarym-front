@@ -36,6 +36,10 @@ export class ItemCardComponent {
   readonly canFg = inject(SessionStore).can('move_work_fg');
   readonly canWork = inject(SessionStore).can('move_cover_work');
   readonly canAmount = inject(SessionStore).can('edit') || inject(SessionStore).can('marks');
+  // «Изменения учтены» снимает цех: те, у кого отметки или переводы этапов (как на сервере)
+  readonly canAck = (['marks', 'move_orders_cut', 'move_cut_cover', 'move_cover_work', 'move_work_fg', 'move_any'] as const).some((c) =>
+    inject(SessionStore).can(c),
+  );
   private readonly toast = inject(ToastService);
 
   readonly item = signal<ItemDetail | null>(null);
