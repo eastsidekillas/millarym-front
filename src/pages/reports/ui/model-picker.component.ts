@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, computed, inject, input, model, si
 import { ChevronDown, LucideAngularModule, X } from 'lucide-angular';
 import { ModelCount } from '@entities/report';
 
-/** Выбор моделей: кнопка с выпадающим списком и поиском, выбранные — чипсами рядом. */
+/** Выбор из списка (модели, партнёры): кнопка с выпадающим списком и поиском, выбранные — чипсами рядом. */
 @Component({
   selector: 'app-model-picker',
   imports: [LucideAngularModule],
@@ -16,7 +16,7 @@ import { ModelCount } from '@entities/report';
         @if (open()) {
           <div class="absolute left-0 top-full z-30 mt-1 w-[min(420px,calc(100vw-2rem))] rounded-lg border border-line bg-surface shadow-lg">
             <div class="flex items-center gap-2 border-b border-line p-2">
-              <input #searchBox type="search" class="field h-8 text-[13px]" placeholder="Найти модель" aria-label="Найти модель" [value]="search()" (input)="search.set($any($event.target).value)" />
+              <input #searchBox type="search" class="field h-8 text-[13px]" [placeholder]="searchLabel()" [attr.aria-label]="searchLabel()" [value]="search()" (input)="search.set($any($event.target).value)" />
             </div>
             <ul class="max-h-72 overflow-y-auto p-1">
               @for (m of filtered(); track m.id) {
@@ -30,7 +30,7 @@ import { ModelCount } from '@entities/report';
                   </label>
                 </li>
               } @empty {
-                <li class="px-2 py-2 text-sm text-muted">{{ options().length ? 'Ничего не нашли' : 'Моделей нет' }}</li>
+                <li class="px-2 py-2 text-sm text-muted">{{ options().length ? 'Ничего не нашли' : emptyLabel() }}</li>
               }
             </ul>
             <div class="flex flex-wrap items-center gap-2 border-t border-line p-2">
@@ -61,6 +61,10 @@ export class ModelPickerComponent {
   readonly options = input.required<ModelCount[]>();
   readonly showCounts = input(true);
   readonly total = input<number | null>(null);
+  readonly allLabel = input('Все модели');
+  readonly searchLabel = input('Найти модель');
+  readonly pickedLabel = input('Выбрано моделей');
+  readonly emptyLabel = input('Моделей нет');
   readonly selected = model<string[]>([]);
   readonly search = signal('');
   readonly open = signal(false);
@@ -76,9 +80,9 @@ export class ModelPickerComponent {
   readonly picked = computed(() => this.options().filter((m) => this.isOn(m.id)));
   readonly label = computed(() => {
     const n = this.selected().length;
-    if (!n) return this.total() === null ? 'Все модели' : `Все модели (${this.total()} шт.)`;
+    if (!n) return this.total() === null ? this.allLabel() : `${this.allLabel()} (${this.total()} шт.)`;
     const count = this.picked().reduce((sum, m) => sum + m.count, 0);
-    return this.showCounts() ? `Выбрано моделей: ${n} (${count} шт.)` : `Выбрано моделей: ${n}`;
+    return this.showCounts() ? `${this.pickedLabel()}: ${n} (${count} шт.)` : `${this.pickedLabel()}: ${n}`;
   });
 
   toggleOpen() {
@@ -100,11 +104,11 @@ export class ModelPickerComponent {
     this.selected.update((list) => [...list, ...this.unpickedFound().map((m) => String(m.id))]);
   }
 
-  isOn(id: number | 'custom'): boolean {
+  isOn(id: number | string): boolean {
     return this.selected().includes(String(id));
   }
 
-  toggle(id: number | 'custom') {
+  toggle(id: number | string) {
     const key = String(id);
     this.selected.update((list) => (list.includes(key) ? list.filter((x) => x !== key) : [...list, key]));
   }

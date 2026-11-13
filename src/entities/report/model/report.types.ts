@@ -1,4 +1,4 @@
-export type ParamType = 'text' | 'bool' | 'date' | 'models';
+export type ParamType = 'text' | 'bool' | 'date' | 'models' | 'partners';
 
 export interface ReportParam {
   name: string;
@@ -43,7 +43,7 @@ export interface ReportResult {
 }
 
 export interface ModelCount {
-  id: number | 'custom';
+  id: number | string;
   name: string;
   count: number;
 }

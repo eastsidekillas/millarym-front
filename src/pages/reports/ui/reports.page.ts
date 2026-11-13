@@ -9,6 +9,8 @@ import { PaginatorComponent, ToastService } from '@shared/ui';
 import { ModelPickerComponent } from './model-picker.component';
 
 const ROW_PAGE = 50;
+/** Резерв партнёра бывает с запятой («Копылова (8 Марта), Красноуфимск») — в адресе разделяем чертой. */
+const PARTNER_SEP = '|';
 
 interface Block {
   group: string;
@@ -37,10 +39,12 @@ export class ReportsPage {
     for (const p of this.report()?.params ?? []) out[p.name] = this.params().get(p.name) ?? '';
     return out;
   });
+  readonly selectedPartners = computed(() => (this.values()['partners'] ?? '').split(PARTNER_SEP).filter(Boolean));
   readonly selectedModels = computed(() => (this.values()['models'] ?? '').split(',').filter(Boolean));
   readonly missing = computed(() => (this.report()?.params ?? []).some((p) => p.required && !this.values()[p.name]));
 
   readonly freeModels = signal<ModelCount[]>([]);
+  readonly partners = signal<ModelCount[]>([]);
   readonly freeTotal = computed(() => this.freeModels().reduce((sum, m) => sum + m.count, 0));
 
   readonly result = signal<ReportResult | null>(null);
@@ -77,6 +81,9 @@ export class ReportsPage {
     effect(() => {
       if (this.kind() === 'free-stock') untracked(() => this.loadFreeModels());
     });
+    effect(() => {
+      if (this.kind() === 'nomenclature') untracked(() => this.loadPartners());
+    });
   }
 
   private async loadFreeModels() {
@@ -84,6 +91,14 @@ export class ReportsPage {
       this.freeModels.set(await firstValueFrom(this.api.freeStockModels()));
     } catch {
       this.freeModels.set([]);
+    }
+  }
+
+  private async loadPartners() {
+    try {
+      this.partners.set(await firstValueFrom(this.api.nomenclaturePartners()));
+    } catch {
+      this.partners.set([]);
     }
   }
 
@@ -146,6 +161,10 @@ export class ReportsPage {
 
   setModels(ids: string[]) {
     this.set('models', ids.join(','));
+  }
+
+  setPartners(ids: string[]) {
+    this.set('partners', ids.join(PARTNER_SEP));
   }
 
   async download() {
